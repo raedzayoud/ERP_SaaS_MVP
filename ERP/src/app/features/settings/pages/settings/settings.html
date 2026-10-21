@@ -1,0 +1,369 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Settings</h1>
+      <p class="page-subtitle">Manage your company, users, roles, and subscription.</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'company'"
+      (click)="setTab('company')"
+    >
+      🏢 Company
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'users'"
+      (click)="setTab('users')"
+    >
+      👥 Users <span class="tab-badge">{{ userCount() }}/{{ planLimit() }}</span>
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'roles'"
+      (click)="setTab('roles')"
+    >
+      🔐 Roles & Permissions
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'subscription'"
+      (click)="setTab('subscription')"
+    >
+      💳 Subscription
+    </button>
+  </div>
+
+  <!-- ═══ COMPANY TAB ═══ -->
+  @if (activeTab() === 'company') {
+    <div class="tab-content card">
+      <h2 class="section-title">Company Information</h2>
+
+      @if (companySaved()) {
+        <div class="alert alert-success">Company information saved successfully.</div>
+      }
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Company name</label>
+          <input
+            type="text"
+            class="form-control"
+            [value]="companyName()"
+            (input)="onCompanyInput('companyName', $event)"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Work email</label>
+          <input
+            type="email"
+            class="form-control"
+            [value]="companyEmail()"
+            (input)="onCompanyInput('companyEmail', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Currency</label>
+          <select class="form-control" [value]="currency()" (change)="onCompanyInput('currency', $event)">
+            <option value="USD">USD — US Dollar</option>
+            <option value="EUR">EUR — Euro</option>
+            <option value="TND">TND — Tunisian Dinar</option>
+            <option value="GBP">GBP — British Pound</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tax ID (optional)</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="e.g. TVA123456"
+            [value]="taxId()"
+            (input)="onCompanyInput('taxId', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Address (optional)</label>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Street, City, Country"
+          [value]="address()"
+          (input)="onCompanyInput('address', $event)"
+        />
+      </div>
+
+      <div class="form-row form-row-3">
+        <div class="form-group">
+          <label class="form-label">Country</label>
+          <select class="form-control" [value]="country()" (change)="onCompanyInput('country', $event)">
+            @for (c of countries; track c.code) {
+              <option [value]="c.code">{{ c.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Language</label>
+          <select class="form-control" [value]="language()" (change)="onCompanyInput('language', $event)">
+            @for (l of languages; track l.code) {
+              <option [value]="l.code">{{ l.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company size</label>
+          <select class="form-control" [value]="companySize()" (change)="onCompanyInput('companySize', $event)">
+            @for (s of companySizes; track s.value) {
+              <option [value]="s.value">{{ s.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Workspace address</label>
+        <input
+          type="text"
+          class="form-control"
+          [value]="workspaceAddress()"
+          readonly
+          disabled
+        />
+        <span class="form-hint">Workspace address cannot be changed after signup.</span>
+      </div>
+
+      <div class="tab-actions">
+        <button class="btn btn-primary" (click)="saveCompany()">Save Changes</button>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ USERS TAB ═══ -->
+  @if (activeTab() === 'users') {
+    <div class="tab-content card">
+      <div class="section-header">
+        <h2 class="section-title">Team Members</h2>
+        <button
+          class="btn btn-primary btn-sm"
+          (click)="toggleAddUser()"
+          [disabled]="!canAddUser()"
+        >
+          + Add User
+        </button>
+      </div>
+
+      @if (userError()) {
+        <div class="alert alert-danger">{{ userError() }}</div>
+      }
+      @if (userSuccess()) {
+        <div class="alert alert-success">{{ userSuccess() }}</div>
+      }
+
+      @if (!canAddUser() && !userError()) {
+        <div class="alert alert-warning">
+          You've reached the {{ plan()?.name }} plan limit of {{ planLimit() }} users.
+          <a routerLink="/settings" (click)="setTab('subscription')">Upgrade your plan</a> to add more.
+        </div>
+      }
+
+      <!-- Add user form -->
+      @if (showAddUser()) {
+        <div class="add-user-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full name</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="e.g. Jane Doe"
+                [value]="newUserName()"
+                (input)="onUserInput('name', $event)"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                placeholder="jane@company.com"
+                [value]="newUserEmail()"
+                (input)="onUserInput('email', $event)"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <select class="form-control" [value]="newUserRole()" (change)="onRoleChange($event)">
+                <option value="Administrator">Administrator</option>
+                <option value="Accountant">Accountant</option>
+                <option value="Sales">Sales</option>
+                <option value="Viewer">Viewer</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-secondary btn-sm" (click)="toggleAddUser()">Cancel</button>
+            <button class="btn btn-success btn-sm" (click)="addUser()">Add User</button>
+          </div>
+        </div>
+      }
+
+      <!-- Users table -->
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th style="width: 60px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of tenant()?.users; track user.id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <span class="user-avatar-sm">{{ user.name.charAt(0) }}</span>
+                  {{ user.name }}
+                </div>
+              </td>
+              <td class="text-muted">{{ user.email }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge-primary]="user.role === 'Administrator'"
+                  [class.badge-info]="user.role === 'Accountant'"
+                  [class.badge-success]="user.role === 'Sales'"
+                  [class.badge-warning]="user.role === 'Viewer'"
+                >
+                  {{ user.role }}
+                </span>
+              </td>
+              <td>
+                @if (user.role !== 'Administrator') {
+                  <button class="btn btn-sm btn-danger" (click)="removeUser(user.id)" title="Remove user">
+                    ✕
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- ═══ ROLES TAB ═══ -->
+  @if (activeTab() === 'roles') {
+    <div class="tab-content">
+      <div class="roles-grid">
+        @for (role of roles; track role.name) {
+          <div class="card role-card">
+            <div class="role-header">
+              <span
+                class="badge"
+                [class.badge-primary]="role.name === 'Administrator'"
+                [class.badge-info]="role.name === 'Accountant'"
+                [class.badge-success]="role.name === 'Sales'"
+                [class.badge-warning]="role.name === 'Viewer'"
+              >
+                {{ role.name }}
+              </span>
+            </div>
+            <p class="role-description">{{ role.description }}</p>
+            <div class="role-permissions">
+              @for (perm of role.permissions; track perm) {
+                <span class="permission-chip">✓ {{ perm }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="card mt-3">
+        <h3 class="section-title">How roles work</h3>
+        <p class="text-muted" style="font-size: 13px; line-height: 1.6;">
+          Roles control what each team member can see and do in the ERP.
+          When you add a user, assign them the role that matches their job.
+          Administrators can always access everything, including settings and billing.
+          These roles are a starting point — finer permission controls will be available in a future release.
+        </p>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ SUBSCRIPTION TAB ═══ -->
+  @if (activeTab() === 'subscription') {
+    <div class="tab-content">
+      @if (upgradeSuccess()) {
+        <div class="alert alert-success">{{ upgradeSuccess() }}</div>
+      }
+
+      <!-- Current plan -->
+      <div class="card current-plan">
+        <div class="current-plan-info">
+          <div>
+            <div class="current-plan-label">Current Plan</div>
+            <div class="current-plan-name">{{ plan()?.name }}</div>
+          </div>
+          <div class="current-plan-details">
+            <span>${{ billingCycle() === 'monthly' ? plan()?.priceMonthly : plan()?.priceAnnual }} {{ billingCycle() === 'monthly' ? '/month' : '/year' }}</span>
+            <span class="text-muted">· {{ userCount() }}/{{ planLimit() }} users · {{ plan()?.storageGb }} GB</span>
+          </div>
+        </div>
+        <div class="billing-toggle-sm">
+          <span [class.active]="billingCycle() === 'monthly'">Monthly</span>
+          <button class="toggle-switch" (click)="toggleBilling()">
+            <span class="toggle-knob" [class.annual]="billingCycle() === 'annual'"></span>
+          </button>
+          <span [class.active]="billingCycle() === 'annual'">Annual</span>
+        </div>
+      </div>
+
+      <!-- Plan comparison -->
+      <div class="plan-grid">
+        @for (p of plans; track p.id) {
+          <div
+            class="plan-card"
+            [class.selected]="tenant()?.planId === p.id"
+            [class.popular]="p.popular"
+          >
+            @if (p.popular) {
+              <div class="popular-badge">Most Popular</div>
+            }
+            @if (tenant()?.planId === p.id) {
+              <div class="current-badge">Current</div>
+            }
+            <div class="plan-name">{{ p.name }}</div>
+            <div class="plan-price">
+              ${{ billingCycle() === 'monthly' ? p.priceMonthly : p.priceAnnual }}
+              <span class="plan-period">{{ billingCycle() === 'monthly' ? '/month' : '/year' }}</span>
+            </div>
+            <ul class="plan-features">
+              @for (feature of p.features; track feature) {
+                <li>✓ {{ feature }}</li>
+              }
+            </ul>
+            @if (tenant()?.planId !== p.id) {
+              <button
+                class="btn"
+                [class.btn-primary]="p.priceMonthly > (plan()?.priceMonthly || 0)"
+                [class.btn-secondary]="p.priceMonthly <= (plan()?.priceMonthly || 0)"
+                (click)="upgradePlan(p.id)"
+              >
+                {{ p.priceMonthly > (plan()?.priceMonthly || 0) ? 'Upgrade' : 'Switch' }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

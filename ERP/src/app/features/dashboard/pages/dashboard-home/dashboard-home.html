@@ -1,0 +1,78 @@
+<div class="dashboard">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Welcome back! Here's an overview of your business.</p>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    @for (kpi of kpis; track kpi.title) {
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-icon">{{ kpi.icon }}</span>
+          <span class="kpi-title">{{ kpi.title }}</span>
+        </div>
+        <div class="kpi-value">{{ kpi.value }}</div>
+        <div class="kpi-change" [class]="'change-' + kpi.changeType">
+          {{ kpi.change }}
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Recent Activity -->
+    <div class="card">
+      <h2 class="card-title">Recent Activity</h2>
+      <div class="activity-list">
+        @for (activity of recentActivity; track activity.message) {
+          <div class="activity-item">
+            <span class="activity-icon">{{ activity.icon }}</span>
+            <div class="activity-content">
+              <div class="activity-message">{{ activity.message }}</div>
+              <div class="activity-time">{{ activity.time }}</div>
+            </div>
+            <span class="badge badge-primary">{{ activity.type }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <h2 class="card-title">Quick Actions</h2>
+      <div class="quick-actions">
+        @for (action of quickActions; track action.label) {
+          <a class="quick-action-btn" [routerLink]="action.route">
+            <span class="quick-action-icon">{{ action.icon }}</span>
+            <span>{{ action.label }}</span>
+          </a>
+        }
+      </div>
+
+      <div class="card-divider"></div>
+
+      <h2 class="card-title">Summary</h2>
+      <div class="summary-list">
+        <div class="summary-item">
+          <span class="summary-label">Total Customers</span>
+          <span class="summary-value">156</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Active Products</span>
+          <span class="summary-value">89</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Pending Orders</span>
+          <span class="summary-value">12</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">This Month Revenue</span>
+          <span class="summary-value text-success">$48,290</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

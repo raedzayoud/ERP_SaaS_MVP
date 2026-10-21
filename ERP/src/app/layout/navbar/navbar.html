@@ -1,0 +1,52 @@
+<header class="navbar">
+  <div class="navbar-left">
+    <button class="menu-toggle" (click)="onToggleSidebar()" aria-label="Toggle sidebar">
+      ☰
+    </button>
+    <div class="navbar-brand">
+      <h1 class="navbar-title">{{ pageTitle() }}</h1>
+      @if (tenant) {
+        <span class="company-badge">{{ tenant.companyName }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="navbar-right">
+    <button class="navbar-icon-btn" title="Notifications">
+      <span class="icon">🔔</span>
+      <span class="badge-dot"></span>
+    </button>
+
+    <div class="user-menu">
+      <button class="user-avatar-btn" (click)="toggleUserMenu()">
+        <span class="avatar">{{ userInitials }}</span>
+        <span class="user-name">{{ authService.currentUser()?.name }}</span>
+        <span class="chevron">▾</span>
+      </button>
+
+      @if (showUserMenu) {
+        <div class="user-dropdown">
+          <div class="dropdown-header">
+            <div class="dropdown-name">{{ authService.currentUser()?.name }}</div>
+            <div class="dropdown-email">{{ authService.currentUser()?.email }}</div>
+            @if (tenant) {
+              <div class="dropdown-company">🏢 {{ tenant.companyName }}</div>
+            }
+          </div>
+          <div class="dropdown-divider"></div>
+          <a
+            class="dropdown-item"
+            routerLink="/settings"
+            (click)="closeUserMenu()"
+          >
+            <span>⚙️</span> Settings
+          </a>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item logout-item" (click)="logout()">
+            <span>🚪</span> Sign out
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</header>

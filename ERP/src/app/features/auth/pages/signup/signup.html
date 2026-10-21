@@ -1,0 +1,314 @@
+<div class="signup-page">
+  <div class="signup-card">
+    <!-- Header -->
+    <div class="signup-header">
+      <div class="signup-logo">E</div>
+      <h1 class="signup-title">Create your workspace</h1>
+      <p class="signup-subtitle">Set up your ERP in under 5 minutes</p>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper">
+      <div class="step" [class.active]="step() >= 1" [class.done]="step() > 1">
+        <div class="step-circle">1</div>
+        <div class="step-label">Apps</div>
+      </div>
+      <div class="step-line" [class.done]="step() > 1"></div>
+      <div class="step" [class.active]="step() >= 2" [class.done]="step() > 2">
+        <div class="step-circle">2</div>
+        <div class="step-label">Details</div>
+      </div>
+      <div class="step-line" [class.done]="step() > 2"></div>
+      <div class="step" [class.active]="step() >= 3" [class.done]="step() > 3">
+        <div class="step-circle">3</div>
+        <div class="step-label">Verify</div>
+      </div>
+      <div class="step-line" [class.done]="step() > 3"></div>
+      <div class="step" [class.active]="step() >= 4">
+        <div class="step-circle">4</div>
+        <div class="step-label">Setup</div>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="signup-error">{{ error() }}</div>
+    }
+
+    <!-- ═══ STEP 1: Choose Applications ═══ -->
+    @if (step() === 1) {
+      <div class="step-content">
+        <p class="step-intro">
+          Select the applications you need. Dependencies are added automatically —
+          you can change this later in Settings.
+        </p>
+
+        <div class="app-grid">
+          @for (group of appCategories; track group.category) {
+            <div class="app-category">
+              <div class="app-category-title">{{ group.category }}</div>
+              <div class="app-cards">
+                @for (app of group.apps; track app.id) {
+                  <div
+                    class="app-card"
+                    [class.selected]="isAppSelected(app.id)"
+                    [class.locked]="app.id === 'dashboard'"
+                    (click)="toggleApp(app)"
+                  >
+                    <div class="app-check">
+                      @if (isAppSelected(app.id)) {
+                        ✓
+                      }
+                    </div>
+                    <div class="app-icon">{{ app.icon }}</div>
+                    <div class="app-info">
+                      <div class="app-name">{{ app.label }}</div>
+                      <div class="app-desc">{{ app.description }}</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (depNotice()) {
+          <div class="dep-notice">🔗 {{ depNotice() }}</div>
+        }
+
+        <div class="selection-summary">
+          <span>
+            <strong>{{ selectableCount() }}</strong> app(s) selected
+          </span>
+          <span class="summary-divider">·</span>
+          <span>
+            Plan: <strong class="plan-name-inline">{{ selectedPlan().name }}</strong>
+            — ${{ selectedPlan().priceMonthly }}/mo
+          </span>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ STEP 2: Your Details ═══ -->
+    @if (step() === 2) {
+      <div class="step-content">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fullName">Full name</label>
+            <input
+              id="fullName"
+              type="text"
+              class="form-control"
+              placeholder="e.g. John Smith"
+              [value]="fullName()"
+              (input)="onFormInput('fullName', $event)"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="email">Work email</label>
+            <input
+              id="email"
+              type="email"
+              class="form-control"
+              placeholder="you@company.com"
+              [value]="email()"
+              (input)="onFormInput('email', $event)"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="companyName">Company name</label>
+          <input
+            id="companyName"
+            type="text"
+            class="form-control"
+            placeholder="e.g. TechStore Ltd"
+            [value]="companyName()"
+            (input)="onFormInput('companyName', $event)"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="subdomain">Workspace address</label>
+          <div class="subdomain-input">
+            <input
+              id="subdomain"
+              type="text"
+              class="form-control subdomain-field"
+              placeholder="yourcompany"
+              [value]="subdomain()"
+              (input)="onSubdomainInput($event)"
+            />
+            <span class="subdomain-suffix">.erpcloud.com</span>
+          </div>
+          @if (subdomainChecked() === true) {
+            <div class="field-hint ok">✓ {{ fullSubdomain }} is available</div>
+          } @else if (subdomainChecked() === false) {
+            <div class="field-hint error">✗ This address is taken or invalid</div>
+          }
+        </div>
+
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label class="form-label" for="country">Country</label>
+            <select
+              id="country"
+              class="form-control"
+              [value]="country()"
+              (change)="onSelectChange('country', $event)"
+            >
+              @for (c of countries; track c.code) {
+                <option [value]="c.code">{{ c.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="language">Language</label>
+            <select
+              id="language"
+              class="form-control"
+              [value]="language()"
+              (change)="onSelectChange('language', $event)"
+            >
+              @for (l of languages; track l.code) {
+                <option [value]="l.code">{{ l.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="companySize">Company size</label>
+            <select
+              id="companySize"
+              class="form-control"
+              [value]="companySize()"
+              (change)="onSelectChange('companySize', $event)"
+            >
+              @for (s of companySizes; track s.value) {
+                <option [value]="s.value">{{ s.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ STEP 3: Email Verification ═══ -->
+    @if (step() === 3) {
+      <div class="step-content verify-content">
+        <div class="verify-icon">📧</div>
+        <h3 class="verify-title">Check your email</h3>
+        <p class="verify-text">
+          We sent a 6-digit verification code to<br />
+          <strong>{{ email() }}</strong>
+        </p>
+
+        <div class="demo-banner">
+          Demo mode — no real email is sent. Your code is
+          <strong class="demo-code">{{ verificationCode() }}</strong>
+        </div>
+
+        @if (verifyError()) {
+          <div class="signup-error">{{ verifyError() }}</div>
+        }
+
+        <input
+          type="text"
+          class="code-input"
+          inputmode="numeric"
+          placeholder="000000"
+          maxlength="6"
+          [value]="codeInput()"
+          (input)="onCodeInput($event)"
+        />
+
+        <div class="verify-actions">
+          <button
+            class="btn btn-secondary btn-sm"
+            (click)="resendCode()"
+            [disabled]="resendCooldown() > 0"
+          >
+            @if (resendCooldown() > 0) {
+              Resend in {{ resendCooldown() }}s
+            } @else {
+              Resend code
+            }
+          </button>
+          <span class="code-expiry">
+            @if (codeExpired) {
+              Code expired
+            } @else {
+              Code valid for 5 minutes
+            }
+          </span>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ STEP 4: Provisioning ═══ -->
+    @if (step() === 4) {
+      <div class="step-content provision-content">
+        <div class="provision-spinner"></div>
+        <h3 class="provision-title">Setting up your workspace…</h3>
+
+        <ul class="provision-list">
+          @for (item of [
+            'Validating information',
+            'Reserving ' + fullSubdomain,
+            'Creating workspace & database',
+            'Enabling your apps (' + selectedApps().length + ')',
+            'Configuring default roles & settings'
+          ]; track item; let i = $index) {
+            <li
+              class="provision-item"
+              [class.done]="provisioningStep() > i"
+              [class.active]="provisioningStep() === i"
+            >
+              <span class="provision-mark">
+                @if (provisioningStep() > i) {
+                  ✓
+                } @else if (provisioningStep() === i) {
+                  <span class="mini-spinner"></span>
+                }
+              </span>
+              {{ item }}
+            </li>
+          }
+        </ul>
+
+        <p class="provision-plan">
+          Plan: <strong>{{ selectedPlan().name }}</strong> —
+          ${{ selectedPlan().priceMonthly }}/mo (auto-selected from your apps)
+        </p>
+      </div>
+    }
+
+    <!-- Actions -->
+    @if (step() < 4) {
+      <div class="step-actions">
+        @if (step() > 1) {
+          <button class="btn btn-secondary" (click)="back()">← Back</button>
+        } @else {
+          <a routerLink="/login" class="btn btn-secondary">← Sign in</a>
+        }
+
+        @if (step() === 1) {
+          <button class="btn btn-primary" (click)="next()">Continue →</button>
+        } @else if (step() === 2) {
+          <button class="btn btn-primary" (click)="next()">Send code →</button>
+        } @else if (step() === 3) {
+          <button
+            class="btn btn-success"
+            (click)="verifyCode()"
+            [disabled]="codeInput().length !== 6"
+          >
+            Verify & launch →
+          </button>
+        }
+      </div>
+    }
+
+    <div class="signup-footer">
+      <p>By creating an account you agree to our Terms of Service and Privacy Policy.</p>
+    </div>
+  </div>
+</div>
