@@ -1,15 +1,16 @@
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { translateSignal } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-module-placeholder',
   template: `
     <div class="placeholder-page">
       <div class="placeholder-icon">{{ icon }}</div>
-      <h1 class="placeholder-title">{{ title }}</h1>
-      <p class="placeholder-description">{{ description }}</p>
-      <div class="placeholder-badge">Under Construction</div>
-      <p class="placeholder-hint">This module will be available in a future release.</p>
+      <h1 class="placeholder-title">{{ title() }}</h1>
+      <p class="placeholder-description">{{ description() }}</p>
+      <div class="placeholder-badge">{{ badge() }}</div>
+      <p class="placeholder-hint">{{ hint() }}</p>
     </div>
   `,
   styles: `
@@ -56,9 +57,16 @@ import { ActivatedRoute } from '@angular/router';
   `,
 })
 export class ModulePlaceholder {
-  private route = inject(ActivatedRoute);
+  private readonly route = inject(ActivatedRoute);
 
-  title = this.route.snapshot.data['title'] || 'Module';
-  description = this.route.snapshot.data['description'] || '';
-  icon = this.route.snapshot.data['icon'] || '🚧';
+  readonly icon = this.text('icon', '🚧');
+  readonly title = translateSignal(this.text('title', 'titles.moduleInactive'));
+  readonly description = translateSignal(this.text('description', ''));
+  readonly badge = translateSignal('placeholder.badge');
+  readonly hint = translateSignal('placeholder.hint');
+
+  private text(name: string, fallback: string): string {
+    const value = this.route.snapshot.data[name];
+    return typeof value === 'string' ? value : fallback;
+  }
 }

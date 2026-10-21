@@ -1,0 +1,41 @@
+<ng-container *transloco="let t">
+  <div class="module-inactive">
+    <div class="inactive-icon" aria-hidden="true">
+      {{ hasWorkspace() ? '🔒' : '🏢' }}
+    </div>
+
+    @if (hasWorkspace()) {
+      <h1 class="inactive-title">{{ t('moduleInactive.title') }}</h1>
+
+      @if (module()) {
+        <p class="inactive-text">
+          {{ t('moduleInactive.notInPlan', { module: t(moduleTitleKey()) }) }}
+        </p>
+        <p class="inactive-hint">{{ t('moduleInactive.hint') }}</p>
+      } @else {
+        <p class="inactive-text">{{ t('moduleInactive.generic') }}</p>
+      }
+
+      <div class="inactive-actions">
+        <a routerLink="/settings" class="btn btn-primary">
+          {{ t('moduleInactive.viewPlans') }}
+        </a>
+        <a routerLink="/dashboard" class="btn btn-secondary">
+          {{ t('moduleInactive.backToDashboard') }}
+        </a>
+      </div>
+    } @else {
+      <h1 class="inactive-title">{{ t('moduleInactive.noWorkspaceTitle') }}</h1>
+      <p class="inactive-text">{{ t('moduleInactive.noWorkspaceText') }}</p>
+
+      <div class="inactive-actions">
+        <a routerLink="/signup" class="btn btn-primary">
+          {{ t('moduleInactive.createWorkspace') }}
+        </a>
+        <a routerLink="/dashboard" class="btn btn-secondary">
+          {{ t('moduleInactive.backToDashboard') }}
+        </a>
+      </div>
+    }
+  </div>
+</ng-container>

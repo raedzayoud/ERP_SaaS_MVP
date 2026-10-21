@@ -1,0 +1,42 @@
+.module-inactive {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  max-width: 480px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.inactive-icon {
+  font-size: 56px;
+  margin-block-end: 16px;
+}
+
+.inactive-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-block-end: 8px;
+}
+
+.inactive-text {
+  font-size: 14px;
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin-block-end: 8px;
+}
+
+.inactive-hint {
+  font-size: 13px;
+  color: var(--gray-400);
+  margin-block-end: 20px;
+}
+
+.inactive-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}

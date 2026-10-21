@@ -6,7 +6,7 @@
   />
 
   <div class="app-main">
-    <app-navbar (toggleSidebar)="toggleMobileSidebar()" />
+    <app-navbar [pageTitleKey]="pageTitleKey()" (toggleSidebar)="toggleMobileSidebar()" />
     <main class="app-content">
       <router-outlet />
     </main>

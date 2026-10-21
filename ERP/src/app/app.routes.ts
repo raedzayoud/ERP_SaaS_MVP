@@ -5,8 +5,7 @@ import { moduleGuard } from './core/guards/module.guard';
 export const routes: Routes = [
   {
     path: 'login',
-    loadComponent: () =>
-      import('./features/auth/pages/login/login').then((m) => m.LoginComponent),
+    loadComponent: () => import('./features/auth/pages/login/login').then((m) => m.LoginComponent),
   },
   {
     path: 'signup',
@@ -15,8 +14,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    loadComponent: () =>
-      import('./layout/main-layout/main-layout').then((m) => m.MainLayout),
+    loadComponent: () => import('./layout/main-layout/main-layout').then((m) => m.MainLayout),
     canActivate: [authGuard],
     children: [
       {
@@ -25,32 +23,56 @@ export const routes: Routes = [
           import('./features/dashboard/pages/dashboard-home/dashboard-home').then(
             (m) => m.DashboardHome,
           ),
-        data: { title: 'Dashboard', moduleId: 'dashboard' },
+        data: { title: 'titles.dashboard', moduleId: 'dashboard' },
+      },
+      {
+        path: 'contacts/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/crm/pages/contact-form/contact-form').then((m) => m.ContactForm),
+        data: { title: 'titles.newContact', moduleId: 'contacts' },
+      },
+      {
+        path: 'contacts/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/crm/pages/contact-form/contact-form').then((m) => m.ContactForm),
+        data: { title: 'titles.editContact', moduleId: 'contacts' },
       },
       {
         path: 'contacts',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
-          ),
+          import('./features/crm/pages/contacts/contacts').then((m) => m.Contacts),
         data: {
-          title: 'Contacts',
-          description: 'Manage your contacts, companies, leads, and opportunities. Track interactions and build your CRM pipeline.',
+          title: 'titles.contacts',
+          description: 'descriptions.contacts',
           icon: '👥',
           moduleId: 'contacts',
         },
       },
       {
+        path: 'products/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/products/pages/product-form/product-form').then((m) => m.ProductForm),
+        data: { title: 'titles.newProduct', moduleId: 'products' },
+      },
+      {
+        path: 'products/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/products/pages/product-form/product-form').then((m) => m.ProductForm),
+        data: { title: 'titles.editProduct', moduleId: 'products' },
+      },
+      {
         path: 'products',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
-          ),
+          import('./features/products/pages/products/products').then((m) => m.Products),
         data: {
-          title: 'Products',
-          description: 'Manage your product and service catalog. Set prices, categories, taxes, and stock levels.',
+          title: 'titles.products',
+          description: 'descriptions.products',
           icon: '📦',
           moduleId: 'products',
         },
@@ -63,8 +85,8 @@ export const routes: Routes = [
             (m) => m.ModulePlaceholder,
           ),
         data: {
-          title: 'Sales Invoices',
-          description: 'Create and manage sales invoices. Track payments, send reminders, and generate PDFs.',
+          title: 'titles.invoices',
+          description: 'descriptions.invoices',
           icon: '🧾',
           moduleId: 'invoices',
         },
@@ -77,8 +99,8 @@ export const routes: Routes = [
             (m) => m.ModulePlaceholder,
           ),
         data: {
-          title: 'Payments',
-          description: 'Track incoming and outgoing payments. Reconcile bank statements and manage payment methods.',
+          title: 'titles.payments',
+          description: 'descriptions.payments',
           icon: '💳',
           moduleId: 'payments',
         },
@@ -91,8 +113,8 @@ export const routes: Routes = [
             (m) => m.ModulePlaceholder,
           ),
         data: {
-          title: 'Purchase Orders',
-          description: 'Manage suppliers, purchase orders, and receipts. Track procurement from request to delivery.',
+          title: 'titles.purchases',
+          description: 'descriptions.purchases',
           icon: '🛒',
           moduleId: 'purchases',
         },
@@ -105,8 +127,8 @@ export const routes: Routes = [
             (m) => m.ModulePlaceholder,
           ),
         data: {
-          title: 'Stock',
-          description: 'Monitor inventory levels across warehouses. Manage stock movements, transfers, and adjustments.',
+          title: 'titles.stock',
+          description: 'descriptions.stock',
           icon: '🏬',
           moduleId: 'stock',
         },
@@ -119,8 +141,8 @@ export const routes: Routes = [
             (m) => m.ModulePlaceholder,
           ),
         data: {
-          title: 'Accounting',
-          description: 'Manage journals, general ledger, trial balance, and financial statements. Double-entry bookkeeping.',
+          title: 'titles.accounting',
+          description: 'descriptions.accounting',
           icon: '📒',
           moduleId: 'accounting',
         },
@@ -133,8 +155,8 @@ export const routes: Routes = [
             (m) => m.ModulePlaceholder,
           ),
         data: {
-          title: 'Invoicing',
-          description: 'Configure invoicing settings, numbering sequences, tax rules, and electronic invoicing compliance.',
+          title: 'titles.invoicing',
+          description: 'descriptions.invoicing',
           icon: '📄',
           moduleId: 'invoicing',
         },
@@ -147,8 +169,8 @@ export const routes: Routes = [
             (m) => m.ModulePlaceholder,
           ),
         data: {
-          title: 'Reports',
-          description: 'View business analytics and reports. Export to PDF, Excel, and CSV. Track KPIs and trends.',
+          title: 'titles.reports',
+          description: 'descriptions.reports',
           icon: '📈',
           moduleId: 'reports',
         },
@@ -161,19 +183,23 @@ export const routes: Routes = [
             (m) => m.ModulePlaceholder,
           ),
         data: {
-          title: 'AI Assistant',
-          description: 'Ask questions about your documents, extract data from invoices, and get AI-powered insights.',
+          title: 'titles.ai-assistant',
+          description: 'descriptions.ai-assistant',
           icon: '🤖',
           moduleId: 'ai-assistant',
         },
       },
       {
+        path: 'module-inactive',
+        loadComponent: () =>
+          import('./shared/pages/module-inactive/module-inactive').then((m) => m.ModuleInactive),
+        data: { title: 'titles.moduleInactive' },
+      },
+      {
         path: 'settings',
         loadComponent: () =>
-          import('./features/settings/pages/settings/settings').then(
-            (m) => m.SettingsComponent,
-          ),
-        data: { title: 'Settings' },
+          import('./features/settings/pages/settings/settings').then((m) => m.SettingsComponent),
+        data: { title: 'titles.settings' },
       },
       {
         path: '',

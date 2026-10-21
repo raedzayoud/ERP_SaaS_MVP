@@ -1,22 +1,23 @@
-import { Component, input, output, inject } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { TenantService } from '../../core/services/tenant.service';
 
 interface MenuItem {
-  label: string;
+  labelKey: string;
   icon: string;
   route: string;
   moduleId: string;
 }
 
 interface MenuSection {
-  title: string;
+  titleKey: string;
   items: MenuItem[];
 }
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, TranslocoDirective],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
@@ -29,55 +30,103 @@ export class Sidebar {
 
   private allSections: MenuSection[] = [
     {
-      title: 'General',
+      titleKey: 'sidebar.sections.general',
       items: [
-        { label: 'Dashboard', icon: '📊', route: '/dashboard', moduleId: 'dashboard' },
+        {
+          labelKey: 'sidebar.items.dashboard',
+          icon: '📊',
+          route: '/dashboard',
+          moduleId: 'dashboard',
+        },
       ],
     },
     {
-      title: 'Relationship',
+      titleKey: 'sidebar.sections.relationship',
       items: [
-        { label: 'Contacts', icon: '👥', route: '/contacts', moduleId: 'contacts' },
+        {
+          labelKey: 'sidebar.items.contacts',
+          icon: '👥',
+          route: '/contacts',
+          moduleId: 'contacts',
+        },
       ],
     },
     {
-      title: 'Sales',
+      titleKey: 'sidebar.sections.sales',
       items: [
-        { label: 'Products', icon: '📦', route: '/products', moduleId: 'products' },
-        { label: 'Invoices', icon: '🧾', route: '/invoices', moduleId: 'invoices' },
-        { label: 'Payments', icon: '💳', route: '/payments', moduleId: 'payments' },
+        {
+          labelKey: 'sidebar.items.products',
+          icon: '📦',
+          route: '/products',
+          moduleId: 'products',
+        },
+        {
+          labelKey: 'sidebar.items.invoices',
+          icon: '🧾',
+          route: '/invoices',
+          moduleId: 'invoices',
+        },
+        {
+          labelKey: 'sidebar.items.payments',
+          icon: '💳',
+          route: '/payments',
+          moduleId: 'payments',
+        },
       ],
     },
     {
-      title: 'Purchases',
+      titleKey: 'sidebar.sections.purchases',
       items: [
-        { label: 'Purchase Orders', icon: '🛒', route: '/purchases', moduleId: 'purchases' },
+        {
+          labelKey: 'sidebar.items.purchaseOrders',
+          icon: '🛒',
+          route: '/purchases',
+          moduleId: 'purchases',
+        },
       ],
     },
     {
-      title: 'Inventory',
+      titleKey: 'sidebar.sections.inventory',
+      items: [{ labelKey: 'sidebar.items.stock', icon: '🏬', route: '/stock', moduleId: 'stock' }],
+    },
+    {
+      titleKey: 'sidebar.sections.finance',
       items: [
-        { label: 'Stock', icon: '🏬', route: '/stock', moduleId: 'stock' },
+        {
+          labelKey: 'sidebar.items.accounting',
+          icon: '📒',
+          route: '/accounting',
+          moduleId: 'accounting',
+        },
+        {
+          labelKey: 'sidebar.items.invoicing',
+          icon: '📄',
+          route: '/invoicing',
+          moduleId: 'invoicing',
+        },
+        { labelKey: 'sidebar.items.reports', icon: '📈', route: '/reports', moduleId: 'reports' },
       ],
     },
     {
-      title: 'Finance',
+      titleKey: 'sidebar.sections.tools',
       items: [
-        { label: 'Accounting', icon: '📒', route: '/accounting', moduleId: 'accounting' },
-        { label: 'Invoicing', icon: '📄', route: '/invoicing', moduleId: 'invoicing' },
-        { label: 'Reports', icon: '📈', route: '/reports', moduleId: 'reports' },
+        {
+          labelKey: 'sidebar.items.aiAssistant',
+          icon: '🤖',
+          route: '/ai-assistant',
+          moduleId: 'ai-assistant',
+        },
       ],
     },
     {
-      title: 'Tools',
+      titleKey: 'sidebar.sections.workspace',
       items: [
-        { label: 'AI Assistant', icon: '🤖', route: '/ai-assistant', moduleId: 'ai-assistant' },
-      ],
-    },
-    {
-      title: 'Workspace',
-      items: [
-        { label: 'Settings', icon: '⚙️', route: '/settings', moduleId: 'settings' },
+        {
+          labelKey: 'sidebar.items.settings',
+          icon: '⚙️',
+          route: '/settings',
+          moduleId: 'settings',
+        },
       ],
     },
   ];

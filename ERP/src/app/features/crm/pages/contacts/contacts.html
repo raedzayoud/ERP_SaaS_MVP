@@ -1,0 +1,217 @@
+<ng-container *transloco="let t">
+  <div class="contacts-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('contacts.title') }}</h1>
+        <p class="page-subtitle">{{ t('contacts.subtitle') }}</p>
+      </div>
+      <a routerLink="/contacts/new" class="btn btn-primary">+ {{ t('contacts.newContact') }}</a>
+    </div>
+
+    @if (notice()) {
+      <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+    }
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('contacts.searchPlaceholder')"
+          [attr.aria-label]="t('contacts.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="kindFilter()"
+          [attr.aria-label]="t('contacts.filters.kind')"
+          (change)="onKindFilter($event)"
+        >
+          <option value="">{{ t('contacts.filters.allKinds') }}</option>
+          <option value="company">{{ t('contacts.filters.companies') }}</option>
+          <option value="person">{{ t('contacts.filters.persons') }}</option>
+        </select>
+
+        <select
+          class="form-control filter-select"
+          [value]="activeFilter()"
+          [attr.aria-label]="t('contacts.filters.status')"
+          (change)="onActiveFilter($event)"
+        >
+          <option value="active">{{ t('contacts.filters.activeOnly') }}</option>
+          <option value="archived">{{ t('contacts.filters.archivedOnly') }}</option>
+          <option value="all">{{ t('contacts.filters.allStatuses') }}</option>
+        </select>
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('contacts.loadError') }}</p>
+          <p class="state-text">{{ t('contacts.loadErrorHint') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (partners().length === 0) {
+        <div class="state-block">
+          <p class="state-title">
+            {{ hasFilters() ? t('contacts.noMatch') : t('contacts.emptyTitle') }}
+          </p>
+          <p class="state-text">
+            {{ hasFilters() ? t('contacts.noMatchHint') : t('contacts.emptyHint') }}
+          </p>
+          @if (hasFilters()) {
+            <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+              {{ t('common.clearFilters') }}
+            </button>
+          } @else {
+            <a routerLink="/contacts/new" class="btn btn-primary">
+              {{ t('contacts.newContact') }}
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col" [attr.aria-sort]="ariaSort('name')">
+                  <button type="button" class="th-sort" (click)="setSort('name')">
+                    {{ t('contacts.columns.name') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('name') }}</span>
+                  </button>
+                </th>
+                <th scope="col">{{ t('contacts.columns.company') }}</th>
+                <th scope="col">{{ t('contacts.columns.email') }}</th>
+                <th scope="col">{{ t('contacts.columns.phone') }}</th>
+                <th scope="col">{{ t('contacts.columns.tags') }}</th>
+                <th scope="col" [attr.aria-sort]="ariaSort('createdAt')">
+                  <button type="button" class="th-sort" (click)="setSort('createdAt')">
+                    {{ t('contacts.columns.created') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('createdAt') }}</span>
+                  </button>
+                </th>
+                <th scope="col" class="col-actions">{{ t('contacts.columns.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (partner of partners(); track partner.id) {
+                <tr [class.row-archived]="!partner.active">
+                  <td>
+                    <div class="cell-name">
+                      <span
+                        class="kind-dot"
+                        [class.kind-person]="partner.kind === 'person'"
+                        aria-hidden="true"
+                      ></span>
+                      <div>
+                        <div class="name-main">{{ partner.name }}</div>
+                        <div class="name-sub">
+                          {{
+                            partner.kind === 'person'
+                              ? t('contacts.kind.person')
+                              : t('contacts.kind.company')
+                          }}
+                          @if (partner.jobTitle) {
+                            <span> · {{ partner.jobTitle }}</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ companyName(partner) || '—' }}</td>
+                  <td>
+                    @if (partner.email) {
+                      <a [href]="'mailto:' + partner.email">{{ partner.email }}</a>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td>{{ partner.phone || '—' }}</td>
+                  <td>
+                    <span class="tags">
+                      @if (partner.isCustomer) {
+                        <span class="badge badge-primary">{{ t('contacts.tags.customer') }}</span>
+                      }
+                      @if (partner.isSupplier) {
+                        <span class="badge badge-info">{{ t('contacts.tags.supplier') }}</span>
+                      }
+                      @if (!partner.isCustomer && !partner.isSupplier) {
+                        <span class="text-muted">—</span>
+                      }
+                      @if (!partner.active) {
+                        <span class="badge badge-warning">{{ t('contacts.tags.archived') }}</span>
+                      }
+                    </span>
+                  </td>
+                  <td class="col-date">{{ partner.createdAt | date: 'mediumDate' }}</td>
+                  <td class="col-actions">
+                    <a [routerLink]="['/contacts', partner.id]" class="btn btn-secondary btn-sm">
+                      {{ t('common.edit') }}
+                    </a>
+                    @if (partner.active) {
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        (click)="archive(partner)"
+                        [attr.aria-label]="t('contacts.archiveFor', { name: partner.name })"
+                      >
+                        {{ t('contacts.archive') }}
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        (click)="restore(partner)"
+                        [attr.aria-label]="t('contacts.restoreFor', { name: partner.name })"
+                      >
+                        {{ t('contacts.restore') }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('contacts.showing', { from: pageStart(), to: pageEnd(), total: total() }) }}
+          </span>
+          <div class="pager">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() === 0"
+              (click)="setPage(page() - 1)"
+            >
+              ← {{ t('common.previous') }}
+            </button>
+            <span class="page-count">{{ page() + 1 }} / {{ totalPages() }}</span>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() + 1 >= totalPages()"
+              (click)="setPage(page() + 1)"
+            >
+              {{ t('common.next') }} →
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

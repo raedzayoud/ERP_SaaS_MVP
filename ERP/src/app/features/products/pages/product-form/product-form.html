@@ -1,0 +1,193 @@
+<ng-container *transloco="let t">
+  <div class="product-form-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          {{ isEdit ? t('products.form.editTitle') : t('products.form.newTitle') }}
+        </h1>
+        <p class="page-subtitle">
+          {{ isEdit ? t('products.form.editSubtitle') : t('products.form.newSubtitle') }}
+        </p>
+      </div>
+      <a routerLink="/products" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('products.form.notFound') }}</p>
+          <p class="state-text">{{ t('products.form.notFoundHint') }}</p>
+          <a routerLink="/products" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else {
+      <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        @if (submitFailed()) {
+          <div class="alert alert-danger" role="alert">{{ t('products.form.saveError') }}</div>
+        }
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('products.form.sectionIdentification') }}</legend>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="sku">
+                {{ t('products.form.sku') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="sku"
+                type="text"
+                class="form-control"
+                formControlName="sku"
+                [attr.aria-invalid]="isInvalid('sku')"
+                [attr.aria-describedby]="isInvalid('sku') ? 'sku-error' : null"
+              />
+              @if (isInvalid('sku')) {
+                <p class="field-error" id="sku-error">
+                  @if (hasError('sku', 'required')) {
+                    {{ t('products.form.skuRequired') }}
+                  } @else {
+                    {{ t('products.form.skuTooShort') }}
+                  }
+                </p>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="name">
+                {{ t('products.form.name') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="name"
+                type="text"
+                class="form-control"
+                formControlName="name"
+                [attr.aria-invalid]="isInvalid('name')"
+                [attr.aria-describedby]="isInvalid('name') ? 'name-error' : null"
+              />
+              @if (isInvalid('name')) {
+                <p class="field-error" id="name-error">
+                  @if (hasError('name', 'required')) {
+                    {{ t('products.form.nameRequired') }}
+                  } @else {
+                    {{ t('products.form.nameTooShort') }}
+                  }
+                </p>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <span class="form-label">{{ t('products.form.type') }}</span>
+            <div class="radio-row">
+              <label class="radio-option">
+                <input type="radio" formControlName="type" value="good" />
+                <span>{{ t('products.type.good') }}</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" formControlName="type" value="service" />
+                <span>{{ t('products.type.service') }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="category">{{ t('products.form.category') }}</label>
+              <select id="category" class="form-control" formControlName="category">
+                @for (category of categories; track category.code) {
+                  <option [value]="category.code">
+                    {{ t('products.categories.' + category.code) }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="unit">{{ t('products.form.unit') }}</label>
+              <select id="unit" class="form-control" formControlName="unit">
+                @for (unit of units; track unit.code) {
+                  <option [value]="unit.code">{{ t('products.units.' + unit.code) }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('products.form.sectionPricing') }}</legend>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="salePrice">
+                {{ t('products.form.salePrice') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="salePrice"
+                type="number"
+                min="0"
+                step="0.01"
+                class="form-control"
+                formControlName="salePrice"
+                [attr.aria-invalid]="isInvalid('salePrice')"
+                [attr.aria-describedby]="isInvalid('salePrice') ? 'salePrice-error' : null"
+              />
+              @if (isInvalid('salePrice')) {
+                <p class="field-error" id="salePrice-error">
+                  @if (hasError('salePrice', 'required')) {
+                    {{ t('products.form.priceRequired') }}
+                  } @else {
+                    {{ t('products.form.priceInvalid') }}
+                  }
+                </p>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="vatRate">{{ t('products.form.vatRate') }}</label>
+              <select id="vatRate" class="form-control" formControlName="vatRate">
+                @for (rate of vatRates; track rate) {
+                  <option [ngValue]="rate">{{ rate }} %</option>
+                }
+              </select>
+              <p class="form-hint">{{ t('products.form.vatRateHint') }}</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('products.form.sectionDescription') }}</legend>
+
+          <div class="form-group">
+            <label class="form-label" for="description">
+              {{ t('products.form.description') }}
+            </label>
+            <textarea
+              id="description"
+              class="form-control"
+              rows="4"
+              formControlName="description"
+            ></textarea>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a routerLink="/products" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? t('products.form.saving') : t('products.form.save') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</ng-container>

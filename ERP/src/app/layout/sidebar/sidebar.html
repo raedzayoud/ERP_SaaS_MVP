@@ -1,43 +1,41 @@
-<nav
-  class="sidebar"
-  [class.collapsed]="collapsed()"
-  [class.mobile-open]="mobileOpen()"
->
-  <div class="sidebar-header">
-    <div class="logo">
-      <span class="logo-icon">E</span>
-      @if (!collapsed()) {
-        <span class="logo-text">ERP Cloud</span>
-      }
-    </div>
-  </div>
-
-  <div class="sidebar-menu">
-    @for (section of menuSections; track section.title) {
-      <div class="menu-section">
+<ng-container *transloco="let t">
+  <nav class="sidebar" [class.collapsed]="collapsed()" [class.mobile-open]="mobileOpen()">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">E</span>
         @if (!collapsed()) {
-          <div class="menu-section-title">{{ section.title }}</div>
-        }
-        @for (item of section.items; track item.route) {
-          <a
-            class="menu-item"
-            [routerLink]="item.route"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
-            (click)="onLinkClick()"
-            [title]="item.label"
-          >
-            <span class="menu-icon">{{ item.icon }}</span>
-            @if (!collapsed()) {
-              <span class="menu-label">{{ item.label }}</span>
-            }
-          </a>
+          <span class="logo-text">ERP Cloud</span>
         }
       </div>
-    }
-  </div>
-</nav>
+    </div>
 
-@if (mobileOpen()) {
-  <div class="sidebar-overlay" (click)="closeMobile.emit()"></div>
-}
+    <div class="sidebar-menu">
+      @for (section of menuSections; track section.titleKey) {
+        <div class="menu-section">
+          @if (!collapsed()) {
+            <div class="menu-section-title">{{ t(section.titleKey) }}</div>
+          }
+          @for (item of section.items; track item.route) {
+            <a
+              class="menu-item"
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+              (click)="onLinkClick()"
+              [title]="t(item.labelKey)"
+            >
+              <span class="menu-icon" aria-hidden="true">{{ item.icon }}</span>
+              @if (!collapsed()) {
+                <span class="menu-label">{{ t(item.labelKey) }}</span>
+              }
+            </a>
+          }
+        </div>
+      }
+    </div>
+  </nav>
+
+  @if (mobileOpen()) {
+    <div class="sidebar-overlay" (click)="closeMobile.emit()"></div>
+  }
+</ng-container>

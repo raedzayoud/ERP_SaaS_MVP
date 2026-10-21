@@ -1,0 +1,197 @@
+<ng-container *transloco="let t">
+  <div class="contact-form-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          {{ isEdit ? t('contacts.form.editTitle') : t('contacts.form.newTitle') }}
+        </h1>
+        <p class="page-subtitle">
+          {{ isEdit ? t('contacts.form.editSubtitle') : t('contacts.form.newSubtitle') }}
+        </p>
+      </div>
+      <a routerLink="/contacts" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('contacts.form.notFound') }}</p>
+          <p class="state-text">{{ t('contacts.form.notFoundHint') }}</p>
+          <a routerLink="/contacts" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else {
+      <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        @if (submitFailed()) {
+          <div class="alert alert-danger" role="alert">{{ t('contacts.form.saveError') }}</div>
+        }
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('contacts.form.sectionIdentity') }}</legend>
+
+          <div class="form-group">
+            <span class="form-label">{{ t('contacts.form.kind') }}</span>
+            <div class="radio-row">
+              <label class="radio-option">
+                <input type="radio" formControlName="kind" value="company" />
+                <span>{{ t('contacts.kind.company') }}</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" formControlName="kind" value="person" />
+                <span>{{ t('contacts.kind.person') }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="name">
+                {{ t('contacts.form.name') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="name"
+                type="text"
+                class="form-control"
+                formControlName="name"
+                [attr.aria-invalid]="isInvalid('name')"
+                [attr.aria-describedby]="isInvalid('name') ? 'name-error' : null"
+              />
+              @if (isInvalid('name')) {
+                <p class="field-error" id="name-error">
+                  @if (hasError('name', 'required')) {
+                    {{ t('contacts.form.nameRequired') }}
+                  } @else {
+                    {{ t('contacts.form.nameTooShort') }}
+                  }
+                </p>
+              }
+            </div>
+
+            @if (kind() === 'person') {
+              <div class="form-group">
+                <label class="form-label" for="jobTitle">{{ t('contacts.form.jobTitle') }}</label>
+                <input id="jobTitle" type="text" class="form-control" formControlName="jobTitle" />
+              </div>
+            }
+          </div>
+
+          @if (kind() === 'person') {
+            <div class="form-group">
+              <label class="form-label" for="parentId">{{ t('contacts.form.company') }}</label>
+              <select id="parentId" class="form-control" formControlName="parentId">
+                <option value="">{{ t('contacts.form.noCompany') }}</option>
+                @for (company of companies(); track company.id) {
+                  <option [value]="company.id">{{ company.name }}</option>
+                }
+              </select>
+              <p class="form-hint">{{ t('contacts.form.companyHint') }}</p>
+            </div>
+          }
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('contacts.form.sectionContact') }}</legend>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="email">{{ t('contacts.form.email') }}</label>
+              <input
+                id="email"
+                type="email"
+                class="form-control"
+                formControlName="email"
+                autocomplete="email"
+                [attr.aria-invalid]="isInvalid('email')"
+                [attr.aria-describedby]="isInvalid('email') ? 'email-error' : null"
+              />
+              @if (isInvalid('email')) {
+                <p class="field-error" id="email-error">{{ t('contacts.form.emailInvalid') }}</p>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="phone">{{ t('contacts.form.phone') }}</label>
+              <input
+                id="phone"
+                type="tel"
+                class="form-control"
+                formControlName="phone"
+                autocomplete="tel"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <span class="form-label">{{ t('contacts.form.tags') }}</span>
+            <div class="checkbox-row">
+              <label class="checkbox-option">
+                <input type="checkbox" formControlName="isCustomer" />
+                <span>{{ t('contacts.tags.customer') }}</span>
+              </label>
+              <label class="checkbox-option">
+                <input type="checkbox" formControlName="isSupplier" />
+                <span>{{ t('contacts.tags.supplier') }}</span>
+              </label>
+            </div>
+            <p class="form-hint">{{ t('contacts.form.tagsHint') }}</p>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('contacts.form.sectionAddress') }}</legend>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="taxId">{{ t('contacts.form.taxId') }}</label>
+              <input id="taxId" type="text" class="form-control" formControlName="taxId" />
+              <p class="form-hint">{{ t('contacts.form.taxIdHint') }}</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="country">{{ t('contacts.form.country') }}</label>
+              <select id="country" class="form-control" formControlName="country">
+                @for (country of countries; track country.code) {
+                  <option [value]="country.code">{{ country.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group form-grid-full">
+              <label class="form-label" for="street">{{ t('contacts.form.street') }}</label>
+              <input id="street" type="text" class="form-control" formControlName="street" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="city">{{ t('contacts.form.city') }}</label>
+              <input id="city" type="text" class="form-control" formControlName="city" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('contacts.form.sectionNotes') }}</legend>
+
+          <div class="form-group">
+            <label class="form-label" for="notes">{{ t('contacts.form.notes') }}</label>
+            <textarea id="notes" class="form-control" rows="3" formControlName="notes"></textarea>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a routerLink="/contacts" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? t('contacts.form.saving') : t('contacts.form.save') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</ng-container>

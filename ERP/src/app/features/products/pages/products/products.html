@@ -1,0 +1,209 @@
+<ng-container *transloco="let t">
+  <div class="products-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('products.title') }}</h1>
+        <p class="page-subtitle">{{ t('products.subtitle') }}</p>
+      </div>
+      <a routerLink="/products/new" class="btn btn-primary">+ {{ t('products.newProduct') }}</a>
+    </div>
+
+    @if (notice()) {
+      <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+    }
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('products.searchPlaceholder')"
+          [attr.aria-label]="t('products.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="typeFilter()"
+          [attr.aria-label]="t('products.filters.type')"
+          (change)="onTypeFilter($event)"
+        >
+          <option value="">{{ t('products.filters.allTypes') }}</option>
+          <option value="good">{{ t('products.type.good') }}</option>
+          <option value="service">{{ t('products.type.service') }}</option>
+        </select>
+
+        <select
+          class="form-control filter-select"
+          [value]="categoryFilter()"
+          [attr.aria-label]="t('products.filters.category')"
+          (change)="onCategoryFilter($event)"
+        >
+          <option value="">{{ t('products.filters.allCategories') }}</option>
+          <option value="hardware">{{ t('products.categories.hardware') }}</option>
+          <option value="services">{{ t('products.categories.services') }}</option>
+          <option value="consumables">{{ t('products.categories.consumables') }}</option>
+          <option value="other">{{ t('products.categories.other') }}</option>
+        </select>
+
+        <select
+          class="form-control filter-select"
+          [value]="activeFilter()"
+          [attr.aria-label]="t('products.filters.status')"
+          (change)="onActiveFilter($event)"
+        >
+          <option value="active">{{ t('products.filters.activeOnly') }}</option>
+          <option value="archived">{{ t('products.filters.archivedOnly') }}</option>
+          <option value="all">{{ t('products.filters.allStatuses') }}</option>
+        </select>
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('products.loadError') }}</p>
+          <p class="state-text">{{ t('products.loadErrorHint') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (products().length === 0) {
+        <div class="state-block">
+          <p class="state-title">
+            {{ hasFilters() ? t('products.noMatch') : t('products.emptyTitle') }}
+          </p>
+          <p class="state-text">
+            {{ hasFilters() ? t('products.noMatchHint') : t('products.emptyHint') }}
+          </p>
+          @if (hasFilters()) {
+            <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+              {{ t('common.clearFilters') }}
+            </button>
+          } @else {
+            <a routerLink="/products/new" class="btn btn-primary">
+              {{ t('products.newProduct') }}
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col" [attr.aria-sort]="ariaSort('name')">
+                  <button type="button" class="th-sort" (click)="setSort('name')">
+                    {{ t('products.columns.product') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('name') }}</span>
+                  </button>
+                </th>
+                <th scope="col">{{ t('products.columns.category') }}</th>
+                <th scope="col">{{ t('products.columns.unit') }}</th>
+                <th scope="col" class="col-price" [attr.aria-sort]="ariaSort('salePrice')">
+                  <button type="button" class="th-sort" (click)="setSort('salePrice')">
+                    {{ t('products.columns.price') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('salePrice') }}</span>
+                  </button>
+                </th>
+                <th scope="col">{{ t('products.columns.vat') }}</th>
+                <th scope="col" [attr.aria-sort]="ariaSort('createdAt')">
+                  <button type="button" class="th-sort" (click)="setSort('createdAt')">
+                    {{ t('products.columns.created') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('createdAt') }}</span>
+                  </button>
+                </th>
+                <th scope="col" class="col-actions">{{ t('products.columns.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of products(); track product.id) {
+                <tr [class.row-archived]="!product.active">
+                  <td>
+                    <div class="cell-name">
+                      <div>
+                        <div class="name-main">
+                          {{ product.name }}
+                          @if (!product.active) {
+                            <span class="badge badge-warning archived-badge">
+                              {{ t('products.tags.archived') }}
+                            </span>
+                          }
+                        </div>
+                        <div class="name-sub">
+                          {{ product.sku }} · {{ t('products.type.' + product.type) }}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ t('products.categories.' + product.category) }}</td>
+                  <td>{{ t('products.units.' + product.unit) }}</td>
+                  <td class="col-price">{{ product.salePrice | currency: currency() }}</td>
+                  <td class="col-vat">{{ product.vatRate }} %</td>
+                  <td class="col-date">{{ product.createdAt | date: 'mediumDate' }}</td>
+                  <td class="col-actions">
+                    <a [routerLink]="['/products', product.id]" class="btn btn-secondary btn-sm">
+                      {{ t('common.edit') }}
+                    </a>
+                    @if (product.active) {
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        (click)="archive(product)"
+                        [attr.aria-label]="t('products.archiveFor', { name: product.name })"
+                      >
+                        {{ t('products.archive') }}
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        (click)="restore(product)"
+                        [attr.aria-label]="t('products.restoreFor', { name: product.name })"
+                      >
+                        {{ t('products.restore') }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('products.showing', { from: pageStart(), to: pageEnd(), total: total() }) }}
+          </span>
+          <div class="pager">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() === 0"
+              (click)="setPage(page() - 1)"
+            >
+              ← {{ t('common.previous') }}
+            </button>
+            <span class="page-count">{{ page() + 1 }} / {{ totalPages() }}</span>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() + 1 >= totalPages()"
+              (click)="setPage(page() + 1)"
+            >
+              {{ t('common.next') }} →
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

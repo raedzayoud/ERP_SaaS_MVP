@@ -1,21 +1,26 @@
-import { Component, input, output, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslocoDirective, TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../core/services/auth.service';
+import { LanguageService } from '../../core/services/language.service';
 import { TenantService } from '../../core/services/tenant.service';
 
 @Component({
   selector: 'app-navbar',
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink, TranslocoDirective, TranslocoPipe],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
 export class Navbar {
-  pageTitle = input<string>('Dashboard');
+  pageTitleKey = input<string>('titles.dashboard');
   toggleSidebar = output<void>();
 
-  private authServiceSvc = inject(AuthService);
-  private tenantService = inject(TenantService);
+  private readonly authServiceSvc = inject(AuthService);
+  private readonly tenantService = inject(TenantService);
+  private readonly languageService = inject(LanguageService);
+
+  readonly availableLangs = this.languageService.availableLangs;
+  readonly currentLang = this.languageService.currentLang;
 
   showUserMenu = false;
 
@@ -37,6 +42,10 @@ export class Navbar {
 
   closeUserMenu(): void {
     this.showUserMenu = false;
+  }
+
+  onLangChange(event: Event): void {
+    this.languageService.setLang((event.target as HTMLSelectElement).value);
   }
 
   logout(): void {

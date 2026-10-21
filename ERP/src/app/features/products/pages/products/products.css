@@ -1,0 +1,14 @@
+.col-price {
+  text-align: end;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.col-vat {
+  white-space: nowrap;
+}
+
+.archived-badge {
+  margin-inline-start: 6px;
+  vertical-align: middle;
+}

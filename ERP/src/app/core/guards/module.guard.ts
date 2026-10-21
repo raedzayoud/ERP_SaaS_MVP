@@ -16,5 +16,7 @@ export const moduleGuard: CanActivateFn = (route) => {
     return true;
   }
 
-  return router.createUrlTree(['/dashboard']);
+  return router.createUrlTree(['/module-inactive'], {
+    queryParams: { module: moduleId },
+  });
 };
