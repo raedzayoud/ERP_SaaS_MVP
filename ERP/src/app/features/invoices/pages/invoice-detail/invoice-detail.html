@@ -1,0 +1,267 @@
+<ng-container *transloco="let t">
+  <div class="invoice-detail-page">
+    @if (loading()) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('titles.invoiceDetail') }}</h1>
+        </div>
+      </div>
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('titles.invoiceDetail') }}</h1>
+        </div>
+        <a routerLink="/invoices" class="btn btn-secondary">← {{ t('common.back') }}</a>
+      </div>
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('invoices.detail.notFound') }}</p>
+          <p class="state-text">{{ t('invoices.detail.notFoundHint') }}</p>
+          <a routerLink="/invoices" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else if (invoice(); as inv) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ inv.number || t('invoices.draftLabel') }}</h1>
+          <p class="page-subtitle">
+            {{ t('invoices.kind.' + inv.kind) }} · {{ t('invoices.status.' + inv.status) }}
+          </p>
+        </div>
+        <div class="page-actions">
+          <a routerLink="/invoices" class="btn btn-secondary">← {{ t('common.back') }}</a>
+
+          @if (inv.status === 'draft') {
+            <a [routerLink]="['/invoices', inv.id, 'edit']" class="btn btn-secondary">
+              {{ t('invoices.detail.edit') }}
+            </a>
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="saving()"
+              (click)="validate()"
+            >
+              {{ saving() ? t('invoices.detail.validating') : t('invoices.detail.validate') }}
+            </button>
+            <button type="button" class="btn btn-danger" [disabled]="saving()" (click)="remove()">
+              {{ t('invoices.detail.delete') }}
+            </button>
+          }
+
+          @if (inv.status === 'posted') {
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="pdfBusy()"
+              (click)="downloadPdf()"
+            >
+              {{ pdfBusy() ? t('invoices.detail.pdfBusy') : t('invoices.detail.pdf') }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="createCreditNote()">
+              {{ t('invoices.detail.createCreditNote') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              disabled
+              [title]="t('invoices.detail.comingSoon')"
+            >
+              {{ t('invoices.detail.payment') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              disabled
+              [title]="t('invoices.detail.comingSoon')"
+            >
+              {{ t('invoices.detail.email') }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (notice()) {
+        <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+      }
+      @if (errorKey(); as key) {
+        <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+      }
+      @if (inv.status === 'draft') {
+        <div class="alert alert-warning" role="status">
+          {{ t('invoices.detail.draftNotice') }} — {{ t('invoices.detail.draftHint') }}
+        </div>
+      }
+
+      <div class="card document">
+        <div class="document-head">
+          <div class="doc-party">
+            <p class="doc-company">{{ sellerName() }}</p>
+            @if (sellerAddress()) {
+              <p class="doc-line">{{ sellerAddress() }}</p>
+            }
+            @if (sellerTaxId()) {
+              <p class="doc-line">{{ t('invoices.pdf.taxId') }}: {{ sellerTaxId() }}</p>
+            }
+          </div>
+          <div class="doc-meta">
+            <p class="doc-title">{{ t('invoices.kind.' + inv.kind) }}</p>
+            <p class="doc-number">{{ inv.number || t('invoices.draftLabel') }}</p>
+            <p class="doc-line">
+              {{ t('invoices.detail.issueDate') }}: {{ inv.issueDate | date: 'mediumDate' }}
+            </p>
+            <p class="doc-line">
+              {{ t('invoices.detail.dueDate') }}: {{ inv.dueDate | date: 'mediumDate' }}
+            </p>
+            <p class="doc-line">
+              {{ t('invoices.detail.terms') }}: {{ t('invoices.terms.' + inv.paymentTerms) }}
+            </p>
+          </div>
+        </div>
+
+        <div class="document-parties">
+          <div class="doc-box">
+            <p class="doc-label">{{ t('invoices.detail.billTo') }}</p>
+            <p class="doc-strong">{{ inv.customerSnapshot?.name }}</p>
+            @if (inv.customerSnapshot?.address) {
+              <p class="doc-line">{{ inv.customerSnapshot?.address }}</p>
+            }
+            @if (inv.customerSnapshot?.taxId) {
+              <p class="doc-line">
+                {{ t('invoices.pdf.taxId') }}: {{ inv.customerSnapshot?.taxId }}
+              </p>
+            }
+          </div>
+          <div class="doc-box">
+            <p class="doc-label">{{ t('invoices.detail.status') }}</p>
+            <p class="doc-badges">
+              <app-status-badge [status]="inv.status" [payment]="payment()" [overdue]="overdue()" />
+            </p>
+            @if (inv.originInvoiceId) {
+              <p class="doc-line">
+                <a [routerLink]="['/invoices', inv.originInvoiceId]">
+                  {{ t('invoices.detail.corrects') }}
+                </a>
+              </p>
+            }
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table lines-table document-lines">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('invoices.form.description') }}</th>
+                <th scope="col" class="num">{{ t('invoices.form.quantity') }}</th>
+                <th scope="col" class="num">{{ t('invoices.form.unitPrice') }}</th>
+                <th scope="col" class="num">{{ t('invoices.form.discount') }}</th>
+                <th scope="col" class="num">{{ t('invoices.form.vatRate') }}</th>
+                <th scope="col" class="num">{{ t('invoices.form.lineTotal') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of inv.lines; track line.id) {
+                <tr>
+                  <td>{{ line.description }}</td>
+                  <td class="num" [attr.data-label]="t('invoices.form.quantity')">
+                    {{ line.quantity }}
+                  </td>
+                  <td class="num" [attr.data-label]="t('invoices.form.unitPrice')">
+                    {{ line.unitPrice | currency: inv.currency }}
+                  </td>
+                  <td class="num" [attr.data-label]="t('invoices.form.discount')">
+                    {{ line.discountPct }} %
+                  </td>
+                  <td class="num" [attr.data-label]="t('invoices.form.vatRate')">
+                    {{ line.vatRate }} %
+                  </td>
+                  <td class="num line-net" [attr.data-label]="t('invoices.form.lineTotal')">
+                    {{ lineNet(inv, line) | currency: inv.currency }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (inv.notes.trim()) {
+          <div class="document-notes">
+            <p class="doc-label">{{ t('invoices.detail.notes') }}</p>
+            <p class="doc-line">{{ inv.notes }}</p>
+          </div>
+        }
+
+        <div class="document-foot">
+          <div class="document-history">
+            <p class="doc-label">{{ t('invoices.detail.history') }}</p>
+            <p class="doc-line">
+              {{ t('invoices.detail.createdAt') }}: {{ inv.createdAt | date: 'medium' }}
+            </p>
+            @if (inv.postedAt) {
+              <p class="doc-line">
+                {{ t('invoices.detail.postedAt') }}: {{ inv.postedAt | date: 'medium' }}
+              </p>
+            }
+            @for (note of creditNotes(); track note.id) {
+              <p class="doc-line">
+                <a [routerLink]="['/invoices', note.id]">{{ note.number }}</a>
+                · {{ note.issueDate | date: 'mediumDate' }}
+              </p>
+            }
+            @if (creditNotes().length === 0 && !inv.originInvoiceId) {
+              <p class="doc-line text-muted">{{ t('invoices.detail.noHistory') }}</p>
+            }
+          </div>
+
+          @if (totals(); as total) {
+            <div class="totals-block">
+              <div class="totals-row">
+                <span>{{ t('invoices.form.totals.net') }}</span>
+                <span>{{ total.totalNet | currency: inv.currency }}</span>
+              </div>
+              @for (vat of total.vatByRate; track vat.rate) {
+                <div class="totals-row">
+                  <span>{{ t('invoices.form.totals.vatRate', { rate: vat.rate }) }}</span>
+                  <span>{{ vat.vat | currency: inv.currency }}</span>
+                </div>
+              }
+              <div class="totals-row">
+                <span>{{ t('invoices.form.totals.vat') }}</span>
+                <span>{{ total.totalVat | currency: inv.currency }}</span>
+              </div>
+              <div class="totals-row">
+                <span>{{ t('invoices.form.totals.totalTtc') }}</span>
+                <span>{{ total.totalTtc | currency: inv.currency }}</span>
+              </div>
+              <div class="totals-row">
+                <span>{{ t('invoices.form.totals.stamp') }}</span>
+                <span>{{ total.stampDuty | currency: inv.currency }}</span>
+              </div>
+              <div class="totals-row totals-grand">
+                <span>{{ t('invoices.form.totals.toPay') }}</span>
+                <strong>{{ total.totalToPay | currency: inv.currency }}</strong>
+              </div>
+              @if (total.amountPaid > 0) {
+                <div class="totals-row">
+                  <span>{{ t('invoices.form.totals.paid') }}</span>
+                  <span>{{ total.amountPaid | currency: inv.currency }}</span>
+                </div>
+              }
+              @if (total.due > 0) {
+                <div class="totals-row totals-due">
+                  <span>{{ t('invoices.form.totals.due') }}</span>
+                  <strong>{{ total.due | currency: inv.currency }}</strong>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ng-container>

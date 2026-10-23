@@ -5,6 +5,9 @@ import { Product, ProductInput, ProductQuery } from '../models/product';
 
 const LATENCY_MS = 300;
 
+const NORD = 'f4a1c2e0-8a01-4a10-9d21-000000000003';
+const VERDE = 'f4a1c2e0-8a01-4a10-9d21-000000000007';
+
 const SEED_PRODUCTS: Product[] = [
   {
     id: 'a1000000-0000-4000-8000-000000000001',
@@ -15,7 +18,18 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'piece',
     category: 'hardware',
     salePrice: 1299,
+    purchasePrice: 900,
     vatRate: 19,
+    suppliers: [
+      {
+        id: 'ps-1001',
+        supplierId: VERDE,
+        supplierRef: 'VRD-LP14',
+        price: 900,
+        minQty: 1,
+        delayDays: 14,
+      },
+    ],
     active: true,
     createdAt: '2026-01-08T10:00:00.000Z',
     updatedAt: '2026-01-08T10:00:00.000Z',
@@ -29,7 +43,26 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'piece',
     category: 'hardware',
     salePrice: 24.9,
+    purchasePrice: 15,
     vatRate: 19,
+    suppliers: [
+      {
+        id: 'ps-1002',
+        supplierId: NORD,
+        supplierRef: 'NRD-MSE-14',
+        price: 15,
+        minQty: 10,
+        delayDays: 7,
+      },
+      {
+        id: 'ps-1003',
+        supplierId: VERDE,
+        supplierRef: 'VRD-MSE',
+        price: 16.5,
+        minQty: 5,
+        delayDays: 21,
+      },
+    ],
     active: true,
     createdAt: '2026-01-15T09:30:00.000Z',
     updatedAt: '2026-01-15T09:30:00.000Z',
@@ -43,7 +76,18 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'piece',
     category: 'hardware',
     salePrice: 189,
+    purchasePrice: 120,
     vatRate: 19,
+    suppliers: [
+      {
+        id: 'ps-1004',
+        supplierId: VERDE,
+        supplierRef: 'VRD-DOCK-C',
+        price: 120,
+        minQty: 1,
+        delayDays: 14,
+      },
+    ],
     active: true,
     createdAt: '2026-02-02T14:20:00.000Z',
     updatedAt: '2026-02-02T14:20:00.000Z',
@@ -57,7 +101,9 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'piece',
     category: 'hardware',
     salePrice: 540,
+    purchasePrice: 320,
     vatRate: 19,
+    suppliers: [],
     active: false,
     createdAt: '2026-02-11T11:45:00.000Z',
     updatedAt: '2026-03-19T11:45:00.000Z',
@@ -71,7 +117,9 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'hour',
     category: 'services',
     salePrice: 60,
+    purchasePrice: 35,
     vatRate: 13,
+    suppliers: [],
     active: true,
     createdAt: '2026-02-20T08:15:00.000Z',
     updatedAt: '2026-02-20T08:15:00.000Z',
@@ -85,7 +133,9 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'month',
     category: 'services',
     salePrice: 150,
+    purchasePrice: 90,
     vatRate: 19,
+    suppliers: [],
     active: true,
     createdAt: '2026-03-01T16:00:00.000Z',
     updatedAt: '2026-03-01T16:00:00.000Z',
@@ -99,7 +149,9 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'day',
     category: 'services',
     salePrice: 720,
+    purchasePrice: 450,
     vatRate: 7,
+    suppliers: [],
     active: true,
     createdAt: '2026-03-12T13:10:00.000Z',
     updatedAt: '2026-03-12T13:10:00.000Z',
@@ -113,7 +165,18 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'box',
     category: 'consumables',
     salePrice: 12.5,
+    purchasePrice: 8,
     vatRate: 7,
+    suppliers: [
+      {
+        id: 'ps-1005',
+        supplierId: NORD,
+        supplierRef: 'NRD-PAP-A4',
+        price: 8,
+        minQty: 20,
+        delayDays: 7,
+      },
+    ],
     active: true,
     createdAt: '2026-03-21T10:40:00.000Z',
     updatedAt: '2026-03-21T10:40:00.000Z',
@@ -127,7 +190,18 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'piece',
     category: 'consumables',
     salePrice: 78,
+    purchasePrice: 60,
     vatRate: 19,
+    suppliers: [
+      {
+        id: 'ps-1006',
+        supplierId: NORD,
+        supplierRef: 'NRD-TNR-BK',
+        price: 60,
+        minQty: 5,
+        delayDays: 7,
+      },
+    ],
     active: true,
     createdAt: '2026-04-04T15:25:00.000Z',
     updatedAt: '2026-04-04T15:25:00.000Z',
@@ -141,7 +215,9 @@ const SEED_PRODUCTS: Product[] = [
     unit: 'month',
     category: 'other',
     salePrice: 25,
+    purchasePrice: 10,
     vatRate: 0,
+    suppliers: [],
     active: false,
     createdAt: '2026-04-18T09:05:00.000Z',
     updatedAt: '2026-05-06T09:05:00.000Z',
@@ -168,6 +244,7 @@ export class ProductService {
       createdAt: now,
       updatedAt: now,
       ...data,
+      suppliers: data.suppliers.map((entry) => ({ id: this.newId(), ...entry })),
     };
 
     return timer(LATENCY_MS).pipe(
@@ -182,6 +259,7 @@ export class ProductService {
     return this.mutate(id, (existing) => ({
       ...existing,
       ...data,
+      suppliers: data.suppliers.map((entry) => ({ id: this.newId(), ...entry })),
       updatedAt: new Date().toISOString(),
     }));
   }

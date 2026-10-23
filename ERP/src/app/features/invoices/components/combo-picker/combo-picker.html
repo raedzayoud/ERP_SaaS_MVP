@@ -1,0 +1,49 @@
+<div class="combo">
+  <label class="form-label" [class.visually-hidden]="hideLabel()" [for]="inputId">
+    {{ label() }}
+    @if (required() && !hideLabel()) {
+      <span class="required" aria-hidden="true">*</span>
+    }
+  </label>
+
+  <input
+    [id]="inputId"
+    type="text"
+    class="form-control"
+    role="combobox"
+    autocomplete="off"
+    aria-autocomplete="list"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="listId"
+    [attr.aria-activedescendant]="activeDescendant()"
+    [placeholder]="selectedLabel() || placeholder()"
+    [value]="displayText()"
+    (focus)="onFocus()"
+    (input)="onInput($event)"
+    (keydown)="onKeydown($event)"
+  />
+
+  @if (open()) {
+    <ul class="combo-list" [id]="listId" role="listbox">
+      @for (item of filtered(); track item.id; let i = $index) {
+        <li
+          [id]="listId + '-' + i"
+          role="option"
+          [attr.aria-selected]="i === activeIndex()"
+          [class.combo-active]="i === activeIndex()"
+          (mousemove)="activeIndex.set(i)"
+          (click)="pick(item)"
+        >
+          <span class="combo-label">{{ item.label }}</span>
+          @if (item.sublabel) {
+            <span class="combo-sub">{{ item.sublabel }}</span>
+          }
+        </li>
+      } @empty {
+        <li class="combo-empty" role="option" aria-disabled="true">
+          {{ 'common.noResults' | transloco }}
+        </li>
+      }
+    </ul>
+  }
+</div>

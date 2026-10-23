@@ -1,0 +1,14 @@
+.qty-input {
+  max-width: 110px;
+}
+
+.line-title {
+  display: block;
+  font-weight: 600;
+}
+
+.line-ref {
+  display: block;
+  font-size: 11px;
+  color: var(--gray-500);
+}

@@ -12,16 +12,21 @@ import {
   ProductInput,
   ProductType,
 } from '../../models/product';
+import { Partner } from '../../../crm/models/partner';
+import { PartnerService } from '../../../crm/services/partner.service';
 
-type CheckedControl = 'sku' | 'name' | 'salePrice';
+type CheckedControl = 'sku' | 'name' | 'salePrice' | 'purchasePrice';
+type SupplierControlName = 'supplierId' | 'supplierRef' | 'price' | 'minQty' | 'delayDays';
 
 @Component({
   selector: 'app-product-form',
   imports: [ReactiveFormsModule, RouterLink, TranslocoDirective],
   templateUrl: './product-form.html',
+  styleUrl: './product-form.css',
 })
 export class ProductForm {
   private readonly service = inject(ProductService);
+  private readonly partners = inject(PartnerService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
@@ -40,6 +45,7 @@ export class ProductForm {
   submitted = signal(false);
 
   type = signal<ProductType>('good');
+  supplierOptions = signal<Partner[]>([]);
 
   form = this.fb.nonNullable.group({
     type: ['good' as ProductType, Validators.required],
@@ -48,8 +54,10 @@ export class ProductForm {
     category: ['hardware'],
     unit: ['piece'],
     salePrice: [0, [Validators.required, Validators.min(0)]],
+    purchasePrice: [0, Validators.min(0)],
     vatRate: [0, Validators.required],
     description: [''],
+    suppliers: this.fb.nonNullable.array([this.newSupplierGroup()]),
   });
 
   constructor() {
@@ -57,9 +65,24 @@ export class ProductForm {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => this.type.set(value));
 
+    this.loadSupplierOptions();
+
     if (this.productId) {
       this.loadProduct(this.productId);
     }
+  }
+
+  addSupplier(): void {
+    this.form.controls.suppliers.push(this.newSupplierGroup());
+  }
+
+  removeSupplier(index: number): void {
+    this.form.controls.suppliers.removeAt(index);
+  }
+
+  supplierFieldInvalid(index: number, name: SupplierControlName): boolean {
+    const control = this.form.controls.suppliers.at(index).controls[name];
+    return control.invalid && (control.touched || this.submitted());
   }
 
   isInvalid(controlName: CheckedControl): boolean {
@@ -88,8 +111,16 @@ export class ProductForm {
       category: raw.category,
       unit: raw.unit,
       salePrice: Number(raw.salePrice),
+      purchasePrice: Number(raw.purchasePrice),
       vatRate: Number(raw.vatRate),
       description: raw.description.trim(),
+      suppliers: raw.suppliers.map((entry) => ({
+        supplierId: entry.supplierId,
+        supplierRef: entry.supplierRef.trim(),
+        price: Number(entry.price),
+        minQty: Number(entry.minQty),
+        delayDays: Number(entry.delayDays),
+      })),
     };
 
     this.saving.set(true);
@@ -109,6 +140,27 @@ export class ProductForm {
         this.submitFailed.set(true);
       },
     });
+  }
+
+  private newSupplierGroup() {
+    return this.fb.nonNullable.group({
+      supplierId: ['', Validators.required],
+      supplierRef: [''],
+      price: [0, [Validators.required, Validators.min(0)]],
+      minQty: [1, [Validators.required, Validators.min(1)]],
+      delayDays: [0, [Validators.required, Validators.min(0)]],
+    });
+  }
+
+  private loadSupplierOptions(): void {
+    this.partners
+      .getPartners({ page: 0, size: 50, sort: 'name,asc' })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (page) =>
+          this.supplierOptions.set(page.items.filter((partner) => partner.isSupplier)),
+        error: () => this.supplierOptions.set([]),
+      });
   }
 
   private loadProduct(id: string): void {
@@ -141,8 +193,16 @@ export class ProductForm {
       category: product.category,
       unit: product.unit,
       salePrice: product.salePrice,
+      purchasePrice: product.purchasePrice,
       vatRate: product.vatRate,
       description: product.description,
+      suppliers: product.suppliers.map((entry) => ({
+        supplierId: entry.supplierId,
+        supplierRef: entry.supplierRef,
+        price: entry.price,
+        minQty: entry.minQty,
+        delayDays: entry.delayDays,
+      })),
     });
   }
 }

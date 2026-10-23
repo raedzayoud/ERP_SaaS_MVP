@@ -1,0 +1,223 @@
+<ng-container *transloco="let t">
+  <div class="invoices-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('invoices.title') }}</h1>
+        <p class="page-subtitle">{{ t('invoices.subtitle') }}</p>
+      </div>
+      <a routerLink="/invoices/new" class="btn btn-primary"
+        >+ {{ t('invoices.list.newInvoice') }}</a
+      >
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <p class="summary-label">{{ t('invoices.summary.outstanding') }}</p>
+        <p class="summary-value">{{ summary().outstanding | currency: currency() }}</p>
+      </div>
+      <div class="summary-card summary-danger">
+        <p class="summary-label">{{ t('invoices.summary.overdue') }}</p>
+        <p class="summary-value">{{ summary().overdue | currency: currency() }}</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('invoices.list.searchPlaceholder')"
+          [attr.aria-label]="t('invoices.list.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="statusFilter()"
+          [attr.aria-label]="t('invoices.columns.status')"
+          (change)="onStatusFilter($event)"
+        >
+          <option value="">{{ t('invoices.filters.allStatuses') }}</option>
+          <option value="draft">{{ t('invoices.status.draft') }}</option>
+          <option value="posted">{{ t('invoices.status.posted') }}</option>
+          <option value="cancelled">{{ t('invoices.status.cancelled') }}</option>
+        </select>
+
+        <select
+          class="form-control filter-select"
+          [value]="paidFilter()"
+          [attr.aria-label]="t('invoices.filters.allPayments')"
+          (change)="onPaidFilter($event)"
+        >
+          <option value="">{{ t('invoices.filters.allPayments') }}</option>
+          <option value="unpaid">{{ t('invoices.payment.unpaid') }}</option>
+          <option value="partial">{{ t('invoices.payment.partial') }}</option>
+          <option value="paid">{{ t('invoices.payment.paid') }}</option>
+        </select>
+
+        <label class="date-filter">
+          <span class="date-filter-label">{{ t('invoices.filters.from') }}</span>
+          <input
+            type="date"
+            class="form-control"
+            [value]="fromFilter()"
+            (change)="onFromFilter($event)"
+          />
+        </label>
+
+        <label class="date-filter">
+          <span class="date-filter-label">{{ t('invoices.filters.to') }}</span>
+          <input
+            type="date"
+            class="form-control"
+            [value]="toFilter()"
+            (change)="onToFilter($event)"
+          />
+        </label>
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('invoices.list.loadError') }}</p>
+          <p class="state-text">{{ t('invoices.list.loadErrorHint') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (invoices().length === 0) {
+        <div class="state-block">
+          <p class="state-title">
+            {{ hasFilters() ? t('invoices.list.noMatch') : t('invoices.list.emptyTitle') }}
+          </p>
+          <p class="state-text">
+            {{ hasFilters() ? t('invoices.list.noMatchHint') : t('invoices.list.emptyHint') }}
+          </p>
+          @if (hasFilters()) {
+            <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+              {{ t('common.clearFilters') }}
+            </button>
+          } @else {
+            <a routerLink="/invoices/new" class="btn btn-primary">
+              {{ t('invoices.list.newInvoice') }}
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('invoices.columns.number') }}</th>
+                <th scope="col">{{ t('invoices.columns.customer') }}</th>
+                <th scope="col" [attr.aria-sort]="ariaSort('issueDate')">
+                  <button type="button" class="th-sort" (click)="setSort('issueDate')">
+                    {{ t('invoices.columns.issueDate') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('issueDate') }}</span>
+                  </button>
+                </th>
+                <th scope="col" [attr.aria-sort]="ariaSort('dueDate')">
+                  <button type="button" class="th-sort" (click)="setSort('dueDate')">
+                    {{ t('invoices.columns.dueDate') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('dueDate') }}</span>
+                  </button>
+                </th>
+                <th scope="col" class="num" [attr.aria-sort]="ariaSort('total')">
+                  <button type="button" class="th-sort" (click)="setSort('total')">
+                    {{ t('invoices.columns.total') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('total') }}</span>
+                  </button>
+                </th>
+                <th scope="col" class="num">{{ t('invoices.columns.balance') }}</th>
+                <th scope="col">{{ t('invoices.columns.status') }}</th>
+                <th scope="col" class="col-actions">{{ t('invoices.columns.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (invoice of invoices(); track invoice.id) {
+                <tr>
+                  <td class="col-number">
+                    <span class="number-main">{{
+                      invoice.number || t('invoices.draftLabel')
+                    }}</span>
+                    <span class="number-kind">{{ t('invoices.kind.' + invoice.kind) }}</span>
+                  </td>
+                  <td>{{ invoice.customerSnapshot?.name }}</td>
+                  <td class="col-date">{{ invoice.issueDate | date: 'mediumDate' }}</td>
+                  <td class="col-date" [class.overdue-date]="overdueOf(invoice)">
+                    {{ invoice.dueDate | date: 'mediumDate' }}
+                  </td>
+                  <td class="num">{{ totalOf(invoice) | currency: invoice.currency }}</td>
+                  <td class="num">
+                    @if (invoice.status === 'posted') {
+                      <span [class.due-amount]="overdueOf(invoice)">
+                        {{ dueOf(invoice) | currency: invoice.currency }}
+                      </span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td>
+                    <app-status-badge
+                      [status]="invoice.status"
+                      [payment]="paymentOf(invoice)"
+                      [overdue]="overdueOf(invoice)"
+                    />
+                  </td>
+                  <td class="col-actions">
+                    <a [routerLink]="['/invoices', invoice.id]" class="btn btn-secondary btn-sm">
+                      {{ t('invoices.list.view') }}
+                    </a>
+                    @if (invoice.status === 'draft') {
+                      <a
+                        [routerLink]="['/invoices', invoice.id, 'edit']"
+                        class="btn btn-secondary btn-sm"
+                      >
+                        {{ t('common.edit') }}
+                      </a>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('invoices.list.showing', { from: pageStart(), to: pageEnd(), total: total() }) }}
+          </span>
+          <div class="pager">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() === 0"
+              (click)="setPage(page() - 1)"
+            >
+              ← {{ t('common.previous') }}
+            </button>
+            <span class="page-count">{{ page() + 1 }} / {{ totalPages() }}</span>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() + 1 >= totalPages()"
+              (click)="setPage(page() + 1)"
+            >
+              {{ t('common.next') }} →
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

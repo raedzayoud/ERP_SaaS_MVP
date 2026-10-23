@@ -20,6 +20,8 @@
     "@angular/router": "^21.2.0",
     "@jsverse/transloco": "^8.4.0",
     "@primeuix/themes": "^3.0.2",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.9",
     "primeicons": "^8.0.2",
     "primeng": "^21.1.10",
     "rxjs": "~7.8.0",

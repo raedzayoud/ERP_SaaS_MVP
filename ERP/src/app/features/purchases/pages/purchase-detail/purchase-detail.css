@@ -1,0 +1,13 @@
+.late-text {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.receptions {
+  margin-block-start: 16px;
+}
+
+.reception-list {
+  margin: 6px 0 0;
+  padding-inline-start: 18px;
+}

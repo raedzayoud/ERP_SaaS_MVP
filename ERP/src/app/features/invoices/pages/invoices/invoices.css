@@ -1,0 +1,94 @@
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-block-end: 16px;
+}
+
+.summary-card {
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-inline-start: 4px solid var(--primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-danger {
+  border-inline-start-color: var(--danger);
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-500);
+  margin-block-end: 6px;
+}
+
+.summary-danger .summary-value {
+  color: var(--danger);
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-filter-label {
+  font-size: 12px;
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+.date-filter .form-control {
+  width: auto;
+  min-width: 150px;
+}
+
+.table .num {
+  text-align: end;
+  white-space: nowrap;
+}
+
+.col-number .number-main {
+  display: block;
+  font-weight: 600;
+  color: var(--gray-900);
+  white-space: nowrap;
+}
+
+.col-number .number-kind {
+  display: block;
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.overdue-date {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.due-amount {
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .date-filter {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .date-filter .form-control {
+    width: 100%;
+  }
+}

@@ -1,0 +1,122 @@
+<ng-container *transloco="let t">
+  <div class="stock-adjustment-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('stock.adjustment.title') }}</h1>
+        <p class="page-subtitle">{{ t('stock.adjustment.subtitle') }}</p>
+      </div>
+      <a routerLink="/stock" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      @if (errorKey(); as key) {
+        <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+      }
+
+      <fieldset class="form-section">
+        <legend class="section-legend">{{ t('stock.adjustment.title') }}</legend>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="date">
+              {{ t('stock.adjustment.date') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input id="date" type="date" class="form-control" formControlName="date" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="productId">
+              {{ t('stock.adjustment.product') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="productId" class="form-control" formControlName="productId">
+              <option value="">{{ t('stock.adjustment.productPlaceholder') }}</option>
+              @for (product of products(); track product.id) {
+                <option [value]="product.id">{{ product.name }} ({{ product.sku }})</option>
+              }
+            </select>
+            @if (isInvalid('productId')) {
+              <p class="field-error">{{ t('stock.adjustment.productRequired') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="warehouseId">
+              {{ t('stock.adjustment.warehouse') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="warehouseId" class="form-control" formControlName="warehouseId">
+              <option value="">{{ t('stock.adjustment.warehouseRequired') }}</option>
+              @for (warehouse of warehouses(); track warehouse.id) {
+                <option [value]="warehouse.id">{{ warehouse.name }}</option>
+              }
+            </select>
+            @if (isInvalid('warehouseId')) {
+              <p class="field-error">{{ t('stock.adjustment.warehouseRequired') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <span class="form-label">
+              {{ t('stock.adjustment.direction') }}
+              <span class="required" aria-hidden="true">*</span>
+            </span>
+            <div class="radio-row">
+              <label class="radio-option">
+                <input type="radio" formControlName="direction" value="in" />
+                <span>{{ t('stock.adjustment.directionIn') }}</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" formControlName="direction" value="out" />
+                <span>{{ t('stock.adjustment.directionOut') }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="quantity">
+              {{ t('stock.adjustment.quantity') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="quantity"
+              type="number"
+              min="0.001"
+              step="any"
+              class="form-control"
+              formControlName="quantity"
+            />
+            @if (isInvalid('quantity')) {
+              <p class="field-error">{{ t('stock.adjustment.quantityRequired') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reason">
+              {{ t('stock.adjustment.reason') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="reason"
+              type="text"
+              class="form-control"
+              formControlName="reason"
+              [placeholder]="t('stock.adjustment.reasonPlaceholder')"
+            />
+            @if (isInvalid('reason')) {
+              <p class="field-error">{{ t('stock.adjustment.reasonRequired') }}</p>
+            }
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <a routerLink="/stock" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ saving() ? t('stock.adjustment.saving') : t('stock.adjustment.save') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-container>

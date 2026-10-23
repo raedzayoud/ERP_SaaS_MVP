@@ -1,0 +1,9 @@
+<span [class]="'badge ' + statusClass()">{{ scope() + '.status.' + status() | transloco }}</span>
+@if (payment() !== 'none') {
+  <span [class]="'badge ' + paymentClass()">{{
+    scope() + '.payment.' + payment() | transloco
+  }}</span>
+}
+@if (overdue()) {
+  <span class="badge badge-danger">{{ scope() + '.tags.overdue' | transloco }}</span>
+}

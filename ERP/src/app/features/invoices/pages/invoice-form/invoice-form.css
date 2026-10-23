@@ -1,0 +1,33 @@
+.currency-value {
+  font-weight: 600;
+}
+
+.cell-product {
+  min-width: 200px;
+}
+
+.lines-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-start: 12px;
+}
+
+.stamp-input {
+  max-width: 220px;
+}
+
+.totals-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .totals-layout {
+    grid-template-columns: 1fr;
+  }
+}

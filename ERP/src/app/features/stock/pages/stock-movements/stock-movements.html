@@ -1,0 +1,135 @@
+<ng-container *transloco="let t">
+  <div class="stock-movements-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('stock.movements.title') }}</h1>
+        <p class="page-subtitle">{{ t('stock.movements.subtitle') }}</p>
+      </div>
+      <a routerLink="/stock" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('stock.movements.searchPlaceholder')"
+          [attr.aria-label]="t('stock.movements.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="typeFilter()"
+          [attr.aria-label]="t('stock.movements.allTypes')"
+          (change)="onTypeFilter($event)"
+        >
+          <option value="">{{ t('stock.movements.allTypes') }}</option>
+          @for (type of types; track type) {
+            <option [value]="type">{{ t('stock.type.' + type) }}</option>
+          }
+        </select>
+
+        <select
+          class="form-control filter-select"
+          [value]="warehouseFilter()"
+          [attr.aria-label]="t('stock.movements.allWarehouses')"
+          (change)="onWarehouseFilter($event)"
+        >
+          <option value="">{{ t('stock.movements.allWarehouses') }}</option>
+          @for (warehouse of warehouses(); track warehouse.id) {
+            <option [value]="warehouse.id">{{ warehouse.name }}</option>
+          }
+        </select>
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('stock.movements.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('common.retry') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (rows().length === 0) {
+        <div class="state-block">
+          <p class="state-title">{{ t('stock.movements.empty') }}</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('stock.movements.columns.date') }}</th>
+                <th scope="col">{{ t('stock.movements.columns.product') }}</th>
+                <th scope="col">{{ t('stock.movements.columns.type') }}</th>
+                <th scope="col">{{ t('stock.movements.columns.direction') }}</th>
+                <th scope="col">{{ t('stock.movements.columns.warehouse') }}</th>
+                <th scope="col" class="num">{{ t('stock.movements.columns.quantity') }}</th>
+                <th scope="col">{{ t('stock.movements.columns.reason') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <td class="col-date">{{ row.date | date: 'mediumDate' }}</td>
+                  <td>
+                    <span class="line-title">{{ row.productName }}</span>
+                    <span class="line-ref">{{ row.productSku }}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="'badge-' + movementBadge(row.type)">
+                      {{ t('stock.type.' + row.type) }}
+                    </span>
+                  </td>
+                  <td>{{ t('stock.direction.' + row.direction) }}</td>
+                  <td>{{ row.warehouseName }}</td>
+                  <td class="num" [class.quantity-negative]="signedQty(row) < 0">
+                    {{ signedQty(row) }}
+                  </td>
+                  <td>{{ row.reason }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('stock.movements.page') }} {{ page() + 1 }} / {{ totalPages() }} ({{
+              pageStart()
+            }}–{{ pageEnd() }} / {{ total() }})
+          </span>
+          <div class="pager">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() === 0"
+              (click)="setPage(page() - 1)"
+            >
+              ← {{ t('common.previous') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() + 1 >= totalPages()"
+              (click)="setPage(page() + 1)"
+            >
+              {{ t('common.next') }} →
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

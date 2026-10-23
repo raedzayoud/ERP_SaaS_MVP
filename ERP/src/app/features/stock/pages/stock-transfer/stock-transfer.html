@@ -1,0 +1,123 @@
+<ng-container *transloco="let t">
+  <div class="stock-transfer-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('stock.transfer.title') }}</h1>
+        <p class="page-subtitle">{{ t('stock.transfer.subtitle') }}</p>
+      </div>
+      <a routerLink="/stock" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      @if (errorKey(); as key) {
+        <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+      }
+
+      <fieldset class="form-section">
+        <legend class="section-legend">{{ t('stock.transfer.title') }}</legend>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="date">
+              {{ t('stock.transfer.date') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input id="date" type="date" class="form-control" formControlName="date" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="productId">
+              {{ t('stock.transfer.product') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="productId" class="form-control" formControlName="productId">
+              <option value="">{{ t('stock.transfer.productPlaceholder') }}</option>
+              @for (product of products(); track product.id) {
+                <option [value]="product.id">{{ product.name }} ({{ product.sku }})</option>
+              }
+            </select>
+            @if (isInvalid('productId')) {
+              <p class="field-error">{{ t('stock.transfer.productRequired') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="fromWarehouseId">
+              {{ t('stock.transfer.fromWarehouse') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="fromWarehouseId" class="form-control" formControlName="fromWarehouseId">
+              <option value="">{{ t('stock.transfer.warehouseRequired') }}</option>
+              @for (warehouse of warehouses(); track warehouse.id) {
+                <option [value]="warehouse.id">{{ warehouse.name }}</option>
+              }
+            </select>
+            @if (isInvalid('fromWarehouseId')) {
+              <p class="field-error">{{ t('stock.transfer.warehouseRequired') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="toWarehouseId">
+              {{ t('stock.transfer.toWarehouse') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="toWarehouseId" class="form-control" formControlName="toWarehouseId">
+              <option value="">{{ t('stock.transfer.warehouseRequired') }}</option>
+              @for (warehouse of warehouses(); track warehouse.id) {
+                <option [value]="warehouse.id">{{ warehouse.name }}</option>
+              }
+            </select>
+            @if (isInvalid('toWarehouseId')) {
+              <p class="field-error">{{ t('stock.transfer.warehouseRequired') }}</p>
+            } @else if (sameWarehouse()) {
+              <p class="field-error">{{ t('stock.transfer.sameWarehouse') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="quantity">
+              {{ t('stock.transfer.quantity') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="quantity"
+              type="number"
+              min="0.001"
+              step="any"
+              class="form-control"
+              formControlName="quantity"
+            />
+            @if (isInvalid('quantity')) {
+              <p class="field-error">{{ t('stock.transfer.quantityRequired') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reason">
+              {{ t('stock.transfer.reason') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="reason"
+              type="text"
+              class="form-control"
+              formControlName="reason"
+              [placeholder]="t('stock.transfer.reasonPlaceholder')"
+            />
+            @if (isInvalid('reason')) {
+              <p class="field-error">{{ t('stock.transfer.reasonRequired') }}</p>
+            }
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <a routerLink="/stock" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ saving() ? t('stock.transfer.saving') : t('stock.transfer.save') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-container>

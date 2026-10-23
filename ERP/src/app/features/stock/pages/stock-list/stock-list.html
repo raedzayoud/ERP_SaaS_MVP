@@ -1,0 +1,103 @@
+<ng-container *transloco="let t">
+  <div class="stock-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('stock.title') }}</h1>
+        <p class="page-subtitle">{{ t('stock.subtitle') }}</p>
+      </div>
+      <div class="header-actions">
+        <a routerLink="/stock/warehouses" class="btn btn-secondary">
+          {{ t('stock.levels.manageWarehouses') }}
+        </a>
+        <a routerLink="/stock/adjustment" class="btn btn-secondary">
+          {{ t('stock.levels.newAdjustment') }}
+        </a>
+        <a routerLink="/stock/transfer" class="btn btn-secondary">
+          {{ t('stock.levels.newTransfer') }}
+        </a>
+        <a routerLink="/stock/movements" class="btn btn-primary">
+          {{ t('stock.movements.title') }}
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('stock.levels.searchPlaceholder')"
+          [attr.aria-label]="t('stock.levels.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="warehouseFilter()"
+          [attr.aria-label]="t('stock.levels.allWarehouses')"
+          (change)="onWarehouseFilter($event)"
+        >
+          <option value="">{{ t('stock.levels.allWarehouses') }}</option>
+          @for (warehouse of warehouses(); track warehouse.id) {
+            <option [value]="warehouse.id">{{ warehouse.name }}</option>
+          }
+        </select>
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('stock.levels.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('common.retry') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (rows().length === 0) {
+        <div class="state-block">
+          <p class="state-title">{{ t('stock.levels.empty') }}</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('stock.levels.columns.product') }}</th>
+                <th scope="col">{{ t('stock.levels.columns.sku') }}</th>
+                <th scope="col">{{ t('stock.levels.columns.unit') }}</th>
+                <th scope="col" class="num">{{ t('stock.levels.columns.quantity') }}</th>
+                <th scope="col" class="num">{{ t('stock.levels.columns.value') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.productId) {
+                <tr>
+                  <td>{{ row.name }}</td>
+                  <td>{{ row.sku }}</td>
+                  <td>{{ row.unit }}</td>
+                  <td class="num" [class.quantity-negative]="row.quantity < 0">
+                    {{ row.quantity | number: '1.0-3' }}
+                    @if (row.quantity < 0) {
+                      <span class="badge badge-danger">{{ t('stock.levels.negative') }}</span>
+                    }
+                  </td>
+                  <td class="num">{{ row.value | currency: 'USD' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('stock.levels.totalValue') }} :
+            <strong>{{ totalValue() | currency: 'USD' }}</strong>
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

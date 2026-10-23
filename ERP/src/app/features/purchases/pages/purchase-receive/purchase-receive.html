@@ -1,0 +1,136 @@
+<ng-container *transloco="let t">
+  <div class="purchase-receive-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('titles.receiveOrder') }}</h1>
+        <p class="page-subtitle">{{ t('purchases.receive.subtitle') }}</p>
+      </div>
+      <a [routerLink]="['/purchases', orderId]" class="btn btn-secondary"
+        >← {{ t('common.back') }}</a
+      >
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('purchases.detail.notFound') }}</p>
+          <p class="state-text">{{ t('purchases.detail.notFoundHint') }}</p>
+          <a routerLink="/purchases" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else if (order(); as ord) {
+      <form class="card form-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        @if (errorKey(); as key) {
+          <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+        }
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('purchases.receive.sectionReception') }}</legend>
+
+          <p class="form-hint">
+            {{ t('purchases.receive.orderInfo', { number: ord.number }) }}
+          </p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="date">
+                {{ t('purchases.receive.date') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input id="date" type="date" class="form-control" formControlName="date" />
+              @if (form.controls.date.invalid && (form.controls.date.touched || submitted())) {
+                <p class="field-error">{{ t('purchases.form.dateRequired') }}</p>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="blNumber">{{ t('purchases.receive.blNumber') }}</label>
+              <input id="blNumber" type="text" class="form-control" formControlName="blNumber" />
+              <p class="form-hint">{{ t('purchases.receive.blNumberHint') }}</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="warehouseId">
+                {{ t('purchases.receive.warehouse') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <select id="warehouseId" class="form-control" formControlName="warehouseId">
+                @for (warehouse of warehouses(); track warehouse.id) {
+                  <option [value]="warehouse.id">{{ warehouse.name }}</option>
+                }
+              </select>
+              <p class="form-hint">{{ t('purchases.receive.warehouseHint') }}</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('purchases.receive.sectionLines') }}</legend>
+
+          <div class="table-wrap">
+            <table class="table lines-table">
+              <thead>
+                <tr>
+                  <th scope="col">{{ t('purchases.form.description') }}</th>
+                  <th scope="col" class="num">{{ t('purchases.receive.ordered') }}</th>
+                  <th scope="col" class="num">{{ t('purchases.detail.received') }}</th>
+                  <th scope="col" class="num">{{ t('purchases.receive.remaining') }}</th>
+                  <th scope="col" class="num">{{ t('purchases.receive.toReceive') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of openLines(); track line.id) {
+                  <tr>
+                    <td [attr.data-label]="t('purchases.form.description')">
+                      <span class="line-title">{{ line.description }}</span>
+                      <span class="line-ref">{{ line.reference }}</span>
+                    </td>
+                    <td class="num" [attr.data-label]="t('purchases.receive.ordered')">
+                      {{ line.quantity }}
+                    </td>
+                    <td class="num" [attr.data-label]="t('purchases.detail.received')">
+                      {{ line.receivedQty }}
+                    </td>
+                    <td class="num" [attr.data-label]="t('purchases.receive.remaining')">
+                      {{ remainingOf(line) }}
+                    </td>
+                    <td class="num" [attr.data-label]="t('purchases.receive.toReceive')">
+                      <input
+                        type="number"
+                        min="0"
+                        [attr.max]="remainingOf(line)"
+                        step="any"
+                        class="form-control qty-input"
+                        [value]="quantityOf(line.id)"
+                        (change)="setQuantity(line.id, $event)"
+                      />
+                      @if (lineProblem(line)) {
+                        <p class="field-error">{{ t('purchases.errors.invalidReceiveQty') }}</p>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a [routerLink]="['/purchases', ord.id]" class="btn btn-secondary">
+            {{ t('common.cancel') }}
+          </a>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? t('purchases.receive.saving') : t('purchases.receive.save') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</ng-container>

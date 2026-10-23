@@ -5,7 +5,7 @@ import { NEVER, Observable, of, throwError } from 'rxjs';
 import { Contacts } from './contacts';
 import { PartnerService } from '../../services/partner.service';
 import { Partner, PartnerQuery } from '../../models/partner';
-import { Page } from '../../../shared/models/page';
+import { Page } from '../../../../shared/models/page';
 
 const EN = {
   contacts: {
@@ -162,6 +162,6 @@ describe('Contacts', () => {
 
     const rows = (fixture.nativeElement as HTMLElement).querySelectorAll('tbody tr');
     expect(rows.length).toBe(2);
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Acme Corp');
+    expect(rows[0].textContent).toContain('Global Ltd');
   });
 });

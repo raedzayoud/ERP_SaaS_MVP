@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 import { ContactForm } from './contact-form';
 import { PartnerService } from '../../services/partner.service';
 import { Partner, PartnerInput, PartnerQuery } from '../../models/partner';
-import { Page } from '../../../shared/models/page';
+import { Page } from '../../../../shared/models/page';
 
 const EN = {
   contacts: {

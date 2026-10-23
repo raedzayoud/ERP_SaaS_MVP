@@ -154,6 +154,28 @@
             </div>
 
             <div class="form-group">
+              <label class="form-label" for="purchasePrice">
+                {{ t('products.form.purchasePrice') }}
+              </label>
+              <input
+                id="purchasePrice"
+                type="number"
+                min="0"
+                step="0.01"
+                class="form-control"
+                formControlName="purchasePrice"
+                [attr.aria-invalid]="isInvalid('purchasePrice')"
+                [attr.aria-describedby]="isInvalid('purchasePrice') ? 'purchasePrice-error' : null"
+              />
+              <p class="form-hint">{{ t('products.form.purchasePriceHint') }}</p>
+              @if (isInvalid('purchasePrice')) {
+                <p class="field-error" id="purchasePrice-error">
+                  {{ t('products.form.purchasePriceInvalid') }}
+                </p>
+              }
+            </div>
+
+            <div class="form-group">
               <label class="form-label" for="vatRate">{{ t('products.form.vatRate') }}</label>
               <select id="vatRate" class="form-control" formControlName="vatRate">
                 @for (rate of vatRates; track rate) {
@@ -162,6 +184,114 @@
               </select>
               <p class="form-hint">{{ t('products.form.vatRateHint') }}</p>
             </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('products.form.sectionSuppliers') }}</legend>
+          <p class="form-hint">{{ t('products.form.suppliersHint') }}</p>
+
+          <div formArrayName="suppliers">
+            @for (entry of form.controls.suppliers.controls; track $index; let i = $index) {
+              <div class="supplier-row" [formGroupName]="i">
+                <div class="form-group">
+                  <label class="form-label" [for]="'supplier-' + i">
+                    {{ t('products.form.supplier') }}
+                    <span class="required" aria-hidden="true">*</span>
+                  </label>
+                  <select [id]="'supplier-' + i" class="form-control" formControlName="supplierId">
+                    <option value="">{{ t('products.form.selectSupplier') }}</option>
+                    @for (supplier of supplierOptions(); track supplier.id) {
+                      <option [value]="supplier.id">{{ supplier.name }}</option>
+                    }
+                  </select>
+                  @if (supplierFieldInvalid(i, 'supplierId')) {
+                    <p class="field-error">{{ t('products.form.supplierRequired') }}</p>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" [for]="'supplierRef-' + i">
+                    {{ t('products.form.supplierRef') }}
+                  </label>
+                  <input
+                    [id]="'supplierRef-' + i"
+                    type="text"
+                    class="form-control"
+                    formControlName="supplierRef"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" [for]="'catalogPrice-' + i">
+                    {{ t('products.form.catalogPrice') }}
+                    <span class="required" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    [id]="'catalogPrice-' + i"
+                    type="number"
+                    min="0"
+                    step="any"
+                    class="form-control"
+                    formControlName="price"
+                  />
+                  @if (supplierFieldInvalid(i, 'price')) {
+                    <p class="field-error">{{ t('products.form.catalogPriceInvalid') }}</p>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" [for]="'minQty-' + i">
+                    {{ t('products.form.minQty') }}
+                    <span class="required" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    [id]="'minQty-' + i"
+                    type="number"
+                    min="1"
+                    step="any"
+                    class="form-control"
+                    formControlName="minQty"
+                  />
+                  @if (supplierFieldInvalid(i, 'minQty')) {
+                    <p class="field-error">{{ t('products.form.minQtyInvalid') }}</p>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" [for]="'delayDays-' + i">
+                    {{ t('products.form.delayDays') }}
+                    <span class="required" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    [id]="'delayDays-' + i"
+                    type="number"
+                    min="0"
+                    step="1"
+                    class="form-control"
+                    formControlName="delayDays"
+                  />
+                  @if (supplierFieldInvalid(i, 'delayDays')) {
+                    <p class="field-error">{{ t('products.form.delayDaysInvalid') }}</p>
+                  }
+                </div>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-danger"
+                  [attr.aria-label]="t('products.form.removeSupplierFor') + ' ' + i"
+                  (click)="removeSupplier(i)"
+                >
+                  ×
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="form-actions" style="justify-content: flex-start">
+            <button type="button" class="btn btn-secondary" (click)="addSupplier()">
+              + {{ t('products.form.addSupplier') }}
+            </button>
           </div>
         </fieldset>
 

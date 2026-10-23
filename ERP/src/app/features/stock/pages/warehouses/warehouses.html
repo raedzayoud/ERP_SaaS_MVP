@@ -1,0 +1,131 @@
+<ng-container *transloco="let t">
+  <div class="warehouses-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('stock.warehouses.title') }}</h1>
+        <p class="page-subtitle">{{ t('stock.warehouses.subtitle') }}</p>
+      </div>
+      <a routerLink="/stock" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    <div class="card">
+      <div class="summary-row">
+        <div class="summary-card">
+          <p class="summary-label">{{ t('stock.warehouses.activeCount') }}</p>
+          <p class="summary-value">{{ activeCount() }}</p>
+        </div>
+      </div>
+
+      @if (errorKey(); as key) {
+        <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+      }
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('stock.warehouses.loading') }}</p>
+        </div>
+      } @else if (warehouses().length === 0) {
+        <div class="state-block">
+          <p class="state-title">{{ t('stock.warehouses.empty') }}</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('stock.warehouses.code') }}</th>
+                <th scope="col">{{ t('stock.warehouses.name') }}</th>
+                <th scope="col">{{ t('stock.warehouses.status') }}</th>
+                <th scope="col" class="col-actions">{{ t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (warehouse of warehouses(); track warehouse.id) {
+                <tr>
+                  <td>{{ warehouse.code }}</td>
+                  <td>{{ warehouse.name }}</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class.badge-success]="warehouse.active"
+                      [class.badge-warning]="!warehouse.active"
+                    >
+                      {{
+                        warehouse.active
+                          ? t('stock.warehouses.active')
+                          : t('stock.warehouses.archived')
+                      }}
+                    </span>
+                  </td>
+                  <td class="col-actions">
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      [disabled]="busyId() === warehouse.id"
+                      (click)="archive(warehouse)"
+                    >
+                      {{
+                        warehouse.active
+                          ? t('stock.warehouses.archive')
+                          : t('stock.warehouses.restore')
+                      }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <fieldset class="form-section">
+        <legend class="section-legend">{{ t('stock.warehouses.addTitle') }}</legend>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="code">
+              {{ t('stock.warehouses.code') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="code"
+              type="text"
+              class="form-control"
+              formControlName="code"
+              [placeholder]="t('stock.warehouses.codePlaceholder')"
+            />
+            @if (isInvalid('code')) {
+              <p class="field-error">{{ t('stock.warehouses.codeRequired') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="name">
+              {{ t('stock.warehouses.name') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="name"
+              type="text"
+              class="form-control"
+              formControlName="name"
+              [placeholder]="t('stock.warehouses.namePlaceholder')"
+            />
+            @if (isInvalid('name')) {
+              <p class="field-error">{{ t('stock.warehouses.nameRequired') }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="form-actions" style="justify-content: flex-start">
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? t('stock.warehouses.creating') : t('stock.warehouses.create') }}
+          </button>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</ng-container>

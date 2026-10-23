@@ -1,0 +1,178 @@
+<ng-container *transloco="let t">
+  <div class="purchases-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('purchases.title') }}</h1>
+        <p class="page-subtitle">{{ t('purchases.subtitle') }}</p>
+      </div>
+      <a routerLink="/purchases/new" class="btn btn-primary"
+        >+ {{ t('purchases.list.newOrder') }}</a
+      >
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <p class="summary-label">{{ t('purchases.summary.awaiting') }}</p>
+        <p class="summary-value">{{ summary().awaiting }}</p>
+      </div>
+      <div class="summary-card summary-danger">
+        <p class="summary-label">{{ t('purchases.summary.late') }}</p>
+        <p class="summary-value">{{ summary().late }}</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('purchases.list.searchPlaceholder')"
+          [attr.aria-label]="t('purchases.list.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="statusFilter()"
+          [attr.aria-label]="t('purchases.columns.status')"
+          (change)="onStatusFilter($event)"
+        >
+          <option value="">{{ t('purchases.filters.allStatuses') }}</option>
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ t('purchases.status.' + status) }}</option>
+          }
+        </select>
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('purchases.list.loadError') }}</p>
+          <p class="state-text">{{ t('purchases.list.loadErrorHint') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (orders().length === 0) {
+        <div class="state-block">
+          <p class="state-title">
+            {{ hasFilters() ? t('purchases.list.noMatch') : t('purchases.list.emptyTitle') }}
+          </p>
+          <p class="state-text">
+            {{ hasFilters() ? t('purchases.list.noMatchHint') : t('purchases.list.emptyHint') }}
+          </p>
+          @if (hasFilters()) {
+            <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+              {{ t('common.clearFilters') }}
+            </button>
+          } @else {
+            <a routerLink="/purchases/new" class="btn btn-primary">
+              {{ t('purchases.list.newOrder') }}
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('purchases.columns.number') }}</th>
+                <th scope="col">{{ t('purchases.columns.supplier') }}</th>
+                <th scope="col" [attr.aria-sort]="ariaSort('orderDate')">
+                  <button type="button" class="th-sort" (click)="setSort('orderDate')">
+                    {{ t('purchases.columns.orderDate') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('orderDate') }}</span>
+                  </button>
+                </th>
+                <th scope="col" [attr.aria-sort]="ariaSort('expectedDate')">
+                  <button type="button" class="th-sort" (click)="setSort('expectedDate')">
+                    {{ t('purchases.columns.expectedDate') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('expectedDate') }}</span>
+                  </button>
+                </th>
+                <th scope="col" class="num">{{ t('purchases.columns.total') }}</th>
+                <th scope="col">{{ t('purchases.columns.status') }}</th>
+                <th scope="col">{{ t('purchases.columns.reception') }}</th>
+                <th scope="col" class="col-actions">{{ t('purchases.columns.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of orders(); track order.id) {
+                <tr>
+                  <td class="col-number">
+                    <span class="number-main">{{ order.number || t('purchases.draftLabel') }}</span>
+                  </td>
+                  <td>{{ order.supplierSnapshot?.name }}</td>
+                  <td class="col-date">{{ order.orderDate | date: 'mediumDate' }}</td>
+                  <td class="col-date" [class.overdue-date]="lateOf(order)">
+                    {{ order.expectedDate | date: 'mediumDate' }}
+                  </td>
+                  <td class="num">{{ totalOf(order) | currency: order.currency }}</td>
+                  <td>
+                    <app-status-badge [status]="order.status" scope="purchases" />
+                    @if (lateOf(order)) {
+                      <span class="badge badge-danger">{{ t('purchases.tags.late') }}</span>
+                    }
+                  </td>
+                  <td>
+                    @if (order.status === 'confirmed') {
+                      <app-reception-badge [state]="receptionOf(order)" />
+                    }
+                  </td>
+                  <td class="col-actions">
+                    <a [routerLink]="['/purchases', order.id]" class="btn btn-secondary btn-sm">
+                      {{ t('purchases.list.view') }}
+                    </a>
+                    @if (order.status === 'draft') {
+                      <a
+                        [routerLink]="['/purchases', order.id, 'edit']"
+                        class="btn btn-secondary btn-sm"
+                      >
+                        {{ t('common.edit') }}
+                      </a>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('purchases.list.showing', { from: pageStart(), to: pageEnd(), total: total() }) }}
+          </span>
+          <div class="pager">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() === 0"
+              (click)="setPage(page() - 1)"
+            >
+              ← {{ t('common.previous') }}
+            </button>
+            <span class="page-count">{{ page() + 1 }} / {{ totalPages() }}</span>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() + 1 >= totalPages()"
+              (click)="setPage(page() + 1)"
+            >
+              {{ t('common.next') }} →
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

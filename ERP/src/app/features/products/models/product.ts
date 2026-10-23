@@ -1,5 +1,16 @@
 export type ProductType = 'good' | 'service';
 
+export interface ProductSupplierEntry {
+  id: string;
+  supplierId: string;
+  supplierRef: string;
+  price: number;
+  minQty: number;
+  delayDays: number;
+}
+
+export type ProductSupplierEntryInput = Omit<ProductSupplierEntry, 'id'>;
+
 export interface Product {
   id: string;
   sku: string;
@@ -9,13 +20,18 @@ export interface Product {
   unit: string;
   category: string;
   salePrice: number;
+  purchasePrice: number;
   vatRate: number;
+  suppliers: ProductSupplierEntry[];
   active: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export type ProductInput = Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'active'>;
+export type ProductInput = Omit<
+  Product,
+  'id' | 'createdAt' | 'updatedAt' | 'active' | 'suppliers'
+> & { suppliers: ProductSupplierEntryInput[] };
 
 export interface ProductQuery {
   page: number;

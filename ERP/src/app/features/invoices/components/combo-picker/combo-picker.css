@@ -1,0 +1,47 @@
+.combo {
+  position: relative;
+}
+
+.combo-list {
+  position: absolute;
+  z-index: 30;
+  inset-inline: 0;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.combo-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.combo-list li.combo-active {
+  background: var(--primary-bg);
+}
+
+.combo-label {
+  font-size: 13px;
+  color: var(--gray-800);
+}
+
+.combo-sub {
+  font-size: 11px;
+  color: var(--gray-500);
+}
+
+.combo-empty {
+  cursor: default;
+  font-size: 13px;
+  color: var(--gray-500);
+}

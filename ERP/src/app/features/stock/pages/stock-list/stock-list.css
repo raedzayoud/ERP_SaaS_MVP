@@ -1,0 +1,10 @@
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quantity-negative {
+  color: #b42318;
+  font-weight: 600;
+}

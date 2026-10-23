@@ -1,0 +1,294 @@
+<ng-container *transloco="let t">
+  <div class="invoice-form-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t(titleKey()) }}</h1>
+        <p class="page-subtitle">{{ t(subtitleKey()) }}</p>
+      </div>
+      <a routerLink="/invoices" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('invoices.form.notFound') }}</p>
+          <p class="state-text">{{ t('invoices.form.notFoundHint') }}</p>
+          <a routerLink="/invoices" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else {
+      <form
+        class="card form-card"
+        [formGroup]="form"
+        (ngSubmit)="save(true)"
+        (keydown.control.enter)="onLineShortcut($event)"
+        (keydown.meta.enter)="onLineShortcut($event)"
+        novalidate
+      >
+        @if (errorKey(); as key) {
+          <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+        }
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('invoices.form.sectionCustomer') }}</legend>
+
+          <div class="form-grid">
+            <div class="form-group form-grid-full">
+              <app-combo-picker
+                [items]="customers()"
+                [label]="t('invoices.form.customer')"
+                [required]="true"
+                [placeholder]="t('invoices.form.customerPlaceholder')"
+                [value]="form.controls.customerId.value"
+                (valueChange)="setCustomer($event)"
+              />
+              @if (isInvalid('customerId')) {
+                <p class="field-error">{{ t('invoices.form.customerRequired') }}</p>
+              }
+              <p class="form-hint">
+                <a routerLink="/contacts/new">+ {{ t('invoices.form.createCustomer') }}</a>
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="issueDate">
+                {{ t('invoices.form.issueDate') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input id="issueDate" type="date" class="form-control" formControlName="issueDate" />
+              @if (isInvalid('issueDate')) {
+                <p class="field-error">{{ t('invoices.form.dateRequired') }}</p>
+              }
+              @if (errorKey() === 'invoices.errors.dateOutOfOrder') {
+                <p class="field-error">{{ t('invoices.errors.dateOutOfOrder') }}</p>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="paymentTerms">
+                {{ t('invoices.form.paymentTerms') }}
+              </label>
+              <select id="paymentTerms" class="form-control" formControlName="paymentTerms">
+                @for (term of terms; track term) {
+                  <option [value]="term">{{ t('invoices.terms.' + term) }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="dueDate">
+                {{ t('invoices.form.dueDate') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input id="dueDate" type="date" class="form-control" formControlName="dueDate" />
+              @if (isInvalid('dueDate')) {
+                <p class="field-error">{{ t('invoices.form.dateRequired') }}</p>
+              }
+              @if (dueDateProblem()) {
+                <p class="field-error">{{ t('invoices.form.dueDateBeforeIssue') }}</p>
+              }
+            </div>
+
+            <div class="form-group">
+              <span class="form-label">{{ t('invoices.form.currency') }}</span>
+              <p class="currency-value">{{ currency() }}</p>
+              <p class="form-hint">{{ t('invoices.form.currencyHint') }}</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('invoices.form.sectionLines') }}</legend>
+
+          <div class="lines-wrap" formArrayName="lines">
+            <table class="table lines-table">
+              <thead>
+                <tr>
+                  <th scope="col">{{ t('invoices.form.product') }}</th>
+                  <th scope="col">{{ t('invoices.form.description') }}</th>
+                  <th scope="col" class="num">{{ t('invoices.form.quantity') }}</th>
+                  <th scope="col" class="num">{{ t('invoices.form.unitPrice') }}</th>
+                  <th scope="col" class="num">{{ t('invoices.form.discount') }}</th>
+                  <th scope="col" class="num">{{ t('invoices.form.vatRate') }}</th>
+                  <th scope="col" class="num">{{ t('invoices.form.lineTotal') }}</th>
+                  <th scope="col" class="col-actions">
+                    <span class="visually-hidden">{{ t('invoices.columns.actions') }}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of form.controls.lines.controls; track line; let i = $index) {
+                  <tr [formGroupName]="i">
+                    <td class="cell-product" [attr.data-label]="t('invoices.form.product')">
+                      <app-combo-picker
+                        [items]="productOptions()"
+                        [label]="t('invoices.form.product')"
+                        [hideLabel]="true"
+                        [placeholder]="t('invoices.form.productPlaceholder')"
+                        [value]="line.controls.productId.value"
+                        (valueChange)="setProduct(i, $event)"
+                      />
+                    </td>
+                    <td [attr.data-label]="t('invoices.form.description')">
+                      <input type="text" class="form-control" formControlName="description" />
+                      @if (lineError(i, 'description'); as key) {
+                        <p class="field-error">{{ t(key) }}</p>
+                      }
+                    </td>
+                    <td class="num" [attr.data-label]="t('invoices.form.quantity')">
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        class="form-control"
+                        formControlName="quantity"
+                      />
+                      @if (lineError(i, 'quantity'); as key) {
+                        <p class="field-error">{{ t(key) }}</p>
+                      }
+                    </td>
+                    <td class="num" [attr.data-label]="t('invoices.form.unitPrice')">
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        class="form-control"
+                        formControlName="unitPrice"
+                      />
+                      @if (lineError(i, 'unitPrice'); as key) {
+                        <p class="field-error">{{ t(key) }}</p>
+                      }
+                    </td>
+                    <td class="num" [attr.data-label]="t('invoices.form.discount')">
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="any"
+                        class="form-control"
+                        formControlName="discountPct"
+                      />
+                      @if (lineError(i, 'discountPct'); as key) {
+                        <p class="field-error">{{ t(key) }}</p>
+                      }
+                    </td>
+                    <td class="num" [attr.data-label]="t('invoices.form.vatRate')">
+                      <select class="form-control" formControlName="vatRate">
+                        @for (rate of vatRates; track rate) {
+                          <option [ngValue]="rate">{{ rate }} %</option>
+                        }
+                      </select>
+                    </td>
+                    <td class="num line-net">{{ lineNet(line) | currency: currency() }}</td>
+                    <td class="col-actions">
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        [disabled]="form.controls.lines.length === 1"
+                        [attr.aria-label]="t('invoices.form.removeLineFor', { line: i + 1 })"
+                        (click)="removeLine(i)"
+                      >
+                        ×
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="lines-footer">
+            <button type="button" class="btn btn-secondary" (click)="addLine()">
+              + {{ t('invoices.form.addLine') }}
+            </button>
+            <span class="form-hint">{{ t('invoices.form.shortcutHint') }}</span>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('invoices.form.sectionNotes') }}</legend>
+
+          <div class="totals-layout">
+            <div>
+              <div class="form-group">
+                <label class="form-label" for="notes">{{ t('invoices.form.notes') }}</label>
+                <textarea
+                  id="notes"
+                  class="form-control"
+                  rows="4"
+                  formControlName="notes"
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="stampDuty">
+                  {{ t('invoices.form.stampDuty') }}
+                </label>
+                <input
+                  id="stampDuty"
+                  type="number"
+                  min="0"
+                  step="any"
+                  class="form-control stamp-input"
+                  formControlName="stampDuty"
+                />
+                <p class="form-hint">{{ t('invoices.form.stampDutyHint') }}</p>
+              </div>
+            </div>
+
+            <div class="totals-block">
+              <div class="totals-row">
+                <span>{{ t('invoices.form.totals.net') }}</span>
+                <span>{{ totals().totalNet | currency: currency() }}</span>
+              </div>
+              @for (vat of totals().vatByRate; track vat.rate) {
+                <div class="totals-row">
+                  <span>{{ t('invoices.form.totals.vatRate', { rate: vat.rate }) }}</span>
+                  <span>{{ vat.vat | currency: currency() }}</span>
+                </div>
+              }
+              <div class="totals-row">
+                <span>{{ t('invoices.form.totals.vat') }}</span>
+                <span>{{ totals().totalVat | currency: currency() }}</span>
+              </div>
+              <div class="totals-row">
+                <span>{{ t('invoices.form.totals.totalTtc') }}</span>
+                <span>{{ totals().totalTtc | currency: currency() }}</span>
+              </div>
+              <div class="totals-row">
+                <span>{{ t('invoices.form.totals.stamp') }}</span>
+                <span>{{ totals().stampDuty | currency: currency() }}</span>
+              </div>
+              <div class="totals-row totals-grand">
+                <span>{{ t('invoices.form.totals.toPay') }}</span>
+                <strong>{{ totals().totalToPay | currency: currency() }}</strong>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a routerLink="/invoices" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            [disabled]="saving()"
+            (click)="save(false)"
+          >
+            {{ t('invoices.form.saveDraft') }}
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? t('invoices.form.saving') : t('invoices.form.saveAndPost') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</ng-container>

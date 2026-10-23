@@ -78,12 +78,33 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'invoices/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/invoices/pages/invoice-form/invoice-form').then((m) => m.InvoiceForm),
+        data: { title: 'titles.newInvoice', moduleId: 'invoices' },
+      },
+      {
+        path: 'invoices/:id/edit',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/invoices/pages/invoice-form/invoice-form').then((m) => m.InvoiceForm),
+        data: { title: 'titles.editInvoice', moduleId: 'invoices' },
+      },
+      {
+        path: 'invoices/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/invoices/pages/invoice-detail/invoice-detail').then(
+            (m) => m.InvoiceDetail,
+          ),
+        data: { title: 'titles.invoiceDetail', moduleId: 'invoices' },
+      },
+      {
         path: 'invoices',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
-          ),
+          import('./features/invoices/pages/invoices/invoices').then((m) => m.Invoices),
         data: {
           title: 'titles.invoices',
           description: 'descriptions.invoices',
@@ -106,12 +127,46 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'purchases/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/purchases/pages/purchase-form/purchase-form').then(
+            (m) => m.PurchaseForm,
+          ),
+        data: { title: 'titles.newPurchaseOrder', moduleId: 'purchases' },
+      },
+      {
+        path: 'purchases/:id/receive',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/purchases/pages/purchase-receive/purchase-receive').then(
+            (m) => m.PurchaseReceive,
+          ),
+        data: { title: 'titles.receiveOrder', moduleId: 'purchases' },
+      },
+      {
+        path: 'purchases/:id/edit',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/purchases/pages/purchase-form/purchase-form').then(
+            (m) => m.PurchaseForm,
+          ),
+        data: { title: 'titles.editPurchaseOrder', moduleId: 'purchases' },
+      },
+      {
+        path: 'purchases/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/purchases/pages/purchase-detail/purchase-detail').then(
+            (m) => m.PurchaseDetail,
+          ),
+        data: { title: 'titles.purchaseOrderDetail', moduleId: 'purchases' },
+      },
+      {
         path: 'purchases',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
-          ),
+          import('./features/purchases/pages/purchases/purchases').then((m) => m.Purchases),
         data: {
           title: 'titles.purchases',
           description: 'descriptions.purchases',
@@ -120,12 +175,44 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'stock/warehouses',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/stock/pages/warehouses/warehouses').then((m) => m.Warehouses),
+        data: { title: 'titles.stockWarehouses', moduleId: 'stock' },
+      },
+      {
+        path: 'stock/movements',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/stock/pages/stock-movements/stock-movements').then(
+            (m) => m.StockMovements,
+          ),
+        data: { title: 'titles.stockMovements', moduleId: 'stock' },
+      },
+      {
+        path: 'stock/adjustment',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/stock/pages/stock-adjustment/stock-adjustment').then(
+            (m) => m.StockAdjustment,
+          ),
+        data: { title: 'titles.stockAdjustment', moduleId: 'stock' },
+      },
+      {
+        path: 'stock/transfer',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/stock/pages/stock-transfer/stock-transfer').then(
+            (m) => m.StockTransfer,
+          ),
+        data: { title: 'titles.stockTransfer', moduleId: 'stock' },
+      },
+      {
         path: 'stock',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
-          ),
+          import('./features/stock/pages/stock-list/stock-list').then((m) => m.StockList),
         data: {
           title: 'titles.stock',
           description: 'descriptions.stock',
