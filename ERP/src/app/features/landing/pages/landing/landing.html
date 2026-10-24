@@ -1,0 +1,200 @@
+<ng-container *transloco="let t">
+  <div class="landing">
+    <header class="landing-header">
+      <div class="header-inner">
+        <a class="brand" routerLink="/">
+          <span class="brand-logo">E</span>
+          <span class="brand-name">ERP Cloud</span>
+        </a>
+
+        <nav class="header-nav">
+          <a href="#features">{{ t('landing.nav.features') }}</a>
+          <a href="#pricing">{{ t('landing.nav.pricing') }}</a>
+        </nav>
+
+        <div class="header-actions">
+          @if (loggedIn) {
+            <a routerLink="/dashboard" class="btn btn-primary">
+              {{ t('landing.nav.dashboard') }}
+            </a>
+          } @else {
+            <a routerLink="/login" class="btn btn-secondary">{{ t('landing.nav.login') }}</a>
+            <a routerLink="/signup" class="btn btn-primary">{{ t('landing.nav.signup') }}</a>
+          }
+        </div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-pill">
+          <span class="pill-dot" aria-hidden="true"></span>
+          {{ t('landing.hero.pill') }}
+        </div>
+
+        <h1 class="hero-title">{{ t('landing.hero.title') }}</h1>
+        <p class="hero-subtitle">{{ t('landing.hero.subtitle') }}</p>
+
+        <div class="hero-actions">
+          @if (loggedIn) {
+            <a routerLink="/dashboard" class="btn btn-primary btn-lg hero-btn-primary">
+              {{ t('landing.nav.dashboard') }}
+            </a>
+          } @else {
+            <a routerLink="/signup" class="btn btn-lg hero-btn-primary">
+              {{ t('landing.hero.ctaPrimary') }}
+            </a>
+            <a href="#pricing" class="btn btn-lg hero-btn-secondary">
+              {{ t('landing.hero.ctaSecondary') }}
+            </a>
+          }
+        </div>
+
+        <p class="hero-note">{{ t('landing.hero.note') }}</p>
+
+        <div class="hero-stats">
+          <span class="hero-stat">{{ t('landing.hero.stats.modules') }}</span>
+          <span class="hero-stat">{{ t('landing.hero.stats.plans') }}</span>
+          <span class="hero-stat">{{ t('landing.hero.stats.multi') }}</span>
+          <span class="hero-stat">{{ t('landing.hero.stats.langs') }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <div class="section-inner">
+        <h2 class="section-title">{{ t('landing.features.title') }}</h2>
+        <p class="section-subtitle">{{ t('landing.features.subtitle') }}</p>
+
+        <div class="feature-grid">
+          @for (module of modules; track module.key) {
+            <div class="feature-card">
+              <span class="feature-icon" aria-hidden="true">{{ module.icon }}</span>
+              <span class="feature-name">{{ t('landing.modules.' + module.key) }}</span>
+              <span class="feature-desc">{{ t('landing.modulesDesc.' + module.key) }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+      <div class="section-inner">
+        <h2 class="section-title">{{ t('landing.pricing.title') }}</h2>
+        <p class="section-subtitle">{{ t('landing.pricing.subtitle') }}</p>
+
+        <div class="billing-controls">
+          <div
+            class="billing-toggle"
+            role="group"
+            [attr.aria-label]="t('landing.pricing.billingToggle')"
+          >
+            <button
+              type="button"
+              class="toggle-btn"
+              [class.active]="billingCycle() === 'monthly'"
+              (click)="setBillingCycle('monthly')"
+            >
+              {{ t('landing.pricing.monthly') }}
+            </button>
+            <button
+              type="button"
+              class="toggle-btn"
+              [class.active]="billingCycle() === 'annual'"
+              (click)="setBillingCycle('annual')"
+            >
+              {{ t('landing.pricing.annual') }}
+            </button>
+          </div>
+
+          <div class="billing-note-slot">
+            @if (billingCycle() === 'annual') {
+              <span class="save-badge">{{ t('landing.pricing.annualBadge') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="plan-grid">
+          @for (plan of plans; track plan.id) {
+            <div class="plan-card" [class.popular]="plan.popular">
+              @if (plan.popular) {
+                <span class="plan-badge">{{ t('landing.pricing.popular') }}</span>
+              }
+
+              <h3 class="plan-name">{{ plan.name }}</h3>
+              <div class="plan-price">
+                <span class="plan-amount">${{ price(plan) }}</span>
+                <span class="plan-period">
+                  {{
+                    billingCycle() === 'monthly'
+                      ? t('landing.pricing.perMonth')
+                      : t('landing.pricing.perYear')
+                  }}
+                </span>
+              </div>
+
+              <ul class="plan-features">
+                @for (feature of plan.features; track feature; let i = $index) {
+                  <li>
+                    <span class="feature-check" aria-hidden="true">✓</span>
+                    {{ t('landing.planFeatures.' + plan.id + '.' + i) }}
+                  </li>
+                }
+              </ul>
+
+              @if (!loggedIn) {
+                <a
+                  routerLink="/signup"
+                  class="btn plan-cta"
+                  [class.btn-primary]="plan.popular"
+                  [class.btn-secondary]="!plan.popular"
+                >
+                  {{ t('landing.pricing.choose') }}
+                </a>
+              } @else {
+                <a
+                  routerLink="/dashboard"
+                  class="btn plan-cta"
+                  [class.btn-primary]="plan.popular"
+                  [class.btn-secondary]="!plan.popular"
+                >
+                  {{ t('landing.nav.dashboard') }}
+                </a>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div class="cta-inner">
+        <h2 class="cta-title">{{ t('landing.cta.title') }}</h2>
+        <p class="cta-subtitle">{{ t('landing.cta.subtitle') }}</p>
+        @if (!loggedIn) {
+          <a routerLink="/signup" class="btn cta-btn">{{ t('landing.cta.button') }}</a>
+        } @else {
+          <a routerLink="/dashboard" class="btn cta-btn">{{ t('landing.nav.dashboard') }}</a>
+        }
+      </div>
+    </section>
+
+    <footer class="landing-footer">
+      <div class="footer-inner">
+        <div class="footer-left">
+          <p class="footer-brand">ERP Cloud</p>
+          <p class="footer-copy">{{ t('landing.footer.copy') }}</p>
+        </div>
+        <nav class="footer-nav">
+          <a href="#features">{{ t('landing.nav.features') }}</a>
+          <a href="#pricing">{{ t('landing.nav.pricing') }}</a>
+          @if (!loggedIn) {
+            <a routerLink="/login">{{ t('landing.nav.login') }}</a>
+          } @else {
+            <a routerLink="/dashboard">{{ t('landing.nav.dashboard') }}</a>
+          }
+        </nav>
+      </div>
+    </footer>
+  </div>
+</ng-container>

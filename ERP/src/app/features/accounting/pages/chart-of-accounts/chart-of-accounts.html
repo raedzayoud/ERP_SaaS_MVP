@@ -1,0 +1,90 @@
+<ng-container *transloco="let t">
+  <div class="chart-of-accounts-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('accounting.accounts.title') }}</h1>
+        <p class="page-subtitle">{{ t('accounting.accounts.subtitle') }}</p>
+      </div>
+      <div class="page-actions">
+        <a routerLink="/accounting" class="btn btn-secondary">
+          {{ t('accounting.nav.journal') }}
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('common.retry') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('accounting.columns.code') }}</th>
+                <th scope="col">{{ t('accounting.columns.accountName') }}</th>
+                <th scope="col">{{ t('accounting.columns.type') }}</th>
+                <th scope="col" class="num">{{ t('accounting.columns.debit') }}</th>
+                <th scope="col" class="num">{{ t('accounting.columns.credit') }}</th>
+                <th scope="col" class="num">{{ t('accounting.columns.balance') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (account of accounts(); track account.code) {
+                <tr>
+                  <td>{{ account.code }}</td>
+                  <td>{{ t('accounting.accountNames.' + account.code) }}</td>
+                  <td>
+                    <span class="badge badge-secondary">
+                      {{ t('accounting.accountTypes.' + account.type) }}
+                    </span>
+                  </td>
+                  <td class="num">
+                    @if (balanceRow(account.code); as row) {
+                      {{ row.debit | currency: 'USD' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td class="num">
+                    @if (balanceRow(account.code); as row) {
+                      {{ row.credit | currency: 'USD' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td class="num">
+                    @if (balanceRow(account.code); as row) {
+                      {{ row.balance | currency: 'USD' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3">{{ t('accounting.accounts.totalRow') }}</td>
+                <td class="num">{{ totalDebit() | currency: 'USD' }}</td>
+                <td class="num">{{ totalCredit() | currency: 'USD' }}</td>
+                <td class="num">
+                  {{ totalDebit() - totalCredit() | currency: 'USD' }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

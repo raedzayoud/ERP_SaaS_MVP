@@ -1,0 +1,95 @@
+<ng-container *transloco="let t">
+  <div class="journal-entry-detail-page">
+    @if (loading()) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('accounting.detail.title') }}</h1>
+        </div>
+      </div>
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('accounting.detail.title') }}</h1>
+        </div>
+        <a routerLink="/accounting" class="btn btn-secondary">← {{ t('common.back') }}</a>
+      </div>
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('accounting.detail.notFound') }}</p>
+          <p class="state-text">{{ t('accounting.detail.notFoundHint') }}</p>
+          <a routerLink="/accounting" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else if (entry(); as e) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ e.ref }} — {{ e.label }}</h1>
+          <p class="page-subtitle">
+            {{ t('accounting.journal.' + e.journal) }} · {{ e.date | date: 'mediumDate' }}
+            @if (balanced()) {
+              <span class="badge badge-success">{{ t('accounting.detail.balanced') }}</span>
+            } @else {
+              <span class="badge badge-danger">{{ t('accounting.detail.unbalanced') }}</span>
+            }
+          </p>
+        </div>
+        <div class="page-actions">
+          <a routerLink="/accounting" class="btn btn-secondary">← {{ t('common.back') }}</a>
+          @if (sourceRoute(e); as route) {
+            <a [routerLink]="route" class="btn btn-primary">{{ t(sourceLabelKey(e)) }}</a>
+          }
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('accounting.columns.account') }}</th>
+                <th scope="col">{{ t('accounting.columns.accountName') }}</th>
+                <th scope="col" class="num">{{ t('accounting.columns.debit') }}</th>
+                <th scope="col" class="num">{{ t('accounting.columns.credit') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of e.lines; track line.id) {
+                <tr>
+                  <td>{{ line.accountCode }}</td>
+                  <td>{{ t('accounting.accountNames.' + line.accountCode) }}</td>
+                  <td class="num">
+                    @if (line.debit > 0) {
+                      {{ line.debit | currency: e.currency }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td class="num">
+                    @if (line.credit > 0) {
+                      {{ line.credit | currency: e.currency }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2">{{ t('accounting.detail.totals') }}</td>
+                <td class="num">{{ totalDebit() | currency: e.currency }}</td>
+                <td class="num">{{ totalCredit() | currency: e.currency }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    }
+  </div>
+</ng-container>

@@ -2,24 +2,34 @@
   <div class="invoices-page">
     <div class="page-header">
       <div>
-        <h1 class="page-title">{{ t('invoices.title') }}</h1>
-        <p class="page-subtitle">{{ t('invoices.subtitle') }}</p>
+        <h1 class="page-title">
+          {{ fixedKind === 'quote' ? t('quotes.title') : t('invoices.title') }}
+        </h1>
+        <p class="page-subtitle">
+          {{ fixedKind === 'quote' ? t('quotes.subtitle') : t('invoices.subtitle') }}
+        </p>
       </div>
-      <a routerLink="/invoices/new" class="btn btn-primary"
-        >+ {{ t('invoices.list.newInvoice') }}</a
-      >
+      @if (fixedKind === 'quote') {
+        <a routerLink="/quotes/new" class="btn btn-primary">+ {{ t('quotes.list.newQuote') }}</a>
+      } @else {
+        <a routerLink="/invoices/new" class="btn btn-primary"
+          >+ {{ t('invoices.list.newInvoice') }}</a
+        >
+      }
     </div>
 
-    <div class="summary-row">
-      <div class="summary-card">
-        <p class="summary-label">{{ t('invoices.summary.outstanding') }}</p>
-        <p class="summary-value">{{ summary().outstanding | currency: currency() }}</p>
+    @if (fixedKind !== 'quote') {
+      <div class="summary-row">
+        <div class="summary-card">
+          <p class="summary-label">{{ t('invoices.summary.outstanding') }}</p>
+          <p class="summary-value">{{ summary().outstanding | currency: currency() }}</p>
+        </div>
+        <div class="summary-card summary-danger">
+          <p class="summary-label">{{ t('invoices.summary.overdue') }}</p>
+          <p class="summary-value">{{ summary().overdue | currency: currency() }}</p>
+        </div>
       </div>
-      <div class="summary-card summary-danger">
-        <p class="summary-label">{{ t('invoices.summary.overdue') }}</p>
-        <p class="summary-value">{{ summary().overdue | currency: currency() }}</p>
-      </div>
-    </div>
+    }
 
     <div class="card">
       <div class="toolbar">
@@ -30,6 +40,20 @@
           [attr.aria-label]="t('invoices.list.searchPlaceholder')"
           [formControl]="searchControl"
         />
+
+        @if (fixedKind === undefined) {
+          <select
+            class="form-control filter-select"
+            [value]="kindFilter()"
+            [attr.aria-label]="t('invoices.filters.allKinds')"
+            (change)="onKindFilter($event)"
+          >
+            <option value="">{{ t('invoices.filters.allKinds') }}</option>
+            <option value="invoice">{{ t('invoices.kind.invoice') }}</option>
+            <option value="credit_note">{{ t('invoices.kind.credit_note') }}</option>
+            <option value="quote">{{ t('invoices.kind.quote') }}</option>
+          </select>
+        }
 
         <select
           class="form-control filter-select"
@@ -107,6 +131,10 @@
             <button type="button" class="btn btn-secondary" (click)="clearFilters()">
               {{ t('common.clearFilters') }}
             </button>
+          } @else if (fixedKind === 'quote') {
+            <a routerLink="/quotes/new" class="btn btn-primary">
+              {{ t('quotes.list.newQuote') }}
+            </a>
           } @else {
             <a routerLink="/invoices/new" class="btn btn-primary">
               {{ t('invoices.list.newInvoice') }}
@@ -175,12 +203,21 @@
                     />
                   </td>
                   <td class="col-actions">
-                    <a [routerLink]="['/invoices', invoice.id]" class="btn btn-secondary btn-sm">
+                    <a
+                      [routerLink]="
+                        fixedKind === 'quote' ? ['/quotes', invoice.id] : ['/invoices', invoice.id]
+                      "
+                      class="btn btn-secondary btn-sm"
+                    >
                       {{ t('invoices.list.view') }}
                     </a>
                     @if (invoice.status === 'draft') {
                       <a
-                        [routerLink]="['/invoices', invoice.id, 'edit']"
+                        [routerLink]="
+                          fixedKind === 'quote'
+                            ? ['/quotes', invoice.id, 'edit']
+                            : ['/invoices', invoice.id, 'edit']
+                        "
                         class="btn btn-secondary btn-sm"
                       >
                         {{ t('common.edit') }}

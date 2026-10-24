@@ -8,7 +8,9 @@
     "next": "Next",
     "previous": "Previous",
     "retry": "Try again",
-    "actions": "Actions"
+    "actions": "Actions",
+    "save": "Save",
+    "saving": "Saving…"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -39,7 +41,16 @@
     "stockWarehouses": "Warehouses",
     "stockMovements": "Stock movements",
     "stockAdjustment": "Stock adjustment",
-    "stockTransfer": "Stock transfer"
+    "stockTransfer": "Stock transfer",
+    "newPayment": "New payment",
+    "paymentDetail": "Payment",
+    "journalEntryDetail": "Journal entry",
+    "chartOfAccounts": "Chart of accounts",
+    "landing": "Home",
+    "newQuote": "New quote",
+    "editQuote": "Edit quote",
+    "quoteDetail": "Quote detail",
+    "quotes": "Quotes"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -51,7 +62,8 @@
     "accounting": "Journals, ledger and financial reports.",
     "invoicing": "Numbering, taxes and e-invoicing compliance.",
     "reports": "Business analytics with export to PDF, Excel and CSV.",
-    "ai-assistant": "Chat assistant and document extraction."
+    "ai-assistant": "Chat assistant and document extraction.",
+    "quotes": "Prepare quotes and convert them into invoices"
   },
   "navbar": {
     "toggleSidebar": "Toggle sidebar",
@@ -83,7 +95,8 @@
       "invoicing": "Invoicing",
       "reports": "Reports",
       "aiAssistant": "AI assistant",
-      "settings": "Settings"
+      "settings": "Settings",
+      "quotes": "Quotes"
     }
   },
   "placeholder": {
@@ -179,7 +192,15 @@
       "sectionNotes": "Notes",
       "notes": "Internal notes",
       "save": "Save contact",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "sectionSuppliedProducts": "Supplied products",
+      "noSuppliedProducts": "This supplier has no products in the catalog.",
+      "suppliedProduct": "Product",
+      "suppliedSku": "SKU",
+      "suppliedSupplierRef": "Supplier ref.",
+      "suppliedCatalogPrice": "Negotiated price",
+      "suppliedMinQty": "Min. qty",
+      "suppliedDelayDays": "Lead time (days)"
     }
   },
   "products": {
@@ -295,7 +316,8 @@
     "posted": "Invoice validated",
     "kind": {
       "invoice": "Invoice",
-      "credit_note": "Credit note"
+      "credit_note": "Credit note",
+      "quote": "Quote"
     },
     "status": {
       "draft": "Draft",
@@ -336,7 +358,8 @@
       "allStatuses": "All statuses",
       "allPayments": "All payments",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "allKinds": "All types"
     },
     "columns": {
       "number": "Number",
@@ -440,7 +463,9 @@
       "dateOutOfOrder": "The issue date cannot be before the last validated document of the same year.",
       "originMissing": "The original invoice is missing.",
       "originNotPosted": "Only a validated invoice can be credited.",
-      "insufficientStock": "Not enough stock in the main warehouse to confirm this invoice."
+      "insufficientStock": "Not enough stock in the main warehouse to confirm this invoice.",
+      "notQuote": "This document is not a quote",
+      "quoteAlreadyConverted": "This quote has already been converted into an invoice"
     },
     "pdf": {
       "billTo": "Bill to",
@@ -775,5 +800,369 @@
       "missingReason": "A reason is required.",
       "insufficientStock": "Not enough stock in the main warehouse for this invoice."
     }
+  },
+  "payments": {
+    "list": {
+      "title": "Payments",
+      "subtitle": "Incoming payments against customer invoices",
+      "searchPlaceholder": "Search by reference, customer or invoice…",
+      "allModes": "All methods",
+      "from": "From",
+      "to": "To",
+      "empty": "No payments recorded yet.",
+      "page": "Page",
+      "newPayment": "New payment"
+    },
+    "columns": {
+      "date": "Date",
+      "invoice": "Invoice",
+      "partner": "Customer",
+      "mode": "Method",
+      "reference": "Reference",
+      "amount": "Amount"
+    },
+    "modes": {
+      "cash": "Cash",
+      "check": "Check",
+      "transfer": "Bank transfer",
+      "card": "Card"
+    },
+    "form": {
+      "title": "Record a payment",
+      "subtitle": "Register a payment against a posted customer invoice",
+      "invoice": "Invoice",
+      "invoicePlaceholder": "Select an invoice…",
+      "invoiceRequired": "An invoice is required.",
+      "noInvoices": "No posted invoice awaiting payment.",
+      "dueHint": "Amount due:",
+      "date": "Payment date",
+      "amount": "Amount",
+      "amountRequired": "A valid amount is required.",
+      "mode": "Method",
+      "reference": "Reference",
+      "referencePlaceholder": "Check number, transfer reference…",
+      "notes": "Notes",
+      "save": "Record payment",
+      "saving": "Saving…",
+      "saveError": "The payment could not be saved.",
+      "checkErrors": "Please correct the errors below."
+    },
+    "detail": {
+      "title": "Payment",
+      "viewInvoice": "View invoice",
+      "notFound": "Payment not found",
+      "notFoundHint": "This payment does not exist or has been removed."
+    },
+    "errors": {
+      "notFound": "Payment not found.",
+      "invalidAmount": "The amount must be greater than zero.",
+      "invoiceNotFound": "The invoice does not exist.",
+      "invoiceNotPosted": "Only posted customer invoices can receive payments.",
+      "overpaid": "The amount exceeds the remaining due."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Welcome back! Here is an overview of your business.",
+    "kpi": {
+      "revenue": "Revenue billed",
+      "outstanding": "Outstanding invoices",
+      "overdue": "Overdue",
+      "payments": "Payments received",
+      "currentMonth": "This month",
+      "stockValue": "Stock value",
+      "stockItems": "references"
+    },
+    "recent": {
+      "title": "Recent invoices",
+      "empty": "No posted invoices yet."
+    },
+    "quick": {
+      "title": "Quick actions",
+      "newInvoice": "New invoice",
+      "newContact": "New contact",
+      "newProduct": "New product",
+      "newOrder": "New purchase order"
+    },
+    "summary": {
+      "title": "Summary",
+      "customers": "Active customers",
+      "products": "Active products",
+      "pendingOrders": "Pending purchase orders",
+      "lateOrders": "Late purchase orders"
+    }
+  },
+  "accounting": {
+    "journal": {
+      "SALES": "Sales",
+      "PURCHASES": "Purchases",
+      "PAYMENTS": "Payments",
+      "STOCK": "Stock"
+    },
+    "accountTypes": {
+      "asset": "Asset",
+      "liability": "Liability",
+      "revenue": "Revenue",
+      "expense": "Expense"
+    },
+    "accountNames": {
+      "310000": "Inventory",
+      "401000": "Accounts payable",
+      "411000": "Accounts receivable",
+      "445660": "Deductible VAT",
+      "445710": "VAT collected",
+      "512000": "Bank",
+      "530000": "Cash",
+      "601000": "Purchases",
+      "693000": "Inventory charges",
+      "701000": "Sales of goods",
+      "706000": "Service revenue",
+      "793000": "Inventory gains"
+    },
+    "nav": {
+      "journal": "Journal",
+      "accounts": "Chart of accounts"
+    },
+    "columns": {
+      "date": "Date",
+      "journal": "Journal",
+      "ref": "Reference",
+      "label": "Label",
+      "lines": "Lines",
+      "debit": "Debit",
+      "credit": "Credit",
+      "account": "Account",
+      "accountName": "Account name",
+      "code": "Code",
+      "type": "Type",
+      "balance": "Balance"
+    },
+    "list": {
+      "title": "Journal",
+      "subtitle": "Accounting entries generated from your documents.",
+      "searchPlaceholder": "Search by reference or label…",
+      "allJournals": "All journals",
+      "from": "From",
+      "to": "To",
+      "empty": "No entries found.",
+      "page": "Page"
+    },
+    "detail": {
+      "title": "Journal entry",
+      "totals": "Totals",
+      "balanced": "Balanced",
+      "unbalanced": "Unbalanced",
+      "notFound": "Entry not found",
+      "notFoundHint": "This entry does not exist or has been removed.",
+      "viewInvoice": "View invoice",
+      "viewOrder": "View order",
+      "viewPayment": "View payment",
+      "viewMovements": "View movements"
+    },
+    "accounts": {
+      "title": "Chart of accounts",
+      "subtitle": "Standard accounts and trial balance.",
+      "totalRow": "Total"
+    }
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "login": "Sign in",
+      "signup": "Sign up",
+      "dashboard": "My dashboard"
+    },
+    "hero": {
+      "title": "The ERP that runs your whole business",
+      "subtitle": "CRM, invoicing, purchases, stock, accounting and AI — one multi-company cloud platform, simple and affordable.",
+      "ctaPrimary": "Start for free",
+      "ctaSecondary": "See pricing",
+      "pill": "Cloud multi-company ERP",
+      "note": "No credit card required",
+      "stats": {
+        "modules": "10 modules included",
+        "plans": "3 plans",
+        "multi": "Multi-company",
+        "langs": "FR / EN"
+      }
+    },
+    "features": {
+      "title": "Everything you need",
+      "subtitle": "All the modules of a complete ERP, ready to use in minutes."
+    },
+    "modules": {
+      "dashboard": "Dashboard",
+      "contacts": "CRM & Contacts",
+      "products": "Products",
+      "invoices": "Invoicing",
+      "payments": "Payments",
+      "purchases": "Purchases",
+      "stock": "Stock",
+      "accounting": "Accounting",
+      "reports": "Reports",
+      "ai": "AI Assistant"
+    },
+    "pricing": {
+      "title": "Simple, transparent pricing",
+      "subtitle": "Choose the plan that fits your company. Change or cancel anytime.",
+      "billingToggle": "Billing period",
+      "monthly": "Monthly",
+      "annual": "Annual",
+      "popular": "Popular",
+      "perMonth": "/month",
+      "perYear": "/year",
+      "choose": "Choose plan",
+      "annualBadge": "2 months free"
+    },
+    "planFeatures": {
+      "starter": {
+        "0": "Up to 3 users",
+        "1": "1 GB storage",
+        "2": "CRM & Contacts",
+        "3": "Product catalog",
+        "4": "Invoicing & Payments",
+        "5": "Email support"
+      },
+      "business": {
+        "0": "Up to 15 users",
+        "1": "10 GB storage",
+        "2": "Everything in Starter",
+        "3": "Purchases & Stock",
+        "4": "Accounting & Reports",
+        "5": "100 AI queries/month",
+        "6": "Priority support"
+      },
+      "enterprise": {
+        "0": "Unlimited users",
+        "1": "100 GB storage",
+        "2": "Everything in Business",
+        "3": "AI Assistant (RAG)",
+        "4": "1,000 AI queries/month",
+        "5": "Advanced analytics",
+        "6": "Dedicated support",
+        "7": "Custom integrations"
+      }
+    },
+    "footer": {
+      "copy": "ERP Cloud SaaS — Multi-Enterprise Platform. All rights reserved."
+    },
+    "modulesDesc": {
+      "dashboard": "Track revenue and key indicators.",
+      "contacts": "Manage customers and suppliers.",
+      "products": "Catalog, prices and stock levels.",
+      "invoices": "Quotes, invoices and credit notes.",
+      "payments": "Record and track incoming payments.",
+      "purchases": "Purchase orders and goods receptions.",
+      "stock": "Multi-warehouse inventory management.",
+      "accounting": "Journals, chart of accounts and trial balance.",
+      "reports": "Exportable business reports.",
+      "ai": "Ask questions, get answers from your data."
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Create your workspace in a few minutes.",
+      "button": "Create my account"
+    }
+  },
+  "quotes": {
+    "title": "Quotes",
+    "subtitle": "Prepare quotes and convert them into invoices",
+    "converted": "The quote has been converted into an invoice draft",
+    "list": {
+      "newQuote": "New quote"
+    },
+    "form": {
+      "newSubtitle": "Create a new quote for a customer",
+      "editSubtitle": "Update the quote before validation"
+    },
+    "detail": {
+      "convert": "Convert to invoice",
+      "converting": "Converting…",
+      "viewInvoice": "View invoice {{number}}",
+      "fromQuote": "From quote"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Business analytics for sales, purchases, stock and accounting",
+    "empty": "No data for this period",
+    "loadError": "Could not load the report",
+    "loadErrorHint": "Please try again.",
+    "export": {
+      "pdf": "Export PDF",
+      "csv": "Export CSV",
+      "exporting": "Exporting…"
+    },
+    "kpi": {
+      "title": "Key figures",
+      "sales": "Sales revenue",
+      "expenses": "Purchase expenses",
+      "stockValue": "Stock value",
+      "outstanding": "Outstanding",
+      "overdue": "Overdue"
+    },
+    "sections": {
+      "salesByMonth": "Sales by month",
+      "topProducts": "Top products sold",
+      "paymentsByMode": "Payments by mode",
+      "margins": "Margins by product",
+      "trialBalance": "Trial balance"
+    },
+    "columns": {
+      "month": "Month",
+      "product": "Product",
+      "mode": "Mode",
+      "count": "Count",
+      "total": "Total",
+      "quantity": "Quantity",
+      "revenue": "Revenue",
+      "margin": "Margin",
+      "account": "Account",
+      "debit": "Debit",
+      "credit": "Credit",
+      "balance": "Balance"
+    },
+    "pdf": {
+      "title": "Business report"
+    }
+  },
+  "invoicing": {
+    "title": "Invoicing settings",
+    "subtitle": "Numbering, taxes and e-invoicing compliance",
+    "saved": "Settings saved",
+    "errors": {
+      "invalidPrefix": "Prefixes must be letters or digits only (no dash)"
+    },
+    "sections": {
+      "numbering": "Numbering",
+      "taxes": "Taxes",
+      "einvoicing": "E-invoicing (Factur-X)"
+    },
+    "numbering": {
+      "hint": "Prefixes used for the next document numbers (PREFIX-YYYY-NNNN).",
+      "invoicePrefix": "Invoice prefix",
+      "creditNotePrefix": "Credit note prefix",
+      "quotePrefix": "Quote prefix",
+      "format": "Format"
+    },
+    "taxes": {
+      "defaultVat": "Default VAT rate",
+      "stampDuty": "Default stamp duty",
+      "stampHint": "Pre-filled when creating a new invoice",
+      "activeRates": "Active VAT rates"
+    },
+    "einvoicing": {
+      "intro": "French e-invoicing obligations (2026): all companies must exchange invoices electronically.",
+      "check1": "Compliant document numbering (PREFIX-YYYY-NNNN)",
+      "check2": "Structured Factur-X (EN 16931) XML format",
+      "check3": "Complete buyer/seller identification (VAT IDs)",
+      "check4": "Legal archive of issued invoices",
+      "downloadHint": "On any posted invoice, use the « Factur-X » button (next to « PDF ») to download the structured XML file."
+    },
+    "detail": {
+      "facturX": "Factur-X"
+    },
+    "facturXDownloaded": "Factur-X XML file downloaded"
   }
 }

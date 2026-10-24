@@ -1,0 +1,8 @@
+.col-date a {
+  font-weight: 600;
+}
+
+.page-actions {
+  display: flex;
+  gap: 8px;
+}

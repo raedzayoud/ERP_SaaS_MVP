@@ -1,0 +1,92 @@
+.invoicing-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+  color: var(--gray-800);
+}
+
+.section-hint {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  margin: 0 0 1rem;
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 160px;
+  flex: 1;
+}
+
+.field-label {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+.format-hint {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  margin: 0 0 1rem;
+}
+
+.format-hint code {
+  background: var(--gray-100);
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+.rates-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.rate-check {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.checklist {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+
+.check-item::before {
+  content: '✓';
+  color: var(--accent);
+  font-weight: 700;
+}

@@ -1,0 +1,140 @@
+<ng-container *transloco="let t">
+  <div class="journal-entries-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('accounting.list.title') }}</h1>
+        <p class="page-subtitle">{{ t('accounting.list.subtitle') }}</p>
+      </div>
+      <div class="page-actions">
+        <a routerLink="/accounting/accounts" class="btn btn-secondary">
+          {{ t('accounting.nav.accounts') }}
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('accounting.list.searchPlaceholder')"
+          [attr.aria-label]="t('accounting.list.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="journalFilter()"
+          [attr.aria-label]="t('accounting.list.allJournals')"
+          (change)="onJournalFilter($event)"
+        >
+          <option value="">{{ t('accounting.list.allJournals') }}</option>
+          @for (journal of journals; track journal) {
+            <option [value]="journal">{{ t('accounting.journal.' + journal) }}</option>
+          }
+        </select>
+
+        <input
+          type="date"
+          class="form-control filter-select"
+          [value]="fromFilter()"
+          [attr.aria-label]="t('accounting.list.from')"
+          (change)="onFromFilter($event)"
+        />
+
+        <input
+          type="date"
+          class="form-control filter-select"
+          [value]="toFilter()"
+          [attr.aria-label]="t('accounting.list.to')"
+          (change)="onToFilter($event)"
+        />
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('common.retry') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (rows().length === 0) {
+        <div class="state-block">
+          <p class="state-title">{{ t('accounting.list.empty') }}</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('accounting.columns.date') }}</th>
+                <th scope="col">{{ t('accounting.columns.journal') }}</th>
+                <th scope="col">{{ t('accounting.columns.ref') }}</th>
+                <th scope="col">{{ t('accounting.columns.label') }}</th>
+                <th scope="col" class="num">{{ t('accounting.columns.lines') }}</th>
+                <th scope="col" class="num">{{ t('accounting.columns.debit') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <td class="col-date">
+                    <a [routerLink]="['/accounting/entries', row.id]">
+                      {{ row.date | date: 'mediumDate' }}
+                    </a>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="journalBadge(row.journal)">
+                      {{ t('accounting.journal.' + row.journal) }}
+                    </span>
+                  </td>
+                  <td>{{ row.ref }}</td>
+                  <td>{{ row.label }}</td>
+                  <td class="num">{{ row.lines.length }}</td>
+                  <td class="num">{{ entryTotal(row) | currency: row.currency }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('accounting.list.page') }} {{ page() + 1 }} / {{ totalPages() }} ({{
+              pageStart()
+            }}–{{ pageEnd() }} / {{ total() }})
+          </span>
+          <div class="pager">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() === 0"
+              (click)="setPage(page() - 1)"
+            >
+              ← {{ t('common.previous') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() + 1 >= totalPages()"
+              (click)="setPage(page() + 1)"
+            >
+              {{ t('common.next') }} →
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

@@ -18,6 +18,7 @@ import { lineTotals, todayIso } from '../../../../shared/utils/money';
 import { Partner } from '../../../crm/models/partner';
 import { PartnerService } from '../../../crm/services/partner.service';
 import { TenantService } from '../../../../core/services/tenant.service';
+import { InvoicingSettingsService } from '../../../invoicing/services/invoicing-settings.service';
 import { PRODUCT_VAT_RATES, Product } from '../../../products/models/product';
 import { ProductService } from '../../../products/services/product.service';
 import { ComboPicker, PickerItem } from '../../components/combo-picker/combo-picker';
@@ -57,6 +58,7 @@ export class InvoiceForm {
   private readonly partners = inject(PartnerService);
   private readonly productsService = inject(ProductService);
   private readonly tenantService = inject(TenantService);
+  private readonly invoicingSettings = inject(InvoicingSettingsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
@@ -67,9 +69,14 @@ export class InvoiceForm {
 
   private invoiceId: string | null = this.route.snapshot.paramMap.get('id');
   private originId: string | null = this.route.snapshot.queryParamMap.get('creditNoteOf');
+  private kindParam: string | null =
+    (this.route.snapshot.data['kind'] as string | undefined) ??
+    this.route.snapshot.queryParamMap.get('kind');
 
   readonly isEdit = signal(this.invoiceId !== null);
-  readonly kind = signal<InvoiceKind>(this.originId ? 'credit_note' : 'invoice');
+  readonly kind = signal<InvoiceKind>(
+    this.originId ? 'credit_note' : this.kindParam === 'quote' ? 'quote' : 'invoice',
+  );
   readonly currency = signal(this.tenantService.currentTenant()?.currency ?? 'USD');
 
   readonly customers = signal<PickerItem[]>([]);
@@ -92,7 +99,7 @@ export class InvoiceForm {
     issueDate: [todayIso(), Validators.required],
     paymentTerms: ['net30' as PaymentTerms, Validators.required],
     dueDate: [todayIso(), Validators.required],
-    stampDuty: [0, Validators.min(0)],
+    stampDuty: [this.invoicingSettings.settings().defaultStampDuty, Validators.min(0)],
     notes: [''],
     lines: this.fb.nonNullable.array([this.newLine()]),
   });
@@ -133,11 +140,17 @@ export class InvoiceForm {
 
   titleKey(): string {
     if (this.kind() === 'credit_note') return 'titles.newCreditNote';
+    if (this.kind() === 'quote') {
+      return this.isEdit() ? 'titles.editQuote' : 'titles.newQuote';
+    }
     return this.isEdit() ? 'titles.editInvoice' : 'titles.newInvoice';
   }
 
   subtitleKey(): string {
     if (this.kind() === 'credit_note') return 'invoices.form.creditSubtitle';
+    if (this.kind() === 'quote') {
+      return this.isEdit() ? 'quotes.form.editSubtitle' : 'quotes.form.newSubtitle';
+    }
     return this.isEdit() ? 'invoices.form.editSubtitle' : 'invoices.form.newSubtitle';
   }
 
@@ -221,7 +234,7 @@ export class InvoiceForm {
           this.isEdit.set(true);
           if (!andPost) {
             this.saving.set(false);
-            this.router.navigate(['/invoices', saved.id]);
+            this.router.navigate([this.detailRoute(saved.id)]);
             return;
           }
           this.post(saved.id);
@@ -237,10 +250,14 @@ export class InvoiceForm {
       .subscribe({
         next: (posted) => {
           this.saving.set(false);
-          this.router.navigate(['/invoices', posted.id]);
+          this.router.navigate([this.detailRoute(posted.id)]);
         },
         error: (error: unknown) => this.onSaveError(error),
       });
+  }
+
+  private detailRoute(id: string): string[] {
+    return this.kind() === 'quote' ? ['/quotes', id] : ['/invoices', id];
   }
 
   private onSaveError(error: unknown): void {
@@ -281,7 +298,7 @@ export class InvoiceForm {
       quantity: 1,
       unitPrice: 0,
       discountPct: 0,
-      vatRate: 0,
+      vatRate: this.invoicingSettings.settings().defaultVatRate,
     });
   }
 

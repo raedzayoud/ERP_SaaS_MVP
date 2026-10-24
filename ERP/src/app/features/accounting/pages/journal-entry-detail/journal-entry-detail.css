@@ -1,0 +1,14 @@
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.page-subtitle .badge {
+  margin-inline-start: 8px;
+}
+
+tfoot td {
+  font-weight: 700;
+  border-block-start: 2px solid var(--gray-200);
+}

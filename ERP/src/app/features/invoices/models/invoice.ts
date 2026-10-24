@@ -1,6 +1,6 @@
 import { PaymentTerms } from '../../../shared/models/payment-terms';
 
-export type InvoiceKind = 'invoice' | 'credit_note';
+export type InvoiceKind = 'invoice' | 'credit_note' | 'quote';
 export type InvoiceStatus = 'draft' | 'posted' | 'cancelled';
 export type PaymentState = 'none' | 'unpaid' | 'partial' | 'paid';
 
@@ -62,6 +62,7 @@ export interface InvoiceQuery {
   size: number;
   search?: string;
   status?: InvoiceStatus;
+  kinds?: InvoiceKind[];
   paid?: 'unpaid' | 'partial' | 'paid';
   from?: string;
   to?: string;
@@ -76,4 +77,5 @@ export interface InvoiceSummary {
 export const NUMBER_PREFIX: Record<InvoiceKind, string> = {
   invoice: 'FAC',
   credit_note: 'AV',
+  quote: 'DEV',
 };

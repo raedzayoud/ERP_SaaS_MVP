@@ -10,6 +10,7 @@ import { StatusBadge } from '../../../../shared/components/status-badge/status-b
 import { Invoice, PaymentState } from '../../models/invoice';
 import { InvoicePdfService, PdfContext } from '../../services/invoice-pdf.service';
 import { InvoiceError, InvoiceService } from '../../services/invoice.service';
+import { FacturXService } from '../../../invoicing/services/factur-x.service';
 import { InvoiceTotals, invoiceTotals, isOverdue, paymentState } from '../../utils/invoice-calc';
 
 @Component({
@@ -21,6 +22,7 @@ import { InvoiceTotals, invoiceTotals, isOverdue, paymentState } from '../../uti
 export class InvoiceDetail {
   private readonly service = inject(InvoiceService);
   private readonly pdfService = inject(InvoicePdfService);
+  private readonly facturXService = inject(FacturXService);
   private readonly tenantService = inject(TenantService);
   private readonly transloco = inject(TranslocoService);
   private readonly route = inject(ActivatedRoute);
@@ -31,6 +33,7 @@ export class InvoiceDetail {
 
   readonly invoice = signal<Invoice | null>(null);
   readonly creditNotes = signal<Invoice[]>([]);
+  readonly convertedInvoice = signal<Invoice | null>(null);
   readonly totals = signal<InvoiceTotals | null>(null);
   readonly payment = signal<PaymentState>('none');
   readonly overdue = signal(false);
@@ -45,6 +48,8 @@ export class InvoiceDetail {
   readonly sellerName = computed(() => this.tenantService.currentTenant()?.companyName ?? '');
   readonly sellerAddress = computed(() => this.tenantService.currentTenant()?.address ?? '');
   readonly sellerTaxId = computed(() => this.tenantService.currentTenant()?.taxId ?? '');
+  readonly isQuote = computed(() => this.invoice()?.kind === 'quote');
+  readonly listRoute = computed(() => (this.isQuote() ? '/quotes' : '/invoices'));
 
   constructor() {
     this.load();
@@ -63,10 +68,11 @@ export class InvoiceDetail {
     forkJoin({
       invoice: this.service.getInvoice(this.invoiceId),
       creditNotes: this.service.getCreditNotesFor(this.invoiceId),
+      convertedInvoice: this.service.getInvoiceForQuote(this.invoiceId),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ invoice, creditNotes }) => {
+        next: ({ invoice, creditNotes, convertedInvoice }) => {
           if (!invoice) {
             this.loadFailed.set(true);
             this.loading.set(false);
@@ -74,6 +80,7 @@ export class InvoiceDetail {
           }
           this.applyInvoice(invoice);
           this.creditNotes.set(creditNotes);
+          this.convertedInvoice.set(convertedInvoice ?? null);
           this.loading.set(false);
         },
         error: () => {
@@ -113,7 +120,24 @@ export class InvoiceDetail {
       .subscribe({
         next: () => {
           this.saving.set(false);
-          this.router.navigate(['/invoices']);
+          this.router.navigate([this.listRoute()]);
+        },
+        error: (error: unknown) => this.showActionError(error),
+      });
+  }
+
+  convert(): void {
+    this.saving.set(true);
+    this.errorKey.set(null);
+
+    this.service
+      .convertQuoteToInvoice(this.invoiceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (invoice) => {
+          this.saving.set(false);
+          this.convertedInvoice.set(invoice);
+          this.showNotice('quotes.converted');
         },
         error: (error: unknown) => this.showActionError(error),
       });
@@ -148,6 +172,19 @@ export class InvoiceDetail {
     this.router.navigate(['/invoices/new'], {
       queryParams: { creditNoteOf: this.invoiceId },
     });
+  }
+
+  downloadFacturX(): void {
+    const current = this.invoice();
+    if (!current || current.kind !== 'invoice') return;
+
+    const tenant = this.tenantService.currentTenant();
+    this.facturXService.download(current, {
+      name: tenant?.companyName ?? '',
+      address: tenant?.address ?? '',
+      taxId: tenant?.taxId ?? '',
+    });
+    this.showNotice('invoicing.facturXDownloaded');
   }
 
   lineNet(invoice: Invoice, line: Invoice['lines'][number]): number {

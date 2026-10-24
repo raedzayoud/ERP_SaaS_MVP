@@ -1,0 +1,83 @@
+<ng-container *transloco="let t">
+  <div class="payment-detail-page">
+    @if (loading()) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('payments.detail.title') }}</h1>
+        </div>
+      </div>
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('payments.detail.title') }}</h1>
+        </div>
+        <a routerLink="/payments" class="btn btn-secondary">← {{ t('common.back') }}</a>
+      </div>
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('payments.detail.notFound') }}</p>
+          <p class="state-text">{{ t('payments.detail.notFoundHint') }}</p>
+          <a routerLink="/payments" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else if (payment(); as pay) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ pay.amount | currency: pay.currency }}</h1>
+          <p class="page-subtitle">
+            {{ t('payments.modes.' + pay.mode) }} · {{ pay.date | date: 'mediumDate' }}
+          </p>
+        </div>
+        <div class="page-actions">
+          <a routerLink="/payments" class="btn btn-secondary">← {{ t('common.back') }}</a>
+          <a [routerLink]="['/invoices', pay.invoiceId]" class="btn btn-primary">
+            {{ t('payments.detail.viewInvoice') }}
+          </a>
+        </div>
+      </div>
+
+      <div class="card">
+        <dl class="detail-grid">
+          <div class="detail-item">
+            <dt>{{ t('payments.columns.invoice') }}</dt>
+            <dd>
+              <a [routerLink]="['/invoices', pay.invoiceId]">{{ pay.invoiceNumber }}</a>
+            </dd>
+          </div>
+          <div class="detail-item">
+            <dt>{{ t('payments.columns.partner') }}</dt>
+            <dd>{{ pay.partnerName }}</dd>
+          </div>
+          <div class="detail-item">
+            <dt>{{ t('payments.columns.date') }}</dt>
+            <dd>{{ pay.date | date: 'mediumDate' }}</dd>
+          </div>
+          <div class="detail-item">
+            <dt>{{ t('payments.columns.amount') }}</dt>
+            <dd>{{ pay.amount | currency: pay.currency }}</dd>
+          </div>
+          <div class="detail-item">
+            <dt>{{ t('payments.columns.mode') }}</dt>
+            <dd>{{ t('payments.modes.' + pay.mode) }}</dd>
+          </div>
+          <div class="detail-item">
+            <dt>{{ t('payments.columns.reference') }}</dt>
+            <dd>{{ pay.reference || '—' }}</dd>
+          </div>
+          @if (pay.notes) {
+            <div class="detail-item detail-item-full">
+              <dt>{{ t('payments.form.notes') }}</dt>
+              <dd>{{ pay.notes }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
+    }
+  </div>
+</ng-container>

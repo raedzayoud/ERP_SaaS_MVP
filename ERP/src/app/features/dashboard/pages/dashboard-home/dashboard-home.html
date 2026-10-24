@@ -1,78 +1,135 @@
-<div class="dashboard">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Dashboard</h1>
-      <p class="page-subtitle">Welcome back! Here's an overview of your business.</p>
+<ng-container *transloco="let t">
+  <div class="dashboard">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('dashboard.title') }}</h1>
+        <p class="page-subtitle">{{ t('dashboard.subtitle') }}</p>
+      </div>
     </div>
-  </div>
 
-  <!-- KPI Cards -->
-  <div class="kpi-grid">
-    @for (kpi of kpis; track kpi.title) {
-      <div class="kpi-card">
-        <div class="kpi-header">
-          <span class="kpi-icon">{{ kpi.icon }}</span>
-          <span class="kpi-title">{{ kpi.title }}</span>
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
         </div>
-        <div class="kpi-value">{{ kpi.value }}</div>
-        <div class="kpi-change" [class]="'change-' + kpi.changeType">
-          {{ kpi.change }}
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('common.retry') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">💰</span>
+            <span class="kpi-title">{{ t('dashboard.kpi.revenue') }}</span>
+          </div>
+          <div class="kpi-value">{{ revenue() | currency: currency() }}</div>
+          <div class="kpi-change change-neutral">{{ t('dashboard.kpi.currentMonth') }}</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">🧾</span>
+            <span class="kpi-title">{{ t('dashboard.kpi.outstanding') }}</span>
+          </div>
+          <div class="kpi-value">{{ outstanding() | currency: currency() }}</div>
+          <div class="kpi-change" [class]="overdue() > 0 ? 'change-negative' : 'change-neutral'">
+            {{ t('dashboard.kpi.overdue') }} : {{ overdue() | currency: currency() }}
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">💳</span>
+            <span class="kpi-title">{{ t('dashboard.kpi.payments') }}</span>
+          </div>
+          <div class="kpi-value">{{ paymentsMonth() | currency: currency() }}</div>
+          <div class="kpi-change change-neutral">{{ t('dashboard.kpi.currentMonth') }}</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">📦</span>
+            <span class="kpi-title">{{ t('dashboard.kpi.stockValue') }}</span>
+          </div>
+          <div class="kpi-value">{{ stockValue() | currency: currency() }}</div>
+          <div class="kpi-change change-neutral">
+            {{ stockItems() }} {{ t('dashboard.kpi.stockItems') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <h2 class="card-title">{{ t('dashboard.recent.title') }}</h2>
+          @if (recentInvoices().length === 0) {
+            <p class="state-text">{{ t('dashboard.recent.empty') }}</p>
+          } @else {
+            <div class="activity-list">
+              @for (inv of recentInvoices(); track inv.id) {
+                <div class="activity-item">
+                  <span class="activity-icon">🧾</span>
+                  <div class="activity-content">
+                    <div class="activity-message">
+                      <a [routerLink]="['/invoices', inv.id]">
+                        {{ inv.number || t('invoices.draftLabel') }}
+                      </a>
+                      — {{ inv.customerSnapshot?.name }}
+                    </div>
+                    <div class="activity-time">{{ inv.issueDate | date: 'mediumDate' }}</div>
+                  </div>
+                  <span class="badge badge-primary">{{
+                    invoiceTotal(inv) | currency: inv.currency
+                  }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">{{ t('dashboard.quick.title') }}</h2>
+          <div class="quick-actions">
+            @for (action of quickActions; track action.labelKey) {
+              <a class="quick-action-btn" [routerLink]="action.route">
+                <span class="quick-action-icon">{{ action.icon }}</span>
+                <span>{{ t(action.labelKey) }}</span>
+              </a>
+            }
+          </div>
+
+          <div class="card-divider"></div>
+
+          <h2 class="card-title">{{ t('dashboard.summary.title') }}</h2>
+          <div class="summary-list">
+            <div class="summary-item">
+              <span class="summary-label">{{ t('dashboard.summary.customers') }}</span>
+              <span class="summary-value">{{ customers() }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">{{ t('dashboard.summary.products') }}</span>
+              <span class="summary-value">{{ products() }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">{{ t('dashboard.summary.pendingOrders') }}</span>
+              <span class="summary-value">{{ pendingOrders() }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">{{ t('dashboard.summary.lateOrders') }}</span>
+              <span class="summary-value" [class.text-danger]="lateOrders() > 0">
+                {{ lateOrders() }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     }
   </div>
-
-  <div class="dashboard-grid">
-    <!-- Recent Activity -->
-    <div class="card">
-      <h2 class="card-title">Recent Activity</h2>
-      <div class="activity-list">
-        @for (activity of recentActivity; track activity.message) {
-          <div class="activity-item">
-            <span class="activity-icon">{{ activity.icon }}</span>
-            <div class="activity-content">
-              <div class="activity-message">{{ activity.message }}</div>
-              <div class="activity-time">{{ activity.time }}</div>
-            </div>
-            <span class="badge badge-primary">{{ activity.type }}</span>
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="card">
-      <h2 class="card-title">Quick Actions</h2>
-      <div class="quick-actions">
-        @for (action of quickActions; track action.label) {
-          <a class="quick-action-btn" [routerLink]="action.route">
-            <span class="quick-action-icon">{{ action.icon }}</span>
-            <span>{{ action.label }}</span>
-          </a>
-        }
-      </div>
-
-      <div class="card-divider"></div>
-
-      <h2 class="card-title">Summary</h2>
-      <div class="summary-list">
-        <div class="summary-item">
-          <span class="summary-label">Total Customers</span>
-          <span class="summary-value">156</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Active Products</span>
-          <span class="summary-value">89</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Pending Orders</span>
-          <span class="summary-value">12</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">This Month Revenue</span>
-          <span class="summary-value text-success">$48,290</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+</ng-container>

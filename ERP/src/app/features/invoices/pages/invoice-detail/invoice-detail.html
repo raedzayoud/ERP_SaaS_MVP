@@ -17,13 +17,13 @@
         <div>
           <h1 class="page-title">{{ t('titles.invoiceDetail') }}</h1>
         </div>
-        <a routerLink="/invoices" class="btn btn-secondary">← {{ t('common.back') }}</a>
+        <a [routerLink]="listRoute()" class="btn btn-secondary">← {{ t('common.back') }}</a>
       </div>
       <div class="card">
         <div class="state-block">
           <p class="state-title">{{ t('invoices.detail.notFound') }}</p>
           <p class="state-text">{{ t('invoices.detail.notFoundHint') }}</p>
-          <a routerLink="/invoices" class="btn btn-primary">{{ t('common.back') }}</a>
+          <a [routerLink]="listRoute()" class="btn btn-primary">{{ t('common.back') }}</a>
         </div>
       </div>
     } @else if (invoice(); as inv) {
@@ -35,10 +35,13 @@
           </p>
         </div>
         <div class="page-actions">
-          <a routerLink="/invoices" class="btn btn-secondary">← {{ t('common.back') }}</a>
+          <a [routerLink]="listRoute()" class="btn btn-secondary">← {{ t('common.back') }}</a>
 
           @if (inv.status === 'draft') {
-            <a [routerLink]="['/invoices', inv.id, 'edit']" class="btn btn-secondary">
+            <a
+              [routerLink]="isQuote() ? ['/quotes', inv.id, 'edit'] : ['/invoices', inv.id, 'edit']"
+              class="btn btn-secondary"
+            >
               {{ t('invoices.detail.edit') }}
             </a>
             <button
@@ -63,17 +66,38 @@
             >
               {{ pdfBusy() ? t('invoices.detail.pdfBusy') : t('invoices.detail.pdf') }}
             </button>
-            <button type="button" class="btn btn-secondary" (click)="createCreditNote()">
-              {{ t('invoices.detail.createCreditNote') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              disabled
-              [title]="t('invoices.detail.comingSoon')"
-            >
-              {{ t('invoices.detail.payment') }}
-            </button>
+            @if (isQuote()) {
+              @if (convertedInvoice(); as converted) {
+                <a [routerLink]="['/invoices', converted.id]" class="btn btn-secondary">
+                  {{ t('quotes.detail.viewInvoice', { number: converted.number || '' }) }}
+                </a>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  [disabled]="saving()"
+                  (click)="convert()"
+                >
+                  {{ saving() ? t('quotes.detail.converting') : t('quotes.detail.convert') }}
+                </button>
+              }
+            } @else {
+              <button type="button" class="btn btn-secondary" (click)="createCreditNote()">
+                {{ t('invoices.detail.createCreditNote') }}
+              </button>
+              <a
+                [routerLink]="['/payments/new']"
+                [queryParams]="{ invoiceId: inv.id }"
+                class="btn btn-secondary"
+              >
+                {{ t('invoices.detail.payment') }}
+              </a>
+              @if (inv.kind === 'invoice') {
+                <button type="button" class="btn btn-secondary" (click)="downloadFacturX()">
+                  {{ t('invoicing.detail.facturX') }}
+                </button>
+              }
+            }
             <button
               type="button"
               class="btn btn-secondary"
@@ -144,8 +168,18 @@
             </p>
             @if (inv.originInvoiceId) {
               <p class="doc-line">
-                <a [routerLink]="['/invoices', inv.originInvoiceId]">
-                  {{ t('invoices.detail.corrects') }}
+                <a
+                  [routerLink]="
+                    inv.kind === 'credit_note'
+                      ? ['/invoices', inv.originInvoiceId]
+                      : ['/quotes', inv.originInvoiceId]
+                  "
+                >
+                  {{
+                    inv.kind === 'credit_note'
+                      ? t('invoices.detail.corrects')
+                      : t('quotes.detail.fromQuote')
+                  }}
                 </a>
               </p>
             }

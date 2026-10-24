@@ -1,7 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -9,6 +9,7 @@ import { TenantService } from '../../../../core/services/tenant.service';
 import { StatusBadge } from '../../../../shared/components/status-badge/status-badge';
 import {
   Invoice,
+  InvoiceKind,
   InvoiceQuery,
   InvoiceStatus,
   InvoiceSummary,
@@ -37,8 +38,10 @@ export class Invoices {
   private readonly service = inject(InvoiceService);
   private readonly tenantService = inject(TenantService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
 
   readonly pageSize = 10;
+  readonly fixedKind = this.route.snapshot.data['kind'] as InvoiceKind | undefined;
 
   invoices = signal<Invoice[]>([]);
   total = signal(0);
@@ -49,6 +52,7 @@ export class Invoices {
 
   searchControl = new FormControl('', { nonNullable: true });
   search = signal('');
+  kindFilter = signal<InvoiceKind | ''>(this.fixedKind ?? '');
   statusFilter = signal<InvoiceStatus | ''>('');
   paidFilter = signal<PaidFilter | ''>('');
   fromFilter = signal('');
@@ -63,6 +67,7 @@ export class Invoices {
   hasFilters = computed(
     () =>
       this.search() !== '' ||
+      (this.fixedKind === undefined && this.kindFilter() !== '') ||
       this.statusFilter() !== '' ||
       this.paidFilter() !== '' ||
       this.fromFilter() !== '' ||
@@ -90,6 +95,7 @@ export class Invoices {
       page: this.page(),
       size: this.pageSize,
       search: this.search() || undefined,
+      kinds: this.kindFilter() ? [this.kindFilter() as InvoiceKind] : undefined,
       status: this.statusFilter() || undefined,
       paid: this.paidFilter() || undefined,
       from: this.fromFilter() || undefined,
@@ -141,6 +147,12 @@ export class Invoices {
     return currentDirection === 'desc' ? 'descending' : 'ascending';
   }
 
+  onKindFilter(event: Event): void {
+    this.kindFilter.set((event.target as HTMLSelectElement).value as InvoiceKind | '');
+    this.page.set(0);
+    this.load();
+  }
+
   onStatusFilter(event: Event): void {
     this.statusFilter.set((event.target as HTMLSelectElement).value as InvoiceStatus | '');
     this.page.set(0);
@@ -167,6 +179,7 @@ export class Invoices {
 
   clearFilters(): void {
     this.searchControl.setValue('');
+    this.kindFilter.set(this.fixedKind ?? '');
     this.statusFilter.set('');
     this.paidFilter.set('');
     this.fromFilter.set('');

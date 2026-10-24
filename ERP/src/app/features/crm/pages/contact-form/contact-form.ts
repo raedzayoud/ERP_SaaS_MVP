@@ -6,8 +6,20 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { COUNTRIES } from '../../../../core/data/countries';
 import { PartnerService } from '../../services/partner.service';
 import { Partner, PartnerInput, PartnerKind } from '../../models/partner';
+import { ProductService } from '../../../products/services/product.service';
 
 type CheckedControl = 'name' | 'email';
+
+interface SuppliedProductRow {
+  productId: string;
+  sku: string;
+  name: string;
+  unit: string;
+  supplierRef: string;
+  price: number;
+  minQty: number;
+  delayDays: number;
+}
 
 @Component({
   selector: 'app-contact-form',
@@ -16,6 +28,7 @@ type CheckedControl = 'name' | 'email';
 })
 export class ContactForm {
   private readonly service = inject(PartnerService);
+  private readonly productsService = inject(ProductService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
@@ -33,6 +46,8 @@ export class ContactForm {
 
   kind = signal<PartnerKind>('company');
   companies = signal<Partner[]>([]);
+  partnerIsSupplier = signal(false);
+  suppliedProducts = signal<SuppliedProductRow[]>([]);
 
   form = this.fb.nonNullable.group({
     kind: ['company' as PartnerKind, Validators.required],
@@ -128,6 +143,10 @@ export class ContactForm {
         next: (partner) => {
           if (partner) {
             this.fillForm(partner);
+            this.partnerIsSupplier.set(partner.isSupplier);
+            if (partner.isSupplier) {
+              this.loadSuppliedProducts(partner.id);
+            }
           } else {
             this.loadFailed.set(true);
           }
@@ -137,6 +156,33 @@ export class ContactForm {
           this.loadFailed.set(true);
           this.loading.set(false);
         },
+      });
+  }
+
+  private loadSuppliedProducts(partnerId: string): void {
+    this.productsService
+      .getProducts({ page: 0, size: 500, active: true, sort: 'name,asc' })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((page) => {
+        const rows: SuppliedProductRow[] = [];
+
+        for (const product of page.items) {
+          for (const entry of product.suppliers) {
+            if (entry.supplierId !== partnerId) continue;
+            rows.push({
+              productId: product.id,
+              sku: product.sku,
+              name: product.name,
+              unit: product.unit,
+              supplierRef: entry.supplierRef,
+              price: entry.price,
+              minQty: entry.minQty,
+              delayDays: entry.delayDays,
+            });
+          }
+        }
+
+        this.suppliedProducts.set(rows);
       });
   }
 

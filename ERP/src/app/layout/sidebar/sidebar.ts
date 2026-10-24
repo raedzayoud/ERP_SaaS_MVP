@@ -67,6 +67,12 @@ export class Sidebar {
           moduleId: 'invoices',
         },
         {
+          labelKey: 'sidebar.items.quotes',
+          icon: '📋',
+          route: '/quotes',
+          moduleId: 'invoices',
+        },
+        {
           labelKey: 'sidebar.items.payments',
           icon: '💳',
           route: '/payments',

@@ -1,0 +1,89 @@
+.reports-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.toolbar-card {
+  padding: 1rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: end;
+}
+
+.date-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.date-filter-label {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-inline-start: auto;
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.kpi-card {
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+}
+
+.kpi-danger .kpi-value {
+  color: #b91c1c;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  margin: 0 0 0.35rem;
+}
+
+.kpi-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--gray-900);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: var(--gray-800);
+}
+
+.chart-box {
+  position: relative;
+  height: 260px;
+  margin-bottom: 1.25rem;
+}
+
+.chart-box-tall {
+  height: 220px;
+}
+
+@media (max-width: 640px) {
+  .chart-box {
+    height: 220px;
+  }
+
+  .toolbar-actions {
+    margin-inline-start: 0;
+  }
+}

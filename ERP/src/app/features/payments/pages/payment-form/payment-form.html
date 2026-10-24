@@ -1,0 +1,137 @@
+<ng-container *transloco="let t">
+  <div class="payment-form-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('payments.form.title') }}</h1>
+        <p class="page-subtitle">{{ t('payments.form.subtitle') }}</p>
+      </div>
+      <a routerLink="/payments" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('common.retry') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="loadInvoices()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <form class="card form-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        @if (errorKey(); as key) {
+          <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+        }
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('payments.form.title') }}</legend>
+
+          <div class="form-grid">
+            <div class="form-group form-grid-full">
+              <label class="form-label" for="invoiceId">
+                {{ t('payments.form.invoice') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <select
+                id="invoiceId"
+                class="form-control"
+                formControlName="invoiceId"
+                (change)="onInvoiceChange($event)"
+              >
+                <option value="">{{ t('payments.form.invoicePlaceholder') }}</option>
+                @for (invoice of invoices(); track invoice.id) {
+                  <option [value]="invoice.id">
+                    {{ invoice.number }} — {{ invoice.customerSnapshot?.name }}
+                  </option>
+                }
+              </select>
+              @if (isInvalid('invoiceId')) {
+                <p class="field-error">{{ t('payments.form.invoiceRequired') }}</p>
+              }
+              @if (invoices().length === 0) {
+                <p class="form-hint">{{ t('payments.form.noInvoices') }}</p>
+              }
+            </div>
+
+            @if (selectedInvoice(); as inv) {
+              <div class="form-group form-grid-full">
+                <p class="form-hint">
+                  {{ t('payments.form.dueHint') }}
+                  {{ due() | currency: inv.currency }}
+                </p>
+              </div>
+            }
+
+            <div class="form-group">
+              <label class="form-label" for="date">
+                {{ t('payments.form.date') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input id="date" type="date" class="form-control" formControlName="date" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="amount">
+                {{ t('payments.form.amount') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="amount"
+                type="number"
+                min="0.01"
+                step="any"
+                class="form-control"
+                formControlName="amount"
+              />
+              @if (isInvalid('amount')) {
+                <p class="field-error">{{ t('payments.form.amountRequired') }}</p>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="mode">
+                {{ t('payments.form.mode') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <select id="mode" class="form-control" formControlName="mode">
+                @for (mode of modes; track mode) {
+                  <option [value]="mode">{{ t('payments.modes.' + mode) }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reference">{{ t('payments.form.reference') }}</label>
+              <input
+                id="reference"
+                type="text"
+                class="form-control"
+                formControlName="reference"
+                [placeholder]="t('payments.form.referencePlaceholder')"
+              />
+            </div>
+
+            <div class="form-group form-grid-full">
+              <label class="form-label" for="notes">{{ t('payments.form.notes') }}</label>
+              <textarea id="notes" class="form-control" rows="2" formControlName="notes"></textarea>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a routerLink="/payments" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? t('payments.form.saving') : t('payments.form.save') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</ng-container>

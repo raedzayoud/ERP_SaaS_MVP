@@ -3,8 +3,10 @@ import { Observable, map, of, switchMap, throwError, timer } from 'rxjs';
 import { Partner } from '../../crm/models/partner';
 import { PartnerService } from '../../crm/services/partner.service';
 import { Page } from '../../../shared/models/page';
+import { roundMoney, todayIso } from '../../../shared/utils/money';
 import { MAIN_WAREHOUSE_ID } from '../../stock/models/warehouse';
 import { StockService } from '../../stock/services/stock.service';
+import { InvoicingSettingsService } from '../../invoicing/services/invoicing-settings.service';
 import {
   CustomerSnapshot,
   Invoice,
@@ -13,7 +15,6 @@ import {
   InvoiceLine,
   InvoiceQuery,
   InvoiceSummary,
-  NUMBER_PREFIX,
 } from '../models/invoice';
 import {
   invoiceTotals,
@@ -32,7 +33,11 @@ export type InvoiceErrorCode =
   | 'dateOutOfOrder'
   | 'originMissing'
   | 'originNotPosted'
-  | 'insufficientStock';
+  | 'insufficientStock'
+  | 'invalidAmount'
+  | 'overpaid'
+  | 'notQuote'
+  | 'quoteAlreadyConverted';
 
 export class InvoiceError extends Error {
   constructor(readonly code: InvoiceErrorCode) {
@@ -217,6 +222,60 @@ const SEED_INVOICES: Invoice[] = [
     updatedAt: '2026-10-05T09:05:00.000Z',
     postedAt: '2026-10-05T09:05:00.000Z',
   },
+  {
+    id: 'c3000000-0000-4000-8000-000000000007',
+    number: null,
+    kind: 'quote',
+    status: 'draft',
+    customerId: HORIZON,
+    customerSnapshot: {
+      name: 'Horizon Media',
+      taxId: '22334455/D/M/000',
+      address: '450 Broadway, New York, US',
+    },
+    issueDate: '2026-10-22',
+    dueDate: '2026-11-21',
+    paymentTerms: 'net30',
+    currency: 'USD',
+    lines: [
+      line('l-1010', LAPTOP, 'Laptop Pro 14', 3, 1299, 19, 5),
+      line('l-1011', SUPPORT, 'Monthly Support', 3, 150, 19),
+    ],
+    stampDuty: 0,
+    amountPaid: 0,
+    notes: 'Quote for the new marketing team devices.',
+    originInvoiceId: null,
+    createdAt: '2026-10-22T10:00:00.000Z',
+    updatedAt: '2026-10-22T10:00:00.000Z',
+    postedAt: null,
+  },
+  {
+    id: 'c3000000-0000-4000-8000-000000000008',
+    number: 'DEV-2026-0001',
+    kind: 'quote',
+    status: 'posted',
+    customerId: GLOBAL,
+    customerSnapshot: {
+      name: 'Global Ltd',
+      taxId: '09876543/B/M/000',
+      address: '5 Bishopsgate, London, GB',
+    },
+    issueDate: '2026-10-08',
+    dueDate: '2026-11-07',
+    paymentTerms: 'net30',
+    currency: 'USD',
+    lines: [
+      line('l-1012', LAPTOP, 'Laptop Pro 14', 5, 1299, 19, 10),
+      line('l-1013', INSTALL, 'Installation Service', 5, 60, 13),
+    ],
+    stampDuty: 0,
+    amountPaid: 0,
+    notes: 'Annual refresh of the London office laptops.',
+    originInvoiceId: null,
+    createdAt: '2026-10-08T09:00:00.000Z',
+    updatedAt: '2026-10-08T09:10:00.000Z',
+    postedAt: '2026-10-08T09:10:00.000Z',
+  },
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -224,6 +283,7 @@ export class InvoiceService {
   private readonly items = signal<Invoice[]>(SEED_INVOICES);
   private readonly partners = inject(PartnerService);
   private readonly stock = inject(StockService);
+  private readonly invoicingSettings = inject(InvoicingSettingsService);
 
   getInvoices(query: InvoiceQuery): Observable<Page<Invoice>> {
     return timer(LATENCY_MS).pipe(map(() => this.buildPage(query)));
@@ -244,6 +304,72 @@ export class InvoiceService {
   getCreditNotesFor(invoiceId: string): Observable<Invoice[]> {
     return timer(LATENCY_MS).pipe(
       map(() => this.items().filter((invoice) => invoice.originInvoiceId === invoiceId)),
+    );
+  }
+
+  getInvoiceForQuote(quoteId: string): Observable<Invoice | undefined> {
+    return timer(LATENCY_MS).pipe(
+      map(() => this.items().find((invoice) => invoice.originInvoiceId === quoteId)),
+    );
+  }
+
+  convertQuoteToInvoice(quoteId: string): Observable<Invoice> {
+    return this.getInvoice(quoteId).pipe(
+      switchMap((quote) => {
+        if (!quote) return this.fail('notFound');
+        if (quote.kind !== 'quote') return this.fail('notQuote');
+        if (quote.status !== 'posted') return this.fail('notDraft');
+        if (this.items().some((invoice) => invoice.originInvoiceId === quote.id)) {
+          return this.fail('quoteAlreadyConverted');
+        }
+
+        return this.withPartner(quote.customerId, (partner) => {
+          const now = new Date().toISOString();
+          const created: Invoice = {
+            id: this.newId(),
+            number: null,
+            kind: 'invoice',
+            status: 'draft',
+            customerId: quote.customerId,
+            customerSnapshot: toSnapshot(partner),
+            issueDate: todayIso(),
+            dueDate: quote.dueDate,
+            paymentTerms: quote.paymentTerms,
+            currency: quote.currency,
+            lines: quote.lines.map((item) => ({ ...item, id: this.newId() })),
+            stampDuty: quote.stampDuty,
+            amountPaid: 0,
+            notes: quote.notes,
+            originInvoiceId: quote.id,
+            createdAt: now,
+            updatedAt: now,
+            postedAt: null,
+          };
+          this.items.update((list) => [...list, created]);
+          return created;
+        });
+      }),
+    );
+  }
+
+  addPayment(invoiceId: string, amount: number): Observable<Invoice> {
+    const existing = this.items().find((invoice) => invoice.id === invoiceId);
+    if (!existing) return this.fail('notFound');
+    if (!(amount > 0)) return this.fail('invalidAmount');
+
+    const { totalToPay, amountPaid } = invoiceTotals(existing);
+    if (amountPaid + amount > totalToPay) return this.fail('overpaid');
+
+    return timer(LATENCY_MS).pipe(
+      map(() => {
+        const updated: Invoice = {
+          ...existing,
+          amountPaid: roundMoney(amountPaid + amount, existing.currency),
+          updatedAt: new Date().toISOString(),
+        };
+        this.replace(updated);
+        return updated;
+      }),
     );
   }
 
@@ -427,7 +553,7 @@ export class InvoiceService {
   }
 
   private nextNumber(kind: InvoiceKind, issueDate: string): string {
-    const prefix = NUMBER_PREFIX[kind];
+    const prefix = this.invoicingSettings.prefixFor(kind);
     const year = issueDate.slice(0, 4);
     let sequence = 0;
 
@@ -448,6 +574,7 @@ export class InvoiceService {
 
     const filtered = this.items().filter((invoice) => {
       if (query.status && invoice.status !== query.status) return false;
+      if (query.kinds && !query.kinds.includes(invoice.kind)) return false;
       if (query.paid && paymentState(invoice) !== query.paid) return false;
       if (query.from && invoice.issueDate < query.from) return false;
       if (query.to && invoice.issueDate > query.to) return false;

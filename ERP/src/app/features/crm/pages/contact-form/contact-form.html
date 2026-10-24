@@ -185,6 +185,57 @@
           </div>
         </fieldset>
 
+        @if (isEdit && partnerIsSupplier()) {
+          <fieldset class="form-section">
+            <legend class="section-legend">
+              {{ t('contacts.form.sectionSuppliedProducts') }}
+            </legend>
+
+            @if (suppliedProducts().length === 0) {
+              <p class="state-text">{{ t('contacts.form.noSuppliedProducts') }}</p>
+            } @else {
+              <div class="table-wrap">
+                <table class="table lines-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">{{ t('contacts.form.suppliedProduct') }}</th>
+                      <th scope="col">{{ t('contacts.form.suppliedSku') }}</th>
+                      <th scope="col">{{ t('contacts.form.suppliedSupplierRef') }}</th>
+                      <th scope="col" class="num">
+                        {{ t('contacts.form.suppliedCatalogPrice') }}
+                      </th>
+                      <th scope="col" class="num">{{ t('contacts.form.suppliedMinQty') }}</th>
+                      <th scope="col" class="num">{{ t('contacts.form.suppliedDelayDays') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of suppliedProducts(); track row.productId + row.supplierRef) {
+                      <tr>
+                        <td [attr.data-label]="t('contacts.form.suppliedProduct')">
+                          {{ row.name }}
+                        </td>
+                        <td [attr.data-label]="t('contacts.form.suppliedSku')">{{ row.sku }}</td>
+                        <td [attr.data-label]="t('contacts.form.suppliedSupplierRef')">
+                          {{ row.supplierRef }}
+                        </td>
+                        <td class="num" [attr.data-label]="t('contacts.form.suppliedCatalogPrice')">
+                          {{ row.price }}
+                        </td>
+                        <td class="num" [attr.data-label]="t('contacts.form.suppliedMinQty')">
+                          {{ row.minQty }}
+                        </td>
+                        <td class="num" [attr.data-label]="t('contacts.form.suppliedDelayDays')">
+                          {{ row.delayDays }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </fieldset>
+        }
+
         <div class="form-actions">
           <a routerLink="/contacts" class="btn btn-secondary">{{ t('common.cancel') }}</a>
           <button type="submit" class="btn btn-primary" [disabled]="saving()">

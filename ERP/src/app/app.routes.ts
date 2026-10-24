@@ -14,6 +14,12 @@ export const routes: Routes = [
   },
   {
     path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./features/landing/pages/landing/landing').then((m) => m.Landing),
+    data: { title: 'titles.landing' },
+  },
+  {
+    path: '',
     loadComponent: () => import('./layout/main-layout/main-layout').then((m) => m.MainLayout),
     canActivate: [authGuard],
     children: [
@@ -113,12 +119,62 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'quotes/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/invoices/pages/invoice-form/invoice-form').then((m) => m.InvoiceForm),
+        data: { title: 'titles.newQuote', moduleId: 'invoices', kind: 'quote' },
+      },
+      {
+        path: 'quotes/:id/edit',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/invoices/pages/invoice-form/invoice-form').then((m) => m.InvoiceForm),
+        data: { title: 'titles.editQuote', moduleId: 'invoices', kind: 'quote' },
+      },
+      {
+        path: 'quotes/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/invoices/pages/invoice-detail/invoice-detail').then(
+            (m) => m.InvoiceDetail,
+          ),
+        data: { title: 'titles.quoteDetail', moduleId: 'invoices' },
+      },
+      {
+        path: 'quotes',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/invoices/pages/invoices/invoices').then((m) => m.Invoices),
+        data: {
+          title: 'titles.quotes',
+          description: 'descriptions.quotes',
+          icon: '📋',
+          moduleId: 'invoices',
+          kind: 'quote',
+        },
+      },
+      {
+        path: 'payments/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/payments/pages/payment-form/payment-form').then((m) => m.PaymentForm),
+        data: { title: 'titles.newPayment', moduleId: 'payments' },
+      },
+      {
+        path: 'payments/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/payments/pages/payment-detail/payment-detail').then(
+            (m) => m.PaymentDetail,
+          ),
+        data: { title: 'titles.paymentDetail', moduleId: 'payments' },
+      },
+      {
         path: 'payments',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
-          ),
+          import('./features/payments/pages/payments/payments').then((m) => m.Payments),
         data: {
           title: 'titles.payments',
           description: 'descriptions.payments',
@@ -221,11 +277,29 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'accounting/entries/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/accounting/pages/journal-entry-detail/journal-entry-detail').then(
+            (m) => m.JournalEntryDetail,
+          ),
+        data: { title: 'titles.journalEntryDetail', moduleId: 'accounting' },
+      },
+      {
+        path: 'accounting/accounts',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/accounting/pages/chart-of-accounts/chart-of-accounts').then(
+            (m) => m.ChartOfAccounts,
+          ),
+        data: { title: 'titles.chartOfAccounts', moduleId: 'accounting' },
+      },
+      {
         path: 'accounting',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
+          import('./features/accounting/pages/journal-entries/journal-entries').then(
+            (m) => m.JournalEntries,
           ),
         data: {
           title: 'titles.accounting',
@@ -238,8 +312,8 @@ export const routes: Routes = [
         path: 'invoicing',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
+          import('./features/invoicing/pages/invoicing-settings/invoicing-settings').then(
+            (m) => m.InvoicingSettingsPage,
           ),
         data: {
           title: 'titles.invoicing',
@@ -252,9 +326,7 @@ export const routes: Routes = [
         path: 'reports',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
-          ),
+          import('./features/reports/pages/reports/reports').then((m) => m.Reports),
         data: {
           title: 'titles.reports',
           description: 'descriptions.reports',

@@ -8,7 +8,9 @@
     "next": "Suivant",
     "previous": "Précédent",
     "retry": "Réessayer",
-    "actions": "Actions"
+    "actions": "Actions",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…"
   },
   "titles": {
     "dashboard": "Tableau de bord",
@@ -39,7 +41,16 @@
     "stockWarehouses": "Entrepôts",
     "stockMovements": "Mouvements de stock",
     "stockAdjustment": "Ajustement de stock",
-    "stockTransfer": "Transfert de stock"
+    "stockTransfer": "Transfert de stock",
+    "newPayment": "Nouveau paiement",
+    "paymentDetail": "Paiement",
+    "journalEntryDetail": "Écriture comptable",
+    "chartOfAccounts": "Plan comptable",
+    "landing": "Accueil",
+    "newQuote": "Nouveau devis",
+    "editQuote": "Modifier le devis",
+    "quoteDetail": "Détail du devis",
+    "quotes": "Devis"
   },
   "descriptions": {
     "contacts": "Les sociétés et les personnes avec lesquelles vous travaillez.",
@@ -51,7 +62,8 @@
     "accounting": "Journaux, grand livre et états financiers.",
     "invoicing": "Numérotation, taxes et facturation électronique.",
     "reports": "Analyses avec export PDF, Excel et CSV.",
-    "ai-assistant": "Assistant conversationnel et extraction de documents."
+    "ai-assistant": "Assistant conversationnel et extraction de documents.",
+    "quotes": "Préparez des devis et convertissez-les en factures"
   },
   "navbar": {
     "toggleSidebar": "Afficher ou masquer le menu",
@@ -83,7 +95,8 @@
       "invoicing": "Facturation",
       "reports": "Rapports",
       "aiAssistant": "Assistant IA",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "quotes": "Devis"
     }
   },
   "placeholder": {
@@ -179,7 +192,15 @@
       "sectionNotes": "Notes",
       "notes": "Notes internes",
       "save": "Enregistrer",
-      "saving": "Enregistrement…"
+      "saving": "Enregistrement…",
+      "sectionSuppliedProducts": "Produits fournis",
+      "noSuppliedProducts": "Ce fournisseur n’a aucun produit au catalogue.",
+      "suppliedProduct": "Produit",
+      "suppliedSku": "SKU",
+      "suppliedSupplierRef": "Réf. fournisseur",
+      "suppliedCatalogPrice": "Prix négocié",
+      "suppliedMinQty": "Qté min",
+      "suppliedDelayDays": "Délai (jours)"
     }
   },
   "products": {
@@ -295,7 +316,8 @@
     "posted": "Facture validée",
     "kind": {
       "invoice": "Facture",
-      "credit_note": "Avoir"
+      "credit_note": "Avoir",
+      "quote": "Devis"
     },
     "status": {
       "draft": "Brouillon",
@@ -336,7 +358,8 @@
       "allStatuses": "Tous les statuts",
       "allPayments": "Tous les paiements",
       "from": "Du",
-      "to": "Au"
+      "to": "Au",
+      "allKinds": "Tous les types"
     },
     "columns": {
       "number": "Numéro",
@@ -440,7 +463,9 @@
       "dateOutOfOrder": "La date d'émission ne peut pas précéder le dernier document validé de la même année.",
       "originMissing": "La facture d'origine est manquante.",
       "originNotPosted": "Seule une facture validée peut être crédité.",
-      "insufficientStock": "Stock insuffisant dans l’entrepôt principal pour confirmer cette facture."
+      "insufficientStock": "Stock insuffisant dans l’entrepôt principal pour confirmer cette facture.",
+      "notQuote": "Ce document n'est pas un devis",
+      "quoteAlreadyConverted": "Ce devis a déjà été converti en facture"
     },
     "pdf": {
       "billTo": "Facturé à",
@@ -775,5 +800,369 @@
       "missingReason": "Un motif est obligatoire.",
       "insufficientStock": "Stock insuffisant dans l’entrepôt principal pour cette facture."
     }
+  },
+  "payments": {
+    "list": {
+      "title": "Paiements",
+      "subtitle": "Encaissements sur factures clients",
+      "searchPlaceholder": "Rechercher par référence, client ou facture…",
+      "allModes": "Tous les modes",
+      "from": "Du",
+      "to": "Au",
+      "empty": "Aucun paiement enregistré pour le moment.",
+      "page": "Page",
+      "newPayment": "Nouveau paiement"
+    },
+    "columns": {
+      "date": "Date",
+      "invoice": "Facture",
+      "partner": "Client",
+      "mode": "Mode",
+      "reference": "Référence",
+      "amount": "Montant"
+    },
+    "modes": {
+      "cash": "Espèces",
+      "check": "Chèque",
+      "transfer": "Virement",
+      "card": "Carte"
+    },
+    "form": {
+      "title": "Enregistrer un paiement",
+      "subtitle": "Enregistrer un encaissement sur une facture client validée",
+      "invoice": "Facture",
+      "invoicePlaceholder": "Sélectionner une facture…",
+      "invoiceRequired": "Une facture est obligatoire.",
+      "noInvoices": "Aucune facture validée en attente de paiement.",
+      "dueHint": "Reste dû :",
+      "date": "Date du paiement",
+      "amount": "Montant",
+      "amountRequired": "Un montant valide est obligatoire.",
+      "mode": "Mode",
+      "reference": "Référence",
+      "referencePlaceholder": "N° de chèque, référence de virement…",
+      "notes": "Notes",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "saveError": "Le paiement n’a pas pu être enregistré.",
+      "checkErrors": "Veuillez corriger les erreurs ci-dessous."
+    },
+    "detail": {
+      "title": "Paiement",
+      "viewInvoice": "Voir la facture",
+      "notFound": "Paiement introuvable",
+      "notFoundHint": "Ce paiement n’existe pas ou a été supprimé."
+    },
+    "errors": {
+      "notFound": "Paiement introuvable.",
+      "invalidAmount": "Le montant doit être supérieur à zéro.",
+      "invoiceNotFound": "La facture n’existe pas.",
+      "invoiceNotPosted": "Seules les factures clients validées peuvent recevoir des paiements.",
+      "overpaid": "Le montant dépasse le reste dû."
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "subtitle": "Bon retour ! Voici un aperçu de votre activité.",
+    "kpi": {
+      "revenue": "CA facturé",
+      "outstanding": "Encours clients",
+      "overdue": "En retard",
+      "payments": "Paiements reçus",
+      "currentMonth": "Ce mois-ci",
+      "stockValue": "Valeur du stock",
+      "stockItems": "références"
+    },
+    "recent": {
+      "title": "Dernières factures",
+      "empty": "Aucune facture validée pour le moment."
+    },
+    "quick": {
+      "title": "Actions rapides",
+      "newInvoice": "Nouvelle facture",
+      "newContact": "Nouveau contact",
+      "newProduct": "Nouveau produit",
+      "newOrder": "Nouveau bon de commande"
+    },
+    "summary": {
+      "title": "Synthèse",
+      "customers": "Clients actifs",
+      "products": "Produits actifs",
+      "pendingOrders": "BC en attente",
+      "lateOrders": "BC en retard"
+    }
+  },
+  "accounting": {
+    "journal": {
+      "SALES": "Ventes",
+      "PURCHASES": "Achats",
+      "PAYMENTS": "Paiements",
+      "STOCK": "Stock"
+    },
+    "accountTypes": {
+      "asset": "Actif",
+      "liability": "Passif",
+      "revenue": "Produits",
+      "expense": "Charges"
+    },
+    "accountNames": {
+      "310000": "Stocks",
+      "401000": "Fournisseurs",
+      "411000": "Clients",
+      "445660": "TVA déductible",
+      "445710": "TVA collectée",
+      "512000": "Banque",
+      "530000": "Caisse",
+      "601000": "Achats",
+      "693000": "Charges des inventaires",
+      "701000": "Ventes de marchandises",
+      "706000": "Prestations de services",
+      "793000": "Produits des inventaires"
+    },
+    "nav": {
+      "journal": "Journal",
+      "accounts": "Plan comptable"
+    },
+    "columns": {
+      "date": "Date",
+      "journal": "Journal",
+      "ref": "Référence",
+      "label": "Libellé",
+      "lines": "Lignes",
+      "debit": "Débit",
+      "credit": "Crédit",
+      "account": "Compte",
+      "accountName": "Nom du compte",
+      "code": "Code",
+      "type": "Type",
+      "balance": "Solde"
+    },
+    "list": {
+      "title": "Journal",
+      "subtitle": "Écritures comptables générées à partir de vos documents.",
+      "searchPlaceholder": "Rechercher par référence ou libellé…",
+      "allJournals": "Tous les journaux",
+      "from": "Du",
+      "to": "Au",
+      "empty": "Aucune écriture trouvée.",
+      "page": "Page"
+    },
+    "detail": {
+      "title": "Écriture comptable",
+      "totals": "Totaux",
+      "balanced": "Équilibrée",
+      "unbalanced": "Non équilibrée",
+      "notFound": "Écriture introuvable",
+      "notFoundHint": "Cette écriture n'existe pas ou a été supprimée.",
+      "viewInvoice": "Voir la facture",
+      "viewOrder": "Voir la commande",
+      "viewPayment": "Voir le paiement",
+      "viewMovements": "Voir les mouvements"
+    },
+    "accounts": {
+      "title": "Plan comptable",
+      "subtitle": "Comptes standards et balance générale.",
+      "totalRow": "Total"
+    }
+  },
+  "landing": {
+    "nav": {
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "login": "Se connecter",
+      "signup": "S'inscrire",
+      "dashboard": "Mon tableau de bord"
+    },
+    "hero": {
+      "title": "L'ERP qui fait tourner toute votre entreprise",
+      "subtitle": "CRM, facturation, achats, stock, comptabilité et IA — une plateforme cloud multi-entreprise, simple et abordable.",
+      "ctaPrimary": "Commencer gratuitement",
+      "ctaSecondary": "Voir les tarifs",
+      "pill": "ERP cloud multi-entreprise",
+      "note": "Sans carte bancaire",
+      "stats": {
+        "modules": "10 modules inclus",
+        "plans": "3 formules",
+        "multi": "Multi-entreprise",
+        "langs": "FR / EN"
+      }
+    },
+    "features": {
+      "title": "Tout ce dont vous avez besoin",
+      "subtitle": "Tous les modules d'un ERP complet, prêts à l'emploi en quelques minutes."
+    },
+    "modules": {
+      "dashboard": "Tableau de bord",
+      "contacts": "CRM & Contacts",
+      "products": "Produits",
+      "invoices": "Facturation",
+      "payments": "Paiements",
+      "purchases": "Achats",
+      "stock": "Stock",
+      "accounting": "Comptabilité",
+      "reports": "Rapports",
+      "ai": "Assistant IA"
+    },
+    "pricing": {
+      "title": "Des tarifs simples et transparents",
+      "subtitle": "Choisissez la formule adaptée à votre entreprise. Changez ou annulez à tout moment.",
+      "billingToggle": "Période de facturation",
+      "monthly": "Mensuel",
+      "annual": "Annuel",
+      "popular": "Populaire",
+      "perMonth": "/mois",
+      "perYear": "/an",
+      "choose": "Choisir cette formule",
+      "annualBadge": "2 mois offerts"
+    },
+    "planFeatures": {
+      "starter": {
+        "0": "Jusqu'à 3 utilisateurs",
+        "1": "1 Go de stockage",
+        "2": "CRM & Contacts",
+        "3": "Catalogue produits",
+        "4": "Facturation & Paiements",
+        "5": "Support par e-mail"
+      },
+      "business": {
+        "0": "Jusqu'à 15 utilisateurs",
+        "1": "10 Go de stockage",
+        "2": "Tout ce qu'il y a dans Starter",
+        "3": "Achats & Stock",
+        "4": "Comptabilité & Rapports",
+        "5": "100 requêtes IA/mois",
+        "6": "Support prioritaire"
+      },
+      "enterprise": {
+        "0": "Utilisateurs illimités",
+        "1": "100 Go de stockage",
+        "2": "Tout ce qu'il y a dans Business",
+        "3": "Assistant IA (RAG)",
+        "4": "1 000 requêtes IA/mois",
+        "5": "Analyses avancées",
+        "6": "Support dédié",
+        "7": "Intégrations personnalisées"
+      }
+    },
+    "footer": {
+      "copy": "ERP Cloud SaaS — Plateforme multi-entreprise. Tous droits réservés."
+    },
+    "modulesDesc": {
+      "dashboard": "Suivez votre chiffre d'affaires et vos indicateurs clés.",
+      "contacts": "Gérez vos clients et fournisseurs.",
+      "products": "Catalogue, prix et niveaux de stock.",
+      "invoices": "Devis, factures et avoirs.",
+      "payments": "Enregistrez et suivez les encaissements.",
+      "purchases": "Bons de commande et réceptions de marchandises.",
+      "stock": "Gestion multi-dépôts de votre inventaire.",
+      "accounting": "Journaux, plan comptable et balance générale.",
+      "reports": "Rapports d'activité exportables.",
+      "ai": "Posez vos questions, obtenez des réponses."
+    },
+    "cta": {
+      "title": "Prêt à démarrer ?",
+      "subtitle": "Créez votre espace en quelques minutes.",
+      "button": "Créer mon compte"
+    }
+  },
+  "quotes": {
+    "title": "Devis",
+    "subtitle": "Préparez des devis et convertissez-les en factures",
+    "converted": "Le devis a été converti en facture brouillon",
+    "list": {
+      "newQuote": "Nouveau devis"
+    },
+    "form": {
+      "newSubtitle": "Créer un nouveau devis pour un client",
+      "editSubtitle": "Modifier le devis avant validation"
+    },
+    "detail": {
+      "convert": "Convertir en facture",
+      "converting": "Conversion…",
+      "viewInvoice": "Voir la facture {{number}}",
+      "fromQuote": "Issu du devis"
+    }
+  },
+  "reports": {
+    "title": "Rapports",
+    "subtitle": "Analyses commerciales des ventes, achats, stock et comptabilité",
+    "empty": "Aucune donnée pour cette période",
+    "loadError": "Impossible de charger le rapport",
+    "loadErrorHint": "Veuillez réessayer.",
+    "export": {
+      "pdf": "Export PDF",
+      "csv": "Export CSV",
+      "exporting": "Export…"
+    },
+    "kpi": {
+      "title": "Chiffres clés",
+      "sales": "Chiffre d’affaires",
+      "expenses": "Dépenses achats",
+      "stockValue": "Valeur du stock",
+      "outstanding": "Encours client",
+      "overdue": "Retards"
+    },
+    "sections": {
+      "salesByMonth": "Ventes par mois",
+      "topProducts": "Meilleurs produits vendus",
+      "paymentsByMode": "Encaissements par mode",
+      "margins": "Marges par produit",
+      "trialBalance": "Balance générale"
+    },
+    "columns": {
+      "month": "Mois",
+      "product": "Produit",
+      "mode": "Mode",
+      "count": "Nombre",
+      "total": "Total",
+      "quantity": "Quantité",
+      "revenue": "Revenu",
+      "margin": "Marge",
+      "account": "Compte",
+      "debit": "Débit",
+      "credit": "Crédit",
+      "balance": "Solde"
+    },
+    "pdf": {
+      "title": "Rapport d’activité"
+    }
+  },
+  "invoicing": {
+    "title": "Paramètres de facturation",
+    "subtitle": "Numérotation, taxes et facturation électronique",
+    "saved": "Réglages enregistrés",
+    "errors": {
+      "invalidPrefix": "Les préfixes ne doivent contenir que des lettres ou chiffres (sans tiret)"
+    },
+    "sections": {
+      "numbering": "Numérotation",
+      "taxes": "Taxes",
+      "einvoicing": "Facturation électronique (Factur-X)"
+    },
+    "numbering": {
+      "hint": "Préfixes utilisés pour les prochains numéros de documents (PRÉFIXE-AAAA-NNNN).",
+      "invoicePrefix": "Préfixe facture",
+      "creditNotePrefix": "Préfixe avoir",
+      "quotePrefix": "Préfixe devis",
+      "format": "Format"
+    },
+    "taxes": {
+      "defaultVat": "Taux de TVA par défaut",
+      "stampDuty": "Droit de timbre par défaut",
+      "stampHint": "Pré-rempli à la création d’une nouvelle facture",
+      "activeRates": "Taux de TVA actifs"
+    },
+    "einvoicing": {
+      "intro": "Obligations françaises de facturation électronique (2026) : toutes les entreprises doivent échanger leurs factures électroniquement.",
+      "check1": "Numérotation conforme des documents (PRÉFIXE-AAAA-NNNN)",
+      "check2": "Format XML Factur-X structuré (EN 16931)",
+      "check3": "Identification complète vendeur/acheteur (numéros TVA)",
+      "check4": "Archivage légal des factures émises",
+      "downloadHint": "Sur toute facture validée, utilisez le bouton « Factur-X » (à côté de « PDF ») pour télécharger le fichier XML structuré."
+    },
+    "detail": {
+      "facturX": "Factur-X"
+    },
+    "facturXDownloaded": "Fichier XML Factur-X téléchargé"
   }
 }

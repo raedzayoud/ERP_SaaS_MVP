@@ -1,0 +1,130 @@
+<ng-container *transloco="let t">
+  <div class="invoicing-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('invoicing.title') }}</h1>
+        <p class="page-subtitle">{{ t('invoicing.subtitle') }}</p>
+      </div>
+    </div>
+
+    @if (saved()) {
+      <div class="alert alert-success" role="status">{{ t('invoicing.saved') }}</div>
+    }
+    @if (errorKey(); as key) {
+      <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+    }
+
+    <div class="card">
+      <h2 class="section-title">{{ t('invoicing.sections.numbering') }}</h2>
+      <p class="section-hint">{{ t('invoicing.numbering.hint') }}</p>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">{{ t('invoicing.numbering.invoicePrefix') }}</span>
+          <input
+            type="text"
+            class="form-control"
+            maxlength="10"
+            [value]="invoicePrefix()"
+            (input)="invoicePrefix.set($any($event.target).value.toUpperCase())"
+          />
+        </label>
+        <label class="field">
+          <span class="field-label">{{ t('invoicing.numbering.creditNotePrefix') }}</span>
+          <input
+            type="text"
+            class="form-control"
+            maxlength="10"
+            [value]="creditNotePrefix()"
+            (input)="creditNotePrefix.set($any($event.target).value.toUpperCase())"
+          />
+        </label>
+        <label class="field">
+          <span class="field-label">{{ t('invoicing.numbering.quotePrefix') }}</span>
+          <input
+            type="text"
+            class="form-control"
+            maxlength="10"
+            [value]="quotePrefix()"
+            (input)="quotePrefix.set($any($event.target).value.toUpperCase())"
+          />
+        </label>
+      </div>
+
+      <p class="format-hint">
+        {{ t('invoicing.numbering.format') }} :
+        <code
+          >{{ invoicePrefix() }}-2026-0001 · {{ creditNotePrefix() }}-2026-0001 ·
+          {{ quotePrefix() }}-2026-0001</code
+        >
+      </p>
+
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveNumbering()">
+        {{ saving() ? t('common.saving') : t('common.save') }}
+      </button>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">{{ t('invoicing.sections.taxes') }}</h2>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">{{ t('invoicing.taxes.defaultVat') }}</span>
+          <select
+            class="form-control"
+            [value]="defaultVatRate()"
+            (change)="defaultVatRate.set($any($event.target).valueAsNumber)"
+          >
+            @for (rate of vatRates; track rate) {
+              <option [value]="rate">{{ rate }} %</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">{{ t('invoicing.taxes.stampDuty') }}</span>
+          <input
+            type="number"
+            class="form-control"
+            min="0"
+            step="0.001"
+            [value]="defaultStampDuty()"
+            (input)="defaultStampDuty.set($any($event.target).valueAsNumber)"
+          />
+          <span class="field-hint">{{ t('invoicing.taxes.stampHint') }}</span>
+        </label>
+      </div>
+
+      <p class="field-label">{{ t('invoicing.taxes.activeRates') }}</p>
+      <div class="rates-row">
+        @for (rate of vatRates; track rate) {
+          <label class="rate-check">
+            <input
+              type="checkbox"
+              [checked]="settings().activeVatRates.includes(rate)"
+              (change)="toggleRate(rate, $any($event.target).checked)"
+            />
+            <span>{{ rate }} %</span>
+          </label>
+        }
+      </div>
+
+      <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveTaxes()">
+        {{ saving() ? t('common.saving') : t('common.save') }}
+      </button>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">{{ t('invoicing.sections.einvoicing') }}</h2>
+      <p class="section-hint">{{ t('invoicing.einvoicing.intro') }}</p>
+
+      <ul class="checklist">
+        <li class="check-item">{{ t('invoicing.einvoicing.check1') }}</li>
+        <li class="check-item">{{ t('invoicing.einvoicing.check2') }}</li>
+        <li class="check-item">{{ t('invoicing.einvoicing.check3') }}</li>
+        <li class="check-item">{{ t('invoicing.einvoicing.check4') }}</li>
+      </ul>
+
+      <p class="section-hint">{{ t('invoicing.einvoicing.downloadHint') }}</p>
+    </div>
+  </div>
+</ng-container>

@@ -84,7 +84,11 @@ export class InvoicePdfService {
     }
 
     const titleKey =
-      invoice.kind === 'credit_note' ? 'invoices.kind.credit_note' : 'invoices.kind.invoice';
+      invoice.kind === 'invoice'
+        ? 'invoices.kind.invoice'
+        : invoice.kind === 'credit_note'
+          ? 'invoices.kind.credit_note'
+          : 'invoices.kind.quote';
     doc
       .setFont('helvetica', 'bold')
       .setFontSize(18)

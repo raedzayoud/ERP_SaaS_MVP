@@ -1,0 +1,141 @@
+<ng-container *transloco="let t">
+  <div class="payments-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('payments.list.title') }}</h1>
+        <p class="page-subtitle">{{ t('payments.list.subtitle') }}</p>
+      </div>
+      <a routerLink="/payments/new" class="btn btn-primary"
+        >+ {{ t('payments.list.newPayment') }}</a
+      >
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('payments.list.searchPlaceholder')"
+          [attr.aria-label]="t('payments.list.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="modeFilter()"
+          [attr.aria-label]="t('payments.list.allModes')"
+          (change)="onModeFilter($event)"
+        >
+          <option value="">{{ t('payments.list.allModes') }}</option>
+          @for (mode of modes; track mode) {
+            <option [value]="mode">{{ t('payments.modes.' + mode) }}</option>
+          }
+        </select>
+
+        <input
+          type="date"
+          class="form-control filter-select"
+          [value]="fromFilter()"
+          [attr.aria-label]="t('payments.list.from')"
+          (change)="onFromFilter($event)"
+        />
+
+        <input
+          type="date"
+          class="form-control filter-select"
+          [value]="toFilter()"
+          [attr.aria-label]="t('payments.list.to')"
+          (change)="onToFilter($event)"
+        />
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('common.retry') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (rows().length === 0) {
+        <div class="state-block">
+          <p class="state-title">{{ t('payments.list.empty') }}</p>
+          <a routerLink="/payments/new" class="btn btn-primary">
+            {{ t('payments.list.newPayment') }}
+          </a>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('payments.columns.date') }}</th>
+                <th scope="col">{{ t('payments.columns.invoice') }}</th>
+                <th scope="col">{{ t('payments.columns.partner') }}</th>
+                <th scope="col">{{ t('payments.columns.mode') }}</th>
+                <th scope="col">{{ t('payments.columns.reference') }}</th>
+                <th scope="col" class="num">{{ t('payments.columns.amount') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.id) {
+                <tr>
+                  <td class="col-date">
+                    <a [routerLink]="['/payments', row.id]">{{ row.date | date: 'mediumDate' }}</a>
+                  </td>
+                  <td>
+                    <a [routerLink]="['/invoices', row.invoiceId]">{{ row.invoiceNumber }}</a>
+                  </td>
+                  <td>{{ row.partnerName }}</td>
+                  <td>
+                    <span class="badge badge-info">{{ t('payments.modes.' + row.mode) }}</span>
+                  </td>
+                  <td>{{ row.reference }}</td>
+                  <td class="num">
+                    {{ row.amount | currency: row.currency }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('payments.list.page') }} {{ page() + 1 }} / {{ totalPages() }} ({{
+              pageStart()
+            }}–{{ pageEnd() }} / {{ total() }})
+          </span>
+          <div class="pager">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() === 0"
+              (click)="setPage(page() - 1)"
+            >
+              ← {{ t('common.previous') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() + 1 >= totalPages()"
+              (click)="setPage(page() + 1)"
+            >
+              {{ t('common.next') }} →
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>
