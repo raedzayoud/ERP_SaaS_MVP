@@ -57,7 +57,8 @@
     "salesOrders": "Sales orders",
     "newSalesOrder": "New sales order",
     "editSalesOrder": "Edit sales order",
-    "salesOrderDetail": "Sales order detail"
+    "salesOrderDetail": "Sales order detail",
+    "signup": "Create your workspace"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -1392,7 +1393,57 @@
   "apps": {
     "title": "Your applications",
     "subtitle": "Open an application to start working.",
-    "empty": "No application enabled."
+    "empty": "No application enabled.",
+    "items": {
+      "dashboard": {
+        "label": "Dashboard",
+        "description": "KPIs, activity feed, and quick actions"
+      },
+      "contacts": {
+        "label": "Contacts",
+        "description": "Contacts, companies, leads, and opportunities"
+      },
+      "products": {
+        "label": "Products",
+        "description": "Product and service catalog with prices"
+      },
+      "sales": {
+        "label": "Sales Orders",
+        "description": "Customer orders from confirmation to invoice"
+      },
+      "invoices": {
+        "label": "Invoices",
+        "description": "Create and manage sales invoices"
+      },
+      "payments": {
+        "label": "Payments",
+        "description": "Track incoming and outgoing payments"
+      },
+      "purchases": {
+        "label": "Purchase Orders",
+        "description": "Suppliers, purchase orders, and receipts"
+      },
+      "stock": {
+        "label": "Stock",
+        "description": "Warehouses, stock movements, and inventory"
+      },
+      "accounting": {
+        "label": "Accounting",
+        "description": "Journals, ledger, balance, and financial reports"
+      },
+      "invoicing": {
+        "label": "Invoicing Settings",
+        "description": "Numbering, taxes, and e-invoicing compliance"
+      },
+      "reports": {
+        "label": "Reports",
+        "description": "Business analytics with PDF/Excel/CSV export"
+      },
+      "ai-assistant": {
+        "label": "AI Assistant",
+        "description": "RAG chatbot and invoice extraction"
+      }
+    }
   },
   "contactOverview": {
     "notFound": "Contact not found.",
@@ -1538,6 +1589,123 @@
     "pdf": {
       "title": "Sales order",
       "taxId": "Tax ID"
+    }
+  },
+  "signup": {
+    "title": "Create your workspace",
+    "subtitle": "Set up your ERP in under 5 minutes",
+    "steps": {
+      "apps": "Apps",
+      "details": "Details",
+      "verify": "Verify",
+      "payment": "Payment",
+      "setup": "Setup"
+    },
+    "appStep": {
+      "intro": "Select the applications you need. Dependencies are added automatically — you can change this later in Settings.",
+      "alwaysActive": "Always active",
+      "autoBadge": "Required by {{app}}",
+      "blockedBy": "{{app}} is required by: {{dependents}}. Unselect those apps first.",
+      "addedBecause": "Added: {{list}} (required by {{app}})",
+      "selectedCount": "{{count}} app(s) selected",
+      "planLine": "Plan: {{plan}} — ${{price}}/mo",
+      "requireAtLeastOne": "Select at least one application to continue.",
+      "suites": {
+        "general": "General",
+        "sales": "Sales",
+        "purchases": "Purchases",
+        "finance": "Finance",
+        "standalone": "Standalone",
+        "inventory": "Inventory"
+      },
+      "requires": "Requires: {{list}}",
+      "masterAll": "Select or clear every app in this group",
+      "suiteAdded": "Added: {{list}}",
+      "suiteCount": "{{selected}}/{{total}}",
+      "invoicesBundlesInvoicing": "Choosing Invoices automatically includes Invoicing Settings.",
+      "backToApps": "Back to apps",
+      "hubIntro": "Choose where to start — you can add the rest later."
+    },
+    "detailsStep": {
+      "fullName": "Full name",
+      "fullNameHolder": "e.g. John Smith",
+      "workEmail": "Work email",
+      "emailHolder": "you@company.com",
+      "companyName": "Company name",
+      "companyHolder": "e.g. TechStore Ltd",
+      "workspaceAddress": "Workspace address",
+      "subdomainHolder": "yourcompany",
+      "hintAvailable": "{{url}} is available",
+      "hintTaken": "This address is taken or invalid",
+      "country": "Country",
+      "language": "Language",
+      "companySize": "Company size",
+      "sizes": {
+        "1-5": "1 – 5 employees",
+        "6-20": "6 – 20 employees",
+        "21-50": "21 – 50 employees",
+        "51-250": "51 – 250 employees",
+        "250+": "250+ employees"
+      },
+      "invalid": "Please fill in all fields correctly."
+    },
+    "verifyStep": {
+      "title": "Check your email",
+      "sent": "We sent a 6-digit verification code to",
+      "demoPrefix": "Demo mode — no real email is sent. Your code is",
+      "resend": "Resend code",
+      "resendIn": "Resend in {{seconds}}s",
+      "codeValid": "Code valid for 5 minutes",
+      "codeExpired": "Code expired",
+      "errors": {
+        "expired": "Code expired. Please resend a new code.",
+        "wrong": "Incorrect code. Please try again.",
+        "tooMany": "Too many attempts. Please resend a new code."
+      }
+    },
+    "paymentStep": {
+      "planTitle": "{{plan}} plan",
+      "planMeta": "{{count}} apps · billed monthly · cancel anytime",
+      "demoPrefix": "Demo mode — no real payment. Use test card",
+      "cardNumber": "Card number",
+      "cardNumberHolder": "1234 1234 1234 1234",
+      "expiry": "Expiry",
+      "expiryHolder": "MM/YY",
+      "cvc": "CVC",
+      "cvcHolder": "CVC",
+      "cardName": "Cardholder name",
+      "cardNameHolder": "Full name on card",
+      "stripeFooter": "Powered by Stripe · Demo mode",
+      "errors": {
+        "name": "Please enter the cardholder name.",
+        "card": "Please enter a valid card number. Use 4242 4242 4242 4242 in demo mode.",
+        "expiry": "Please enter a valid expiry date (MM/YY).",
+        "cvc": "Please enter a valid CVC (3 or 4 digits)."
+      }
+    },
+    "setupStep": {
+      "title": "Setting up your workspace…",
+      "item1": "Validating information",
+      "item2": "Reserving {{subdomain}}",
+      "item3": "Creating workspace & database",
+      "item4": "Enabling your apps ({{count}})",
+      "item5": "Configuring default roles & settings",
+      "planNote": "Plan: {{plan}} — ${{price}}/mo (chosen automatically from your apps)"
+    },
+    "actions": {
+      "back": "← Back",
+      "signIn": "← Sign in",
+      "continue": "Continue →",
+      "sendCode": "Send code →",
+      "verify": "Verify & continue →",
+      "processing": "Processing…",
+      "pay": "Pay ${{price}} & create workspace →"
+    },
+    "footer": {
+      "terms": "By creating an account you agree to our Terms of Service and Privacy Policy."
+    },
+    "error": {
+      "generic": "Something went wrong. Please try again."
     }
   }
 }

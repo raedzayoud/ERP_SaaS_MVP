@@ -25,6 +25,13 @@ export const routes: Routes = [
       import('./features/auth/pages/signup/signup').then((m) => m.SignupComponent),
   },
   {
+    path: 'signup/apps/:suite',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/pages/signup/signup').then((m) => m.SignupComponent),
+    data: { title: 'titles.signup' },
+  },
+  {
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./features/landing/pages/landing/landing').then((m) => m.Landing),

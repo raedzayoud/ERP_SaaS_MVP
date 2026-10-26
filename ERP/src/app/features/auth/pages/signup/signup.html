@@ -1,419 +1,475 @@
-<div class="signup-page">
-  <div class="signup-card">
-    <!-- Header -->
-    <div class="signup-header">
-      <div class="signup-logo">E</div>
-      <h1 class="signup-title">Create your workspace</h1>
-      <p class="signup-subtitle">Set up your ERP in under 5 minutes</p>
-    </div>
+<ng-container *transloco="let t">
+  <div class="signup-page">
+    <div class="signup-card">
+      <!-- Header -->
+      <div class="signup-header">
+        <div class="signup-logo">E</div>
+        <h1 class="signup-title">{{ t('signup.title') }}</h1>
+        <p class="signup-subtitle">{{ t('signup.subtitle') }}</p>
+      </div>
 
-    <!-- Stepper -->
-    <div class="stepper">
-      <div class="step" [class.active]="step() >= 1" [class.done]="step() > 1">
-        <div class="step-circle">1</div>
-        <div class="step-label">Apps</div>
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="step" [class.active]="state.step() >= 1" [class.done]="state.step() > 1">
+          <div class="step-circle">1</div>
+          <div class="step-label">{{ t('signup.steps.apps') }}</div>
+        </div>
+        <div class="step-line" [class.done]="state.step() > 1"></div>
+        <div class="step" [class.active]="state.step() >= 2" [class.done]="state.step() > 2">
+          <div class="step-circle">2</div>
+          <div class="step-label">{{ t('signup.steps.details') }}</div>
+        </div>
+        <div class="step-line" [class.done]="state.step() > 2"></div>
+        <div class="step" [class.active]="state.step() >= 3" [class.done]="state.step() > 3">
+          <div class="step-circle">3</div>
+          <div class="step-label">{{ t('signup.steps.verify') }}</div>
+        </div>
+        <div class="step-line" [class.done]="state.step() > 3"></div>
+        <div class="step" [class.active]="state.step() >= 4" [class.done]="state.step() > 4">
+          <div class="step-circle">4</div>
+          <div class="step-label">{{ t('signup.steps.payment') }}</div>
+        </div>
+        <div class="step-line" [class.done]="state.step() > 4"></div>
+        <div class="step" [class.active]="state.step() >= 5">
+          <div class="step-circle">5</div>
+          <div class="step-label">{{ t('signup.steps.setup') }}</div>
+        </div>
       </div>
-      <div class="step-line" [class.done]="step() > 1"></div>
-      <div class="step" [class.active]="step() >= 2" [class.done]="step() > 2">
-        <div class="step-circle">2</div>
-        <div class="step-label">Details</div>
-      </div>
-      <div class="step-line" [class.done]="step() > 2"></div>
-      <div class="step" [class.active]="step() >= 3" [class.done]="step() > 3">
-        <div class="step-circle">3</div>
-        <div class="step-label">Verify</div>
-      </div>
-      <div class="step-line" [class.done]="step() > 3"></div>
-      <div class="step" [class.active]="step() >= 4" [class.done]="step() > 4">
-        <div class="step-circle">4</div>
-        <div class="step-label">Payment</div>
-      </div>
-      <div class="step-line" [class.done]="step() > 4"></div>
-      <div class="step" [class.active]="step() >= 5">
-        <div class="step-circle">5</div>
-        <div class="step-label">Setup</div>
-      </div>
-    </div>
 
-    @if (error()) {
-      <div class="signup-error">{{ error() }}</div>
-    }
+      @if (state.error()) {
+        <div class="signup-error">{{ state.error() }}</div>
+      }
 
-    <!-- ═══ STEP 1: Choose Applications ═══ -->
-    @if (step() === 1) {
-      <div class="step-content">
-        <p class="step-intro">
-          Select the applications you need. Dependencies are added automatically —
-          you can change this later in Settings.
-        </p>
+      <!-- ═══ STEP 1: Choose Applications ═══ -->
+      @if (state.step() === 1) {
+        <div class="step-content">
+          @if (suite; as group) {
+            <!-- Suite page -->
+            <div class="suite-page-head">
+              <h2 class="suite-page-title">{{ t('signup.appStep.suites.' + group.id) }}</h2>
+              <label class="suite-master">
+                <input
+                  type="checkbox"
+                  [attr.aria-label]="t('signup.appStep.masterAll')"
+                  [checked]="state.suiteState(group) === 'all'"
+                  [indeterminate]="state.suiteState(group) === 'some'"
+                  (change)="state.toggleSuite(group)"
+                />
+                <span class="suite-count">
+                  {{ t('signup.appStep.suiteCount', state.suiteCount(group)) }}
+                </span>
+              </label>
+            </div>
+            <p class="step-intro">{{ t('signup.appStep.intro') }}</p>
 
-        <div class="app-grid">
-          @for (group of appCategories; track group.category) {
-            <div class="app-category">
-              <div class="app-category-title">{{ group.category }}</div>
+            <div class="app-suite">
               <div class="app-cards">
                 @for (app of group.apps; track app.id) {
                   <div
                     class="app-card"
-                    [class.selected]="isAppSelected(app.id)"
-                    [class.locked]="app.id === 'dashboard'"
-                    (click)="toggleApp(app)"
+                    role="checkbox"
+                    tabindex="0"
+                    [attr.aria-checked]="state.isAppSelected(app.id)"
+                    [attr.aria-label]="t('apps.items.' + app.id + '.label')"
+                    [class.selected]="state.isAppSelected(app.id)"
+                    (click)="state.toggleApp(app)"
+                    (keydown.enter)="state.toggleApp(app)"
+                    (keydown.space)="$event.preventDefault(); state.toggleApp(app)"
                   >
-                    <div class="app-check">
-                      @if (isAppSelected(app.id)) {
+                    <div class="app-check" aria-hidden="true">
+                      @if (state.isAppSelected(app.id)) {
                         ✓
                       }
                     </div>
-                    <div class="app-icon">{{ app.icon }}</div>
+                    <div class="app-icon" aria-hidden="true">{{ app.icon }}</div>
                     <div class="app-info">
-                      <div class="app-name">{{ app.label }}</div>
-                      <div class="app-desc">{{ app.description }}</div>
+                      <div class="app-name">{{ t('apps.items.' + app.id + '.label') }}</div>
+                      <div class="app-desc">{{ t('apps.items.' + app.id + '.description') }}</div>
+                      @if (state.requiresLabel(app); as req) {
+                        <div class="app-requires">{{ req }}</div>
+                      }
+                      @if (state.requiredByLabel(app.id); as reqBy) {
+                        <div class="app-badge app-badge-auto">
+                          {{ t('signup.appStep.autoBadge', { app: reqBy }) }}
+                        </div>
+                      }
                     </div>
                   </div>
                 }
               </div>
+              @if (group.id === 'sales') {
+                <p class="suite-footnote">
+                  {{ t('signup.appStep.invoicesBundlesInvoicing') }}
+                </p>
+              }
+            </div>
+
+            <a routerLink="/signup" class="suite-back">
+              ← {{ t('signup.appStep.backToApps') }}
+            </a>
+          } @else {
+            <!-- Hub -->
+            <p class="step-intro">{{ t('signup.appStep.hubIntro') }}</p>
+
+            <div class="app-card locked dashboard-hub-card">
+              <div class="app-card-hub-inner">
+                <div class="app-check" aria-hidden="true">✓</div>
+                <div class="app-icon" aria-hidden="true">📊</div>
+                <div class="app-info">
+                  <div class="app-name">{{ t('apps.items.dashboard.label') }}</div>
+                  <div class="app-desc">{{ t('apps.items.dashboard.description') }}</div>
+                  <div class="app-badge app-badge-locked">
+                    {{ t('signup.appStep.alwaysActive') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hub-tiles">
+              @for (group of state.hubSuites; track group.id) {
+                <a class="hub-tile" [routerLink]="['/signup/apps', group.id]">
+                  <span class="hub-tile-title">{{ t('signup.appStep.suites.' + group.id) }}</span>
+                  <span class="hub-tile-count">
+                    {{ t('signup.appStep.suiteCount', state.suiteCount(group)) }}
+                  </span>
+                  <span class="hub-tile-arrow" aria-hidden="true">→</span>
+                </a>
+              }
             </div>
           }
-        </div>
 
-        @if (depNotice()) {
-          <div class="dep-notice">🔗 {{ depNotice() }}</div>
-        }
-
-        <div class="selection-summary">
-          <span>
-            <strong>{{ selectableCount() }}</strong> app(s) selected
-          </span>
-          <span class="summary-divider">·</span>
-          <span>
-            Plan: <strong class="plan-name-inline">{{ selectedPlan().name }}</strong>
-            — ${{ selectedPlan().priceMonthly }}/mo
-          </span>
-        </div>
-        <p class="selection-apps">{{ selectedLabels() }}</p>
-      </div>
-    }
-
-    <!-- ═══ STEP 2: Your Details ═══ -->
-    @if (step() === 2) {
-      <div class="step-content">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="fullName">Full name</label>
-            <input
-              id="fullName"
-              type="text"
-              class="form-control"
-              placeholder="e.g. John Smith"
-              [value]="fullName()"
-              (input)="onFormInput('fullName', $event)"
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="email">Work email</label>
-            <input
-              id="email"
-              type="email"
-              class="form-control"
-              placeholder="you@company.com"
-              [value]="email()"
-              (input)="onFormInput('email', $event)"
-            />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="companyName">Company name</label>
-          <input
-            id="companyName"
-            type="text"
-            class="form-control"
-            placeholder="e.g. TechStore Ltd"
-            [value]="companyName()"
-            (input)="onFormInput('companyName', $event)"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="subdomain">Workspace address</label>
-          <div class="subdomain-input">
-            <input
-              id="subdomain"
-              type="text"
-              class="form-control subdomain-field"
-              placeholder="yourcompany"
-              [value]="subdomain()"
-              (input)="onSubdomainInput($event)"
-            />
-            <span class="subdomain-suffix">.erpcloud.com</span>
-          </div>
-          @if (subdomainChecked() === true) {
-            <div class="field-hint ok">✓ {{ fullSubdomain }} is available</div>
-          } @else if (subdomainChecked() === false) {
-            <div class="field-hint error">✗ This address is taken or invalid</div>
+          @if (state.depNotice()) {
+            <div class="dep-notice" role="status">🔗 {{ state.depNotice() }}</div>
           }
-        </div>
 
-        <div class="form-row form-row-3">
-          <div class="form-group">
-            <label class="form-label" for="country">Country</label>
-            <select
-              id="country"
-              class="form-control"
-              [value]="country()"
-              (change)="onSelectChange('country', $event)"
-            >
-              @for (c of countries; track c.code) {
-                <option [value]="c.code">{{ c.name }}</option>
-              }
-            </select>
+          <div class="selection-summary">
+            <span>{{ t('signup.appStep.selectedCount', { count: state.selectableCount() }) }}</span>
+            <span class="summary-divider">·</span>
+            <span>
+              {{ t('signup.appStep.planLine', { plan: state.selectedPlan().name, price: state.selectedPlan().priceMonthly }) }}
+            </span>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="language">Language</label>
-            <select
-              id="language"
-              class="form-control"
-              [value]="language()"
-              (change)="onSelectChange('language', $event)"
-            >
-              @for (l of languages; track l.code) {
-                <option [value]="l.code">{{ l.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="companySize">Company size</label>
-            <select
-              id="companySize"
-              class="form-control"
-              [value]="companySize()"
-              (change)="onSelectChange('companySize', $event)"
-            >
-              @for (s of companySizes; track s.value) {
-                <option [value]="s.value">{{ s.label }}</option>
-              }
-            </select>
-          </div>
+          @if (state.selectableCount() < 1) {
+            <p class="continue-hint">{{ t('signup.appStep.requireAtLeastOne') }}</p>
+          }
+          <p class="selection-apps">{{ state.selectedLabels() }}</p>
         </div>
-      </div>
-    }
+      }
 
-    <!-- ═══ STEP 3: Email Verification ═══ -->
-    @if (step() === 3) {
-      <div class="step-content verify-content">
-        <div class="verify-icon">📧</div>
-        <h3 class="verify-title">Check your email</h3>
-        <p class="verify-text">
-          We sent a 6-digit verification code to<br />
-          <strong>{{ email() }}</strong>
-        </p>
+      <!-- ═══ STEP 2: Your Details ═══ -->
+      @if (state.step() === 2) {
+        <div class="step-content">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="fullName">{{ t('signup.detailsStep.fullName') }}</label>
+              <input
+                id="fullName"
+                type="text"
+                class="form-control"
+                [placeholder]="t('signup.detailsStep.fullNameHolder')"
+                [value]="state.fullName()"
+                (input)="state.onFormInput('fullName', $event)"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="email">{{ t('signup.detailsStep.workEmail') }}</label>
+              <input
+                id="email"
+                type="email"
+                class="form-control"
+                [placeholder]="t('signup.detailsStep.emailHolder')"
+                [value]="state.email()"
+                (input)="state.onFormInput('email', $event)"
+              />
+            </div>
+          </div>
 
-        <div class="demo-banner">
-          Demo mode — no real email is sent. Your code is
-          <strong class="demo-code">{{ verificationCode() }}</strong>
-        </div>
+          <div class="form-group">
+            <label class="form-label" for="companyName">{{ t('signup.detailsStep.companyName') }}</label>
+            <input
+              id="companyName"
+              type="text"
+              class="form-control"
+              [placeholder]="t('signup.detailsStep.companyHolder')"
+              [value]="state.companyName()"
+              (input)="state.onFormInput('companyName', $event)"
+            />
+          </div>
 
-        @if (verifyError()) {
-          <div class="signup-error">{{ verifyError() }}</div>
-        }
-
-        <input
-          type="text"
-          class="code-input"
-          inputmode="numeric"
-          placeholder="000000"
-          maxlength="6"
-          [value]="codeInput()"
-          (input)="onCodeInput($event)"
-        />
-
-        <div class="verify-actions">
-          <button
-            class="btn btn-secondary btn-sm"
-            (click)="resendCode()"
-            [disabled]="resendCooldown() > 0"
-          >
-            @if (resendCooldown() > 0) {
-              Resend in {{ resendCooldown() }}s
-            } @else {
-              Resend code
+          <div class="form-group">
+            <label class="form-label" for="subdomain">{{ t('signup.detailsStep.workspaceAddress') }}</label>
+            <div class="subdomain-input">
+              <input
+                id="subdomain"
+                type="text"
+                class="form-control subdomain-field"
+                [placeholder]="t('signup.detailsStep.subdomainHolder')"
+                [value]="state.subdomain()"
+                (input)="state.onSubdomainInput($event)"
+              />
+              <span class="subdomain-suffix">.erpcloud.com</span>
+            </div>
+            @if (state.subdomainChecked() === true) {
+              <div class="field-hint ok">✓ {{ t('signup.detailsStep.hintAvailable', { url: state.fullSubdomain }) }}</div>
+            } @else if (state.subdomainChecked() === false) {
+              <div class="field-hint error">✗ {{ t('signup.detailsStep.hintTaken') }}</div>
             }
-          </button>
-          <span class="code-expiry">
-            @if (codeExpired) {
-              Code expired
-            } @else {
-              Code valid for 5 minutes
-            }
-          </span>
-        </div>
-      </div>
-    }
+          </div>
 
-    <!-- ═══ STEP 4: Payment ═══ -->
-    @if (step() === 4) {
-      <div class="step-content">
-        <div class="plan-summary">
-          <div class="plan-summary-info">
-            <p class="plan-summary-name">{{ selectedPlan().name }} plan</p>
-            <p class="plan-summary-meta">
-              {{ selectableCount() }} apps · billed monthly · cancel anytime
+          <div class="form-row form-row-3">
+            <div class="form-group">
+              <label class="form-label" for="country">{{ t('signup.detailsStep.country') }}</label>
+              <select
+                id="country"
+                class="form-control"
+                [value]="state.country()"
+                (change)="state.onSelectChange('country', $event)"
+              >
+                @for (c of state.countries; track c.code) {
+                  <option [value]="c.code">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="language">{{ t('signup.detailsStep.language') }}</label>
+              <select
+                id="language"
+                class="form-control"
+                [value]="state.language()"
+                (change)="state.onSelectChange('language', $event)"
+              >
+                @for (l of state.languages; track l.code) {
+                  <option [value]="l.code">{{ l.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="companySize">{{ t('signup.detailsStep.companySize') }}</label>
+              <select
+                id="companySize"
+                class="form-control"
+                [value]="state.companySize()"
+                (change)="state.onSelectChange('companySize', $event)"
+              >
+                @for (s of state.companySizes; track s.value) {
+                  <option [value]="s.value">{{ t('signup.detailsStep.sizes.' + s.value) }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══ STEP 3: Email Verification ═══ -->
+      @if (state.step() === 3) {
+        <div class="step-content verify-content">
+          <div class="verify-icon" aria-hidden="true">📧</div>
+          <h3 class="verify-title">{{ t('signup.verifyStep.title') }}</h3>
+          <p class="verify-text">
+            {{ t('signup.verifyStep.sent') }}<br />
+            <strong>{{ state.email() }}</strong>
+          </p>
+
+          <div class="demo-banner">
+            {{ t('signup.verifyStep.demoPrefix') }}
+            <strong class="demo-code">{{ state.verificationCode() }}</strong>
+          </div>
+
+          @if (state.verifyError()) {
+            <div class="signup-error">{{ state.verifyError() }}</div>
+          }
+
+          <input
+            type="text"
+            class="code-input"
+            inputmode="numeric"
+            placeholder="000000"
+            maxlength="6"
+            [value]="state.codeInput()"
+            (input)="state.onCodeInput($event)"
+          />
+
+          <div class="verify-actions">
+            <button
+              class="btn btn-secondary btn-sm"
+              (click)="state.resendCode()"
+              [disabled]="state.resendCooldown() > 0"
+            >
+              @if (state.resendCooldown() > 0) {
+                {{ t('signup.verifyStep.resendIn', { seconds: state.resendCooldown() }) }}
+              } @else {
+                {{ t('signup.verifyStep.resend') }}
+              }
+            </button>
+            <span class="code-expiry">
+              @if (state.codeExpired) {
+                {{ t('signup.verifyStep.state.codeExpired') }}
+              } @else {
+                {{ t('signup.verifyStep.codeValid') }}
+              }
+            </span>
+          </div>
+        </div>
+      }
+
+      <!-- ═══ STEP 4: Payment ═══ -->
+      @if (state.step() === 4) {
+        <div class="step-content">
+          <div class="plan-summary">
+            <div class="plan-summary-info">
+              <p class="plan-summary-name">{{ t('signup.paymentStep.planTitle', { plan: state.selectedPlan().name }) }}</p>
+              <p class="plan-summary-meta">{{ t('signup.paymentStep.planMeta', { count: state.selectableCount() }) }}</p>
+            </div>
+            <p class="plan-summary-price">
+              <strong>${{ state.selectedPlan().priceMonthly }}</strong>/mo
             </p>
           </div>
-          <p class="plan-summary-price">
-            <strong>${{ selectedPlan().priceMonthly }}</strong>/mo
+
+          <div class="demo-banner">
+            {{ t('signup.paymentStep.demoPrefix') }}
+            <strong class="demo-code">4242 4242 4242 4242</strong>
+          </div>
+
+          @if (state.paymentError()) {
+            <div class="signup-error">{{ state.paymentError() }}</div>
+          }
+
+          <div class="stripe-card">
+            <div class="stripe-field">
+              <label class="stripe-label" for="cardNumber">{{ t('signup.paymentStep.cardNumber') }}</label>
+              <div class="stripe-input-row">
+                <input
+                  id="cardNumber"
+                  type="text"
+                  inputmode="numeric"
+                  class="stripe-input"
+                  autocomplete="cc-number"
+                  [placeholder]="t('signup.paymentStep.cardNumberHolder')"
+                  [value]="state.cardNumber()"
+                  (input)="state.onCardNumberInput($event)"
+                />
+                @if (state.cardBrand !== 'CARD') {
+                  <span class="card-brand">{{ state.cardBrand }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="stripe-field-row">
+              <div class="stripe-field">
+                <label class="stripe-label" for="cardExpiry">{{ t('signup.paymentStep.expiry') }}</label>
+                <input
+                  id="cardExpiry"
+                  type="text"
+                  inputmode="numeric"
+                  class="stripe-input"
+                  autocomplete="cc-exp"
+                  [placeholder]="t('signup.paymentStep.expiryHolder')"
+                  [value]="state.cardExpiry()"
+                  (input)="state.onCardExpiryInput($event)"
+                />
+              </div>
+              <div class="stripe-field">
+                <label class="stripe-label" for="cardCvc">{{ t('signup.paymentStep.cvc') }}</label>
+                <input
+                  id="cardCvc"
+                  type="text"
+                  inputmode="numeric"
+                  class="stripe-input"
+                  autocomplete="cc-csc"
+                  [placeholder]="t('signup.paymentStep.cvcHolder')"
+                  [value]="state.cardCvc()"
+                  (input)="state.onCardCvcInput($event)"
+                />
+              </div>
+            </div>
+
+            <div class="stripe-field">
+              <label class="stripe-label" for="cardName">{{ t('signup.paymentStep.cardName') }}</label>
+              <input
+                id="cardName"
+                type="text"
+                class="stripe-input"
+                autocomplete="cc-name"
+                [placeholder]="t('signup.paymentStep.cardNameHolder')"
+                [value]="state.cardName()"
+                (input)="state.onCardNameInput($event)"
+              />
+            </div>
+          </div>
+
+          <p class="stripe-footer">🔒 {{ t('signup.paymentStep.stripeFooter') }}</p>
+        </div>
+      }
+
+      <!-- ═══ STEP 5: Provisioning ═══ -->
+      @if (state.step() === 5) {
+        <div class="step-content provision-content">
+          <div class="provision-spinner" aria-hidden="true"></div>
+          <h3 class="provision-title">{{ t('signup.setupStep.title') }}</h3>
+
+          <ul class="provision-list">
+            @for (item of state.provisionItems(); track item.key) {
+              <li
+                class="provision-item"
+                [class.done]="state.provisioningStep() > $index"
+                [class.active]="state.provisioningStep() === $index"
+              >
+                <span class="provision-mark" aria-hidden="true">
+                  @if (state.provisioningStep() > $index) {
+                    ✓
+                  } @else if (state.provisioningStep() === $index) {
+                    <span class="mini-spinner"></span>
+                  }
+                </span>
+                {{ t(item.key, item.params) }}
+              </li>
+            }
+          </ul>
+
+          <p class="provision-plan">
+            {{ t('signup.setupStep.planNote', { plan: state.selectedPlan().name, price: state.selectedPlan().priceMonthly }) }}
           </p>
         </div>
+      }
 
-        <div class="demo-banner">
-          Demo mode — no real payment. Use test card
-          <strong class="demo-code">4242 4242 4242 4242</strong>
-        </div>
-
-        @if (paymentError()) {
-          <div class="signup-error">{{ paymentError() }}</div>
-        }
-
-        <div class="stripe-card">
-          <div class="stripe-field">
-            <label class="stripe-label" for="cardNumber">Card number</label>
-            <div class="stripe-input-row">
-              <input
-                id="cardNumber"
-                type="text"
-                inputmode="numeric"
-                class="stripe-input"
-                autocomplete="cc-number"
-                placeholder="1234 1234 1234 1234"
-                [value]="cardNumber()"
-                (input)="onCardNumberInput($event)"
-              />
-              @if (cardBrand !== 'CARD') {
-                <span class="card-brand">{{ cardBrand }}</span>
-              }
-            </div>
-          </div>
-
-          <div class="stripe-field-row">
-            <div class="stripe-field">
-              <label class="stripe-label" for="cardExpiry">Expiry</label>
-              <input
-                id="cardExpiry"
-                type="text"
-                inputmode="numeric"
-                class="stripe-input"
-                autocomplete="cc-exp"
-                placeholder="MM/YY"
-                [value]="cardExpiry()"
-                (input)="onCardExpiryInput($event)"
-              />
-            </div>
-            <div class="stripe-field">
-              <label class="stripe-label" for="cardCvc">CVC</label>
-              <input
-                id="cardCvc"
-                type="text"
-                inputmode="numeric"
-                class="stripe-input"
-                autocomplete="cc-csc"
-                placeholder="CVC"
-                [value]="cardCvc()"
-                (input)="onCardCvcInput($event)"
-              />
-            </div>
-          </div>
-
-          <div class="stripe-field">
-            <label class="stripe-label" for="cardName">Cardholder name</label>
-            <input
-              id="cardName"
-              type="text"
-              class="stripe-input"
-              autocomplete="cc-name"
-              placeholder="Full name on card"
-              [value]="cardName()"
-              (input)="onCardNameInput($event)"
-            />
-          </div>
-        </div>
-
-        <p class="stripe-footer">🔒 Powered by Stripe · Demo mode</p>
-      </div>
-    }
-
-    <!-- ═══ STEP 5: Provisioning ═══ -->
-    @if (step() === 5) {
-      <div class="step-content provision-content">
-        <div class="provision-spinner"></div>
-        <h3 class="provision-title">Setting up your workspace…</h3>
-
-        <ul class="provision-list">
-          @for (item of [
-            'Validating information',
-            'Reserving ' + fullSubdomain,
-            'Creating workspace & database',
-            'Enabling your apps (' + selectedApps().length + ')',
-            'Configuring default roles & settings'
-          ]; track item; let i = $index) {
-            <li
-              class="provision-item"
-              [class.done]="provisioningStep() > i"
-              [class.active]="provisioningStep() === i"
-            >
-              <span class="provision-mark">
-                @if (provisioningStep() > i) {
-                  ✓
-                } @else if (provisioningStep() === i) {
-                  <span class="mini-spinner"></span>
-                }
-              </span>
-              {{ item }}
-            </li>
+      <!-- Actions -->
+      @if (state.step() < 5) {
+        <div class="step-actions">
+          @if (state.step() > 1) {
+            <button class="btn btn-secondary" (click)="state.back()">{{ t('signup.actions.back') }}</button>
+          } @else {
+            <a routerLink="/login" class="btn btn-secondary">{{ t('signup.actions.signIn') }}</a>
           }
-        </ul>
 
-        <p class="provision-plan">
-          Plan: <strong>{{ selectedPlan().name }}</strong> —
-          ${{ selectedPlan().priceMonthly }}/mo (auto-selected from your apps)
-        </p>
+          @if (state.step() === 1) {
+            <button class="btn btn-primary" (click)="state.next()" [disabled]="state.selectableCount() < 1">
+              {{ t('signup.actions.continue') }}
+            </button>
+          } @else if (state.step() === 2) {
+            <button class="btn btn-primary" (click)="state.next()">{{ t('signup.actions.sendCode') }}</button>
+          } @else if (state.step() === 3) {
+            <button
+              class="btn btn-primary"
+              (click)="state.verifyCode()"
+              [disabled]="state.codeInput().length !== 6"
+            >
+              {{ t('signup.actions.verify') }}
+            </button>
+          } @else if (state.step() === 4) {
+            <button class="btn stripe-pay-btn" (click)="state.pay()" [disabled]="state.paying()">
+              @if (state.paying()) {
+                <span class="mini-spinner" aria-hidden="true"></span> {{ t('signup.actions.processing') }}
+              } @else {
+                {{ t('signup.actions.pay', { price: state.selectedPlan().priceMonthly }) }}
+              }
+            </button>
+          }
+        </div>
+      }
+
+      <div class="signup-footer">
+        <p>{{ t('signup.footer.terms') }}</p>
       </div>
-    }
-
-    <!-- Actions -->
-    @if (step() < 5) {
-      <div class="step-actions">
-        @if (step() > 1) {
-          <button class="btn btn-secondary" (click)="back()">← Back</button>
-        } @else {
-          <a routerLink="/login" class="btn btn-secondary">← Sign in</a>
-        }
-
-        @if (step() === 1) {
-          <button class="btn btn-primary" (click)="next()">Continue →</button>
-        } @else if (step() === 2) {
-          <button class="btn btn-primary" (click)="next()">Send code →</button>
-        } @else if (step() === 3) {
-          <button
-            class="btn btn-primary"
-            (click)="verifyCode()"
-            [disabled]="codeInput().length !== 6"
-          >
-            Verify & continue →
-          </button>
-        } @else if (step() === 4) {
-          <button class="btn stripe-pay-btn" (click)="pay()" [disabled]="paying()">
-            @if (paying()) {
-              <span class="mini-spinner" aria-hidden="true"></span> Processing…
-            } @else {
-              Pay ${{ selectedPlan().priceMonthly }} & create workspace →
-            }
-          </button>
-        }
-      </div>
-    }
-
-    <div class="signup-footer">
-      <p>By creating an account you agree to our Terms of Service and Privacy Policy.</p>
     </div>
   </div>
-</div>
+</ng-container>

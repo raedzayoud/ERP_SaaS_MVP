@@ -57,7 +57,8 @@
     "salesOrders": "Commandes de vente",
     "newSalesOrder": "Nouvelle commande de vente",
     "editSalesOrder": "Modifier la commande de vente",
-    "salesOrderDetail": "Détail de la commande de vente"
+    "salesOrderDetail": "Détail de la commande de vente",
+    "signup": "Créez votre espace de travail"
   },
   "descriptions": {
     "contacts": "Les sociétés et les personnes avec lesquelles vous travaillez.",
@@ -1392,7 +1393,57 @@
   "apps": {
     "title": "Vos applications",
     "subtitle": "Ouvrez une application pour commencer.",
-    "empty": "Aucune application activée."
+    "empty": "Aucune application activée.",
+    "items": {
+      "dashboard": {
+        "label": "Tableau de bord",
+        "description": "KPIs, flux d’activité et actions rapides"
+      },
+      "contacts": {
+        "label": "Contacts",
+        "description": "Contacts, entreprises, pistes et opportunités"
+      },
+      "products": {
+        "label": "Produits",
+        "description": "Catalogue de produits et services avec prix"
+      },
+      "sales": {
+        "label": "Commandes de vente",
+        "description": "Commandes clients, de la confirmation à la facture"
+      },
+      "invoices": {
+        "label": "Factures",
+        "description": "Créer et gérer les factures de vente"
+      },
+      "payments": {
+        "label": "Paiements",
+        "description": "Suivi des paiements entrants et sortants"
+      },
+      "purchases": {
+        "label": "Commandes d’achat",
+        "description": "Fournisseurs, commandes d’achat et réceptions"
+      },
+      "stock": {
+        "label": "Stock",
+        "description": "Entrepôts, mouvements de stock et inventaire"
+      },
+      "accounting": {
+        "label": "Comptabilité",
+        "description": "Journaux, grand livre, balance et rapports financiers"
+      },
+      "invoicing": {
+        "label": "Paramètres de facturation",
+        "description": "Numérotation, taxes et facturation électronique"
+      },
+      "reports": {
+        "label": "Rapports",
+        "description": "Analyse d’activité avec export PDF/Excel/CSV"
+      },
+      "ai-assistant": {
+        "label": "Assistant IA",
+        "description": "Chatbot RAG et extraction de factures"
+      }
+    }
   },
   "contactOverview": {
     "notFound": "Contact introuvable.",
@@ -1538,6 +1589,123 @@
     "pdf": {
       "title": "Commande de vente",
       "taxId": "Numéro fiscal"
+    }
+  },
+  "signup": {
+    "title": "Créez votre espace de travail",
+    "subtitle": "Configurez votre ERP en moins de 5 minutes",
+    "steps": {
+      "apps": "Applications",
+      "details": "Détails",
+      "verify": "Vérification",
+      "payment": "Paiement",
+      "setup": "Configuration"
+    },
+    "appStep": {
+      "intro": "Sélectionnez les applications dont vous avez besoin. Les dépendances sont ajoutées automatiquement — modifiable plus tard dans Paramètres.",
+      "alwaysActive": "Toujours actif",
+      "autoBadge": "Requis par {{app}}",
+      "blockedBy": "{{app}} est requis par : {{dependents}}. Désélectionnez d'abord ces applications.",
+      "addedBecause": "Ajoutés : {{list}} (requis par {{app}})",
+      "selectedCount": "{{count}} app(s) sélectionnée(s)",
+      "planLine": "Plan : {{plan}} — {{price}} $/mois",
+      "requireAtLeastOne": "Sélectionnez au moins une application pour continuer.",
+      "suites": {
+        "general": "Général",
+        "sales": "Ventes",
+        "purchases": "Achats",
+        "finance": "Finance",
+        "standalone": "Autonomes",
+        "inventory": "Stock"
+      },
+      "requires": "Requiert : {{list}}",
+      "masterAll": "Tout sélectionner ou tout retirer dans ce groupe",
+      "suiteAdded": "Ajoutés : {{list}}",
+      "suiteCount": "{{selected}}/{{total}}",
+      "invoicesBundlesInvoicing": "Choisir Factures inclut automatiquement Paramètres de facturation.",
+      "backToApps": "Retour aux apps",
+      "hubIntro": "Choisissez par où commencer — vous pourrez ajouter le reste plus tard."
+    },
+    "detailsStep": {
+      "fullName": "Nom complet",
+      "fullNameHolder": "ex. Jean Dupont",
+      "workEmail": "E-mail professionnel",
+      "emailHolder": "you@company.com",
+      "companyName": "Nom de la société",
+      "companyHolder": "ex. TechStore SARL",
+      "workspaceAddress": "Adresse de l’espace",
+      "subdomainHolder": "votresociete",
+      "hintAvailable": "{{url}} est disponible",
+      "hintTaken": "Cette adresse est prise ou invalide",
+      "country": "Pays",
+      "language": "Langue",
+      "companySize": "Taille de la société",
+      "sizes": {
+        "1-5": "1 – 5 employés",
+        "6-20": "6 – 20 employés",
+        "21-50": "21 – 50 employés",
+        "51-250": "51 – 250 employés",
+        "250+": "250+ employés"
+      },
+      "invalid": "Merci de remplir correctement tous les champs."
+    },
+    "verifyStep": {
+      "title": "Vérifiez votre e-mail",
+      "sent": "Nous avons envoyé un code de vérification à 6 chiffres à",
+      "demoPrefix": "Mode démo — aucun vrai e-mail n’est envoyé. Votre code est",
+      "resend": "Renvoyer le code",
+      "resendIn": "Renvoyer dans {{seconds}} s",
+      "codeValid": "Code valable 5 minutes",
+      "codeExpired": "Code expiré",
+      "errors": {
+        "expired": "Code expiré. Veuillez renvoyer un nouveau code.",
+        "wrong": "Code incorrect. Veuillez réessayer.",
+        "tooMany": "Trop de tentatives. Veuillez renvoyer un nouveau code."
+      }
+    },
+    "paymentStep": {
+      "planTitle": "Plan {{plan}}",
+      "planMeta": "{{count}} apps · facturation mensuelle · résiliable à tout moment",
+      "demoPrefix": "Mode démo — aucun paiement réel. Utilisez la carte de test",
+      "cardNumber": "Numéro de carte",
+      "cardNumberHolder": "1234 1234 1234 1234",
+      "expiry": "Expiration",
+      "expiryHolder": "MM/AA",
+      "cvc": "CVC",
+      "cvcHolder": "CVC",
+      "cardName": "Nom du titulaire",
+      "cardNameHolder": "Nom complet sur la carte",
+      "stripeFooter": "Propulsé par Stripe · Mode démo",
+      "errors": {
+        "name": "Saisissez le nom du titulaire de la carte.",
+        "card": "Numéro de carte invalide. Utilisez 4242 4242 4242 4242 en mode démo.",
+        "expiry": "Date d’expiration invalide (MM/AA).",
+        "cvc": "CVC invalide (3 ou 4 chiffres)."
+      }
+    },
+    "setupStep": {
+      "title": "Configuration de votre espace…",
+      "item1": "Validation des informations",
+      "item2": "Réservation de {{subdomain}}",
+      "item3": "Création de l’espace et de la base de données",
+      "item4": "Activation de vos applications ({{count}})",
+      "item5": "Configuration des rôles et paramètres par défaut",
+      "planNote": "Plan : {{plan}} — {{price}} $/mois (choisi automatiquement selon vos applications)"
+    },
+    "actions": {
+      "back": "← Retour",
+      "signIn": "← Se connecter",
+      "continue": "Continuer →",
+      "sendCode": "Envoyer le code →",
+      "verify": "Vérifier et continuer →",
+      "processing": "Traitement…",
+      "pay": "Payer {{price}} $ et créer l’espace →"
+    },
+    "footer": {
+      "terms": "En créant un compte, vous acceptez nos Conditions d’utilisation et notre Politique de confidentialité."
+    },
+    "error": {
+      "generic": "Une erreur est survenue. Veuillez réessayer."
     }
   }
 }

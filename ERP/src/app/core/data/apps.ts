@@ -110,6 +110,31 @@ export function getAppById(id: string): ErpApp | undefined {
   return ERP_APPS.find((a) => a.id === id);
 }
 
+/** Boxes that visually group apps in the signup wizard. */
+export interface ErpSuite {
+  id: string;
+  apps: string[];
+}
+
+export const ERP_SUITES: ErpSuite[] = [
+  { id: 'sales', apps: ['products', 'sales', 'invoices', 'payments'] },
+  { id: 'purchases', apps: ['purchases'] },
+  { id: 'inventory', apps: ['stock'] },
+  { id: 'finance', apps: ['accounting', 'reports'] },
+  { id: 'standalone', apps: ['contacts', 'ai-assistant'] },
+];
+
+/**
+ * Apps that get provisioned automatically when the key app is chosen.
+ * They are never shown as a separate choice in the signup wizard.
+ */
+export const AUTO_BUNDLED_APPS: Record<string, string[]> = {
+  invoices: ['invoicing'],
+};
+
+/** Flat list of all automatically provisioned app ids. */
+export const AUTO_BUNDLED_IDS: string[] = Object.values(AUTO_BUNDLED_APPS).flat();
+
 export function getAppsByCategory(): { category: string; apps: ErpApp[] }[] {
   const categories: { category: string; apps: ErpApp[] }[] = [];
   for (const app of ERP_APPS) {
