@@ -1,0 +1,41 @@
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-block-end: 16px;
+}
+
+.summary-card {
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-inline-start: 4px solid var(--primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-500);
+  margin-block-end: 6px;
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.filter-date {
+  width: auto;
+}
+
+.col-number .number-main {
+  display: block;
+  font-weight: 600;
+  color: var(--gray-900);
+  white-space: nowrap;
+}

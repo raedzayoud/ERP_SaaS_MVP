@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { TenantService } from '../../../../core/services/tenant.service';
 import { StockLevelRow } from '../../models/stock-movement';
 import { Warehouse } from '../../models/warehouse';
 import { StockService } from '../../services/stock.service';
@@ -17,6 +18,7 @@ import { StockService } from '../../services/stock.service';
 })
 export class StockList {
   private readonly service = inject(StockService);
+  private readonly tenantService = inject(TenantService);
   private readonly destroyRef = inject(DestroyRef);
 
   rows = signal<StockLevelRow[]>([]);
@@ -29,6 +31,9 @@ export class StockList {
   warehouseFilter = signal('');
 
   totalValue = computed(() => this.rows().reduce((sum, row) => sum + row.value, 0));
+
+  /** The currency of the current workspace, used for all money displays. */
+  readonly currency = computed(() => this.tenantService.activeCurrency());
 
   constructor() {
     this.searchControl.valueChanges

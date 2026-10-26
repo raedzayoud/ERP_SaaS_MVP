@@ -1,4 +1,5 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { Navbar } from '../navbar/navbar';
@@ -14,12 +15,17 @@ export class MainLayout {
   mobileSidebarOpen = signal(false);
   pageTitleKey = signal('titles.dashboard');
 
-  constructor(private readonly router: Router) {
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.updatePageTitle();
-      }
-    });
+  private readonly router = inject(Router);
+
+  constructor() {
+    // Auto-unsubscribed when the layout is destroyed.
+    this.router.events
+      .pipe(takeUntilDestroyed())
+      .subscribe((event) => {
+        if (event instanceof NavigationEnd) {
+          this.updatePageTitle();
+        }
+      });
 
     this.updatePageTitle();
   }

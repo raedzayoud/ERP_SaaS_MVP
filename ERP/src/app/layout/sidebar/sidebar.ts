@@ -40,12 +40,6 @@ export class Sidebar {
           route: '/dashboard',
           moduleId: 'dashboard',
         },
-        {
-          labelKey: 'sidebar.items.apps',
-          icon: '🧩',
-          route: '/apps',
-          moduleId: 'apps',
-        },
       ],
     },
     {
@@ -72,6 +66,12 @@ export class Sidebar {
           labelKey: 'sidebar.items.salesOrders',
           icon: '📑',
           route: '/sales-orders',
+          moduleId: 'sales',
+        },
+        {
+          labelKey: 'sidebar.items.deliveries',
+          icon: '🚚',
+          route: '/deliveries',
           moduleId: 'sales',
         },
         {
@@ -157,14 +157,18 @@ export class Sidebar {
     return this.allSections
       .map((section) => ({
         ...section,
-        items: section.items.filter(
-          (item) =>
-            this.permissions.canAccessModule(item.moduleId) &&
-            (item.moduleId === 'dashboard' ||
-              item.moduleId === 'apps' ||
-              item.moduleId === 'settings' ||
-              enabled.includes(item.moduleId)),
-        ),
+        items: section.items.filter((item) => {
+          if (!this.permissions.canAccessModule(item.moduleId)) {
+            return false;
+          }
+          // Dashboard, Apps and Settings are workspace tools,
+          // not parts of the purchased module list.
+          const isWorkspaceTool =
+            item.moduleId === 'dashboard' ||
+            item.moduleId === 'apps' ||
+            item.moduleId === 'settings';
+          return isWorkspaceTool || enabled.includes(item.moduleId);
+        }),
       }))
       .filter((section) => section.items.length > 0);
   }

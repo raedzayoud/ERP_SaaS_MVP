@@ -110,7 +110,7 @@ export class Contacts {
   sortIcon(field: SortField): string {
     const [currentField, currentDirection] = this.sort().split(',');
     if (currentField !== field) return '';
-    return currentDirection === 'desc' ? 'â†“' : 'â†‘';
+    return currentDirection === 'desc' ? '↓' : '↑';
   }
 
   ariaSort(field: SortField): 'ascending' | 'descending' | 'none' {

@@ -36,6 +36,9 @@ export class Reports {
   loadFailed = signal(false);
   pdfBusy = signal(false);
 
+  /** The currency of the current workspace, used for all money displays. */
+  readonly currency = computed(() => this.tenantService.activeCurrency());
+
   readonly salesChartData = computed<ChartConfiguration<'line'>['data']>(() => {
     const months = this.data()?.salesByMonth ?? [];
     return {

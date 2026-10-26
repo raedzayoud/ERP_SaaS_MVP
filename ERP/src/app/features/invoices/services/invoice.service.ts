@@ -92,6 +92,8 @@ const SEED_INVOICES: Invoice[] = [
     amountPaid: 0,
     notes: '',
     originInvoiceId: null,
+    salesOrderId: null,
+    deliveryNoteId: null,
     createdAt: '2026-10-18T09:15:00.000Z',
     updatedAt: '2026-10-18T09:15:00.000Z',
     postedAt: null,
@@ -119,6 +121,8 @@ const SEED_INVOICES: Invoice[] = [
     amountPaid: 0,
     notes: '',
     originInvoiceId: null,
+    salesOrderId: null,
+    deliveryNoteId: null,
     createdAt: '2026-10-10T11:00:00.000Z',
     updatedAt: '2026-10-10T11:05:00.000Z',
     postedAt: '2026-10-10T11:05:00.000Z',
@@ -143,6 +147,8 @@ const SEED_INVOICES: Invoice[] = [
     amountPaid: 0,
     notes: '',
     originInvoiceId: null,
+    salesOrderId: null,
+    deliveryNoteId: null,
     createdAt: '2026-08-20T08:30:00.000Z',
     updatedAt: '2026-08-20T08:45:00.000Z',
     postedAt: '2026-08-20T08:45:00.000Z',
@@ -167,6 +173,8 @@ const SEED_INVOICES: Invoice[] = [
     amountPaid: 1000,
     notes: '',
     originInvoiceId: null,
+    salesOrderId: null,
+    deliveryNoteId: null,
     createdAt: '2026-09-28T14:20:00.000Z',
     updatedAt: '2026-10-02T10:10:00.000Z',
     postedAt: '2026-09-28T14:25:00.000Z',
@@ -194,6 +202,8 @@ const SEED_INVOICES: Invoice[] = [
     amountPaid: 3552.86,
     notes: 'Paid by bank transfer.',
     originInvoiceId: null,
+    salesOrderId: null,
+    deliveryNoteId: null,
     createdAt: '2026-09-10T10:00:00.000Z',
     updatedAt: '2026-09-24T16:40:00.000Z',
     postedAt: '2026-09-10T10:05:00.000Z',
@@ -218,6 +228,8 @@ const SEED_INVOICES: Invoice[] = [
     amountPaid: 0,
     notes: 'Credit note for FAC-2026-0004, cancelled consulting day.',
     originInvoiceId: 'c3000000-0000-4000-8000-000000000005',
+    salesOrderId: null,
+    deliveryNoteId: null,
     createdAt: '2026-10-05T09:00:00.000Z',
     updatedAt: '2026-10-05T09:05:00.000Z',
     postedAt: '2026-10-05T09:05:00.000Z',
@@ -245,6 +257,8 @@ const SEED_INVOICES: Invoice[] = [
     amountPaid: 0,
     notes: 'Quote for the new marketing team devices.',
     originInvoiceId: null,
+    salesOrderId: null,
+    deliveryNoteId: null,
     createdAt: '2026-10-22T10:00:00.000Z',
     updatedAt: '2026-10-22T10:00:00.000Z',
     postedAt: null,
@@ -272,6 +286,8 @@ const SEED_INVOICES: Invoice[] = [
     amountPaid: 0,
     notes: 'Annual refresh of the London office laptops.',
     originInvoiceId: null,
+    salesOrderId: null,
+    deliveryNoteId: null,
     createdAt: '2026-10-08T09:00:00.000Z',
     updatedAt: '2026-10-08T09:10:00.000Z',
     postedAt: '2026-10-08T09:10:00.000Z',
@@ -305,6 +321,25 @@ export class InvoiceService {
     return timer(LATENCY_MS).pipe(
       map(() => this.items().filter((invoice) => invoice.originInvoiceId === invoiceId)),
     );
+  }
+
+  getInvoiceForDelivery(deliveryId: string): Observable<Invoice | null> {
+    return timer(LATENCY_MS).pipe(map(() => this.findLinkedInvoice(deliveryId, 'deliveryNoteId')));
+  }
+
+  getInvoiceForOrder(orderId: string): Observable<Invoice | null> {
+    return timer(LATENCY_MS).pipe(map(() => this.findLinkedInvoice(orderId, 'salesOrderId')));
+  }
+
+  /** First non-cancelled invoice linked to a delivery note or a sales order. */
+  private findLinkedInvoice(
+    sourceId: string,
+    field: 'deliveryNoteId' | 'salesOrderId',
+  ): Invoice | null {
+    const linked = this.items().find(
+      (invoice) => invoice[field] === sourceId && invoice.status !== 'cancelled',
+    );
+    return linked ?? null;
   }
 
   addPayment(invoiceId: string, amount: number): Observable<Invoice> {
@@ -355,6 +390,8 @@ export class InvoiceService {
           stampDuty: data.stampDuty,
           notes: data.notes,
           originInvoiceId: data.originInvoiceId,
+          salesOrderId: data.salesOrderId ?? null,
+          deliveryNoteId: data.deliveryNoteId ?? null,
           lines: data.lines.map((item) => ({ id: this.newId(), ...item })),
           updatedAt: now,
         };
@@ -378,6 +415,8 @@ export class InvoiceService {
         amountPaid: 0,
         notes: data.notes,
         originInvoiceId: data.originInvoiceId,
+        salesOrderId: data.salesOrderId ?? null,
+        deliveryNoteId: data.deliveryNoteId ?? null,
         createdAt: now,
         updatedAt: now,
         postedAt: null,
@@ -400,8 +439,12 @@ export class InvoiceService {
           return this.fail('dateOutOfOrder');
         }
 
+        // An invoice linked to a delivery note gets its stock impact from the
+        // delivery note itself: never touch the stock again here.
+        const linkedToDelivery = invoice.deliveryNoteId !== null;
+
         const stockCheck$ =
-          invoice.kind === 'invoice'
+          invoice.kind === 'invoice' && !linkedToDelivery
             ? this.stock
                 .checkAvailability(MAIN_WAREHOUSE_ID, invoice.lines)
                 .pipe(
@@ -428,7 +471,7 @@ export class InvoiceService {
             }),
           ),
           switchMap((posted) => {
-            if (posted.kind !== 'invoice') return of(posted);
+            if (posted.kind !== 'invoice' || linkedToDelivery) return of(posted);
 
             return this.stock
               .recordSalePosting({

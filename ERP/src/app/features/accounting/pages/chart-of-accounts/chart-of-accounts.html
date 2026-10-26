@@ -1,4 +1,4 @@
-<ng-container *transloco="let t">
+﻿<ng-container *transloco="let t">
   <div class="chart-of-accounts-page">
     <div class="page-header">
       <div>
@@ -50,23 +50,23 @@
                   </td>
                   <td class="num">
                     @if (balanceRow(account.code); as row) {
-                      {{ row.debit | currency: 'USD' }}
+                      {{ row.debit | currency: currency() }}
                     } @else {
-                      —
+                      â€”
                     }
                   </td>
                   <td class="num">
                     @if (balanceRow(account.code); as row) {
-                      {{ row.credit | currency: 'USD' }}
+                      {{ row.credit | currency: currency() }}
                     } @else {
-                      —
+                      â€”
                     }
                   </td>
                   <td class="num">
                     @if (balanceRow(account.code); as row) {
-                      {{ row.balance | currency: 'USD' }}
+                      {{ row.balance | currency: currency() }}
                     } @else {
-                      —
+                      â€”
                     }
                   </td>
                 </tr>
@@ -75,10 +75,10 @@
             <tfoot>
               <tr>
                 <td colspan="3">{{ t('accounting.accounts.totalRow') }}</td>
-                <td class="num">{{ totalDebit() | currency: 'USD' }}</td>
-                <td class="num">{{ totalCredit() | currency: 'USD' }}</td>
+                <td class="num">{{ totalDebit() | currency: currency() }}</td>
+                <td class="num">{{ totalCredit() | currency: currency() }}</td>
                 <td class="num">
-                  {{ totalDebit() - totalCredit() | currency: 'USD' }}
+                  {{ totalDebit() - totalCredit() | currency: currency() }}
                 </td>
               </tr>
             </tfoot>

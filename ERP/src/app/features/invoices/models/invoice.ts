@@ -38,6 +38,8 @@ export interface Invoice {
   amountPaid: number;
   notes: string;
   originInvoiceId: string | null;
+  salesOrderId: string | null;
+  deliveryNoteId: string | null;
   createdAt: string;
   updatedAt: string;
   postedAt: string | null;
@@ -54,6 +56,8 @@ export interface InvoiceDraftInput {
   stampDuty: number;
   notes: string;
   originInvoiceId: string | null;
+  salesOrderId?: string | null;
+  deliveryNoteId?: string | null;
   lines: InvoiceLineInput[];
 }
 
@@ -74,9 +78,3 @@ export interface InvoiceSummary {
   outstanding: number;
   overdue: number;
 }
-
-export const NUMBER_PREFIX: Record<InvoiceKind, string> = {
-  invoice: 'FAC',
-  credit_note: 'AV',
-  quote: 'DEV',
-};

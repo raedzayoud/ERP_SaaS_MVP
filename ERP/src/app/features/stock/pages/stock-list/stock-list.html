@@ -1,4 +1,4 @@
-<ng-container *transloco="let t">
+﻿<ng-container *transloco="let t">
   <div class="stock-page">
     <div class="page-header">
       <div>
@@ -84,7 +84,7 @@
                       <span class="badge badge-danger">{{ t('stock.levels.negative') }}</span>
                     }
                   </td>
-                  <td class="num">{{ row.value | currency: 'USD' }}</td>
+                  <td class="num">{{ row.value | currency: currency() }}</td>
                 </tr>
               }
             </tbody>
@@ -94,7 +94,7 @@
         <div class="table-footer">
           <span class="page-info">
             {{ t('stock.levels.totalValue') }} :
-            <strong>{{ totalValue() | currency: 'USD' }}</strong>
+            <strong>{{ totalValue() | currency: currency() }}</strong>
           </span>
         </div>
       }

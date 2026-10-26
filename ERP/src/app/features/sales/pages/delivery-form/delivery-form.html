@@ -1,0 +1,149 @@
+<ng-container *transloco="let t">
+  <div class="delivery-form-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('titles.newDelivery') }}</h1>
+        <p class="page-subtitle">{{ t('deliveries.form.subtitle') }}</p>
+      </div>
+      <a routerLink="/deliveries" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('deliveries.form.loadError') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="card">
+        @if (errorKey(); as error) {
+          <div class="alert alert-danger">{{ t(error) }}</div>
+        }
+
+        @if (candidates().length === 0) {
+          <div class="state-block">
+            <p class="state-title">{{ t('deliveries.form.noConfirmedOrders') }}</p>
+            <p class="state-text">{{ t('deliveries.form.noConfirmedOrdersHint') }}</p>
+            <a routerLink="/sales-orders" class="btn btn-primary">
+              {{ t('deliveries.form.goToOrders') }}
+            </a>
+          </div>
+        } @else {
+          <form [formGroup]="form" (ngSubmit)="createDelivery()">
+            <fieldset class="form-fieldset">
+              <legend class="form-legend">{{ t('deliveries.form.sectionOrder') }}</legend>
+
+              <div class="form-group">
+                <label class="form-label" for="delivery-order">{{ t('deliveries.form.order') }}</label>
+                <select
+                  id="delivery-order"
+                  class="form-control"
+                  formControlName="salesOrderId"
+                  (change)="onOrderSelect($event)"
+                >
+                  <option value="" disabled>{{ t('deliveries.form.chooseOrder') }}</option>
+                  @for (order of candidates(); track order.id) {
+                    <option [value]="order.id">
+                      {{ order.number || t('deliveries.detail.noNumber') }} —
+                      {{ order.customerSnapshot?.name }}
+                      ({{ t('deliveries.form.linesCount', { count: order.lines.length }) }})
+                    </option>
+                  }
+                </select>
+              </div>
+
+              @if (selectedOrder(); as order) {
+                <div class="delivery-preview">
+                  <p class="delivery-preview-title">{{ t('deliveries.form.preview') }}</p>
+                  <div class="table-wrap">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">{{ t('deliveries.pdf.colRef') }}</th>
+                          <th scope="col">{{ t('deliveries.pdf.colDescription') }}</th>
+                          <th scope="col" class="num">{{ t('deliveries.pdf.colQuantity') }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (line of order.lines; track line.id) {
+                          <tr>
+                            <td>{{ line.reference }}</td>
+                            <td>{{ line.description }}</td>
+                            <td class="num">
+                              {{ line.quantity }} {{ line.unit }}
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              }
+            </fieldset>
+
+            <fieldset class="form-fieldset">
+              <legend class="form-legend">{{ t('deliveries.form.sectionShipping') }}</legend>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="delivery-date">{{ t('deliveries.form.deliveryDate') }}</label>
+                  <input
+                    id="delivery-date"
+                    type="date"
+                    class="form-control"
+                    formControlName="deliveryDate"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="delivery-warehouse">{{ t('deliveries.form.warehouse') }}</label>
+                  <select
+                    id="delivery-warehouse"
+                    class="form-control"
+                    formControlName="warehouseId"
+                  >
+                    @for (warehouse of warehouses(); track warehouse.id) {
+                      <option [value]="warehouse.id">
+                        {{ warehouse.code }} — {{ warehouse.name }}
+                      </option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="delivery-notes">{{ t('deliveries.form.notes') }}</label>
+                <textarea
+                  id="delivery-notes"
+                  class="form-control"
+                  rows="2"
+                  formControlName="notes"
+                  [placeholder]="t('deliveries.form.notesPlaceholder')"
+                ></textarea>
+              </div>
+            </fieldset>
+
+            <p class="delivery-stock-warning">{{ t('deliveries.form.stockWarning') }}</p>
+
+            <div class="form-actions">
+              <a routerLink="/deliveries" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+              <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                {{ saving() ? t('deliveries.form.creating') : t('deliveries.form.create') }}
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    }
+  </div>
+</ng-container>

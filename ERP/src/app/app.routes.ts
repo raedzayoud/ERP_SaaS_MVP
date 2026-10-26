@@ -307,6 +307,38 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'deliveries/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/sales/pages/delivery-form/delivery-form').then(
+            (m) => m.DeliveryForm,
+          ),
+        data: { title: 'titles.newDelivery', moduleId: 'sales' },
+      },
+      {
+        path: 'deliveries/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/sales/pages/delivery-detail/delivery-detail').then(
+            (m) => m.DeliveryDetail,
+          ),
+        data: { title: 'titles.deliveryDetail', moduleId: 'sales' },
+      },
+      {
+        path: 'deliveries',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/sales/pages/delivery-list/delivery-list').then(
+            (m) => m.DeliveryList,
+          ),
+        data: {
+          title: 'titles.deliveries',
+          description: 'descriptions.deliveries',
+          icon: '🚚',
+          moduleId: 'sales',
+        },
+      },
+      {
         path: 'payments/new',
         canActivate: [moduleGuard],
         loadComponent: () =>

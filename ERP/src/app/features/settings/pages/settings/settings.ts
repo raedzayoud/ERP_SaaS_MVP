@@ -1,9 +1,9 @@
 import { Component, signal, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { PLANS, getPlanById } from '../../../../core/data/plans';
+import { PLANS, getPlanById, getAllPlans } from '../../../../core/data/plans';
 import { Tenant } from '../../../../core/models/tenant';
 import { COUNTRIES, LANGUAGES, COMPANY_SIZES } from '../../../../core/data/countries';
 import { ASSIGNEE_ROLES, ROLE_INFO, Role, roleLabelKey } from '../../../../core/models/role';
@@ -30,10 +30,11 @@ const ROLE_BADGE_CLASS: Record<Role, string> = {
 export class SettingsComponent {
   private tenantService = inject(TenantService);
   private authService = inject(AuthService);
+  private transloco = inject(TranslocoService);
 
   tenant = this.tenantService.currentTenant;
   plan = this.tenantService.currentPlan;
-  plans = PLANS;
+  plans = getAllPlans();
 
   activeTab = signal<SettingsTab>('company');
 
@@ -142,7 +143,7 @@ export class SettingsComponent {
     this.userSuccess.set('');
 
     if (!this.newUserName().trim() || !this.newUserEmail().includes('@')) {
-      this.userError.set('Please enter a valid name and email.');
+      this.userError.set(this.transloco.translate('settings.messages.userInvalid'));
       return;
     }
 
@@ -153,13 +154,13 @@ export class SettingsComponent {
     });
 
     if (success) {
-      this.userSuccess.set('User added successfully.');
+      this.userSuccess.set(this.transloco.translate('settings.messages.userAdded'));
       this.showAddUser.set(false);
       this.newUserName.set('');
       this.newUserEmail.set('');
       setTimeout(() => this.userSuccess.set(''), 3000);
     } else {
-      this.userError.set('User limit reached for your plan. Please upgrade.');
+      this.userError.set(this.transloco.translate('settings.messages.userLimit'));
     }
   }
 
@@ -175,7 +176,10 @@ export class SettingsComponent {
   upgradePlan(planId: string): void {
     if (planId === this.tenant()?.planId) return;
     this.tenantService.upgradePlan(planId);
-    this.upgradeSuccess.set(`Plan upgraded to ${getPlanById(planId).name}!`);
+    const message = this.transloco.translate('settings.messages.planUpgraded', {
+      plan: getPlanById(planId).name,
+    });
+    this.upgradeSuccess.set(message);
     setTimeout(() => this.upgradeSuccess.set(''), 3000);
   }
 

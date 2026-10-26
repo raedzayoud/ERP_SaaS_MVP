@@ -5,9 +5,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { StatusBadge } from '../../../../shared/components/status-badge/status-badge';
 import { TenantService } from '../../../../core/services/tenant.service';
+import { Invoice, PaymentState } from '../../../invoices/models/invoice';
+import { paymentState } from '../../../invoices/utils/invoice-calc';
+import { InvoiceService } from '../../../invoices/services/invoice.service';
 import { SalesOrder } from '../../models/sales-order';
+import { DeliveryNote } from '../../models/delivery-note';
+import { DeliveryError } from '../../models/delivery-note';
+import { DeliveryNoteService } from '../../services/delivery-note.service';
 import { SalesError, SalesOrderService } from '../../services/sales-order.service';
-import { SalesTotals, isCancellable, isInvoiceable, isLate, lineNet, salesTotals } from '../../utils/sales-calc';
+import { SalesTotals, isCancellable, isEditable, isInvoiceable, isLate, lineNet, salesTotals } from '../../utils/sales-calc';
 
 @Component({
   selector: 'app-sales-order-detail',
@@ -17,6 +23,8 @@ import { SalesTotals, isCancellable, isInvoiceable, isLate, lineNet, salesTotals
 })
 export class SalesOrderDetail {
   private readonly service = inject(SalesOrderService);
+  private readonly deliveries = inject(DeliveryNoteService);
+  private readonly invoices = inject(InvoiceService);
   private readonly tenantService = inject(TenantService);
   private readonly transloco = inject(TranslocoService);
   private readonly route = inject(ActivatedRoute);
@@ -28,6 +36,8 @@ export class SalesOrderDetail {
   readonly order = signal<SalesOrder | null>(null);
   readonly totals = signal<SalesTotals | null>(null);
   readonly late = signal(false);
+  readonly delivery = signal<DeliveryNote | null>(null);
+  readonly invoice = signal<Invoice | null>(null);
 
   readonly loading = signal(true);
   readonly loadFailed = signal(false);
@@ -41,6 +51,23 @@ export class SalesOrderDetail {
 
   constructor() {
     this.load();
+    this.loadDelivery();
+  }
+
+  loadDelivery(): void {
+    if (!this.orderId) return;
+
+    this.deliveries
+      .getDeliveryByOrder(this.orderId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((note) => this.delivery.set(note ?? null));
+  }
+
+  canDeliver(): boolean {
+    const order = this.order();
+    return (
+      !!order && order.status === 'confirmed' && order.lines.length > 0 && !this.delivery()
+    );
   }
 
   load(): void {
@@ -131,10 +158,32 @@ export class SalesOrderDetail {
 
   createInvoice(): void {
     const current = this.order();
-    if (!current) return;
+    if (!current || this.saving()) return;
 
     this.saving.set(true);
     this.errorKey.set(null);
+
+    // A delivered order is invoiced through its delivery note: same draft,
+    // but linked to the BL so the stock is only decremented once.
+    const note = this.delivery();
+    if (note) {
+      this.deliveries
+        .createInvoiceDraft(note.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (invoice) => {
+            this.saving.set(false);
+            this.applyOrder({
+              ...current,
+              invoiceId: invoice.id,
+              updatedAt: new Date().toISOString(),
+            });
+            this.showNotice('sales.invoiceCreated');
+          },
+          error: (error: unknown) => this.showActionError(error),
+        });
+      return;
+    }
 
     this.service
       .createInvoice(this.orderId)
@@ -170,7 +219,7 @@ export class SalesOrderDetail {
 
   canDelete(): boolean {
     const order = this.order();
-    return !!order && order.status === 'draft';
+    return !!order && isEditable(order);
   }
 
   lineNetOf(order: SalesOrder, line: SalesOrder['lines'][number]): number {
@@ -185,12 +234,34 @@ export class SalesOrderDetail {
     this.order.set(order);
     this.totals.set(salesTotals(order.lines, order.currency));
     this.late.set(isLate(order));
+    this.loadInvoice(order.invoiceId);
+  }
+
+  loadInvoice(invoiceId: string | null): void {
+    if (!invoiceId || invoiceId === '') {
+      this.invoice.set(null);
+      return;
+    }
+
+    this.invoices
+      .getInvoice(invoiceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((found) => this.invoice.set(found ?? null));
+  }
+
+  invoicePayment(): PaymentState {
+    const current = this.invoice();
+    return current ? paymentState(current) : 'none';
   }
 
   private showActionError(error: unknown): void {
     this.saving.set(false);
     this.errorKey.set(
-      error instanceof SalesError ? `sales.errors.${error.code}` : 'sales.detail.actionError',
+      error instanceof DeliveryError
+        ? `deliveries.errors.${error.code}`
+        : error instanceof SalesError
+          ? `sales.errors.${error.code}`
+          : 'sales.detail.actionError',
     );
   }
 

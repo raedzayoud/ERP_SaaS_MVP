@@ -76,6 +76,8 @@ const POSTED_INVOICE: Invoice = {
   amountPaid: 0,
   notes: '',
   originInvoiceId: null,
+  salesOrderId: null,
+  deliveryNoteId: null,
   createdAt: '2026-10-10T10:00:00.000Z',
   updatedAt: '2026-10-10T10:00:00.000Z',
   postedAt: '2026-10-10T10:05:00.000Z',

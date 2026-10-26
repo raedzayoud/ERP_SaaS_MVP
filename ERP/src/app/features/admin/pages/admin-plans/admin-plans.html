@@ -1,22 +1,83 @@
 <ng-container *transloco="let t">
   <div class="admin-page">
-    <h2 class="admin-page-heading">{{ t('admin.nav.plans') }}</h2>
-    <p class="admin-page-sub">{{ t('admin.plans.subtitle') }}</p>
+    <div class="admin-plans-head">
+      <div>
+        <h2 class="admin-page-heading">{{ t('admin.nav.plans') }}</h2>
+        <p class="admin-page-sub">{{ t('admin.plans.subtitle') }}</p>
+      </div>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="saving()"
+        (click)="resetPrices()"
+      >
+        {{ t('admin.plans.resetPrices') }}
+      </button>
+    </div>
+
+    @if (priceSaved()) {
+      <div class="alert alert-success">{{ priceSaved() }}</div>
+    }
 
     <div class="admin-plans-grid">
-      @for (plan of plans; track plan.id) {
+      @for (plan of plans(); track plan.id) {
         <div class="admin-plan-card" [class.plan-popular]="plan.popular">
           @if (plan.popular) {
             <span class="plan-badge">{{ t('admin.plans.popular') }}</span>
           }
           <h3 class="plan-name">{{ plan.name }}</h3>
-          <div class="plan-price">
-            <span class="plan-amount">{{ plan.priceMonthly | currency: 'USD' }}</span>
-            <span class="plan-period">/ {{ t('admin.plans.month') }}</span>
-          </div>
-          <div class="plan-price plan-price-annual">
-            {{ plan.priceAnnual | currency: 'USD' }} / {{ t('admin.plans.year') }}
-          </div>
+
+          @if (editingId() === plan.id) {
+            <div class="plan-edit">
+              <div class="plan-edit-field">
+                <label>{{ t('admin.plans.priceMonthly') }}</label>
+                <input
+                  type="number"
+                  min="0"
+                  class="form-control"
+                  [value]="monthlyDraft()"
+                  (input)="onMonthlyInput($event)"
+                />
+              </div>
+              <div class="plan-edit-field">
+                <label>{{ t('admin.plans.priceAnnual') }}</label>
+                <input
+                  type="number"
+                  min="0"
+                  class="form-control"
+                  [value]="annualDraft()"
+                  (input)="onAnnualInput($event)"
+                />
+              </div>
+              @if (priceError()) {
+                <p class="plan-error">{{ t('admin.plans.invalidPrice') }}</p>
+              }
+              <div class="plan-edit-actions">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  [disabled]="saving()"
+                  (click)="save(plan)"
+                >
+                  {{ saving() ? t('common.saving') : t('common.save') }}
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="cancelEdit()">
+                  {{ t('common.cancel') }}
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="plan-price">
+              <span class="plan-amount">{{ plan.priceMonthly | currency: 'USD' }}</span>
+              <span class="plan-period">/ {{ t('admin.plans.month') }}</span>
+            </div>
+            <div class="plan-price plan-price-annual">
+              {{ plan.priceAnnual | currency: 'USD' }} / {{ t('admin.plans.year') }}
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm plan-edit-btn" (click)="startEdit(plan)">
+              {{ t('admin.plans.editPrice') }}
+            </button>
+          }
 
           <ul class="plan-features">
             <li>

@@ -1,15 +1,18 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-not-found',
   template: `
-    <div class="not-found">
-      <div class="not-found-code">404</div>
-      <h1 class="not-found-title">Page Not Found</h1>
-      <p class="not-found-text">The page you are looking for does not exist or has been moved.</p>
-      <a routerLink="/dashboard" class="btn btn-primary">Go to Dashboard</a>
-    </div>
+    <ng-container *transloco="let t">
+      <div class="not-found">
+        <div class="not-found-code">404</div>
+        <h1 class="not-found-title">{{ t('notFound.title') }}</h1>
+        <p class="not-found-text">{{ t('notFound.text') }}</p>
+        <a routerLink="/" class="btn btn-primary">{{ t('notFound.back') }}</a>
+      </div>
+    </ng-container>
   `,
   styles: `
     .not-found {
@@ -39,6 +42,6 @@ import { RouterLink } from '@angular/router';
       margin-bottom: 24px;
     }
   `,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslocoDirective],
 })
 export class NotFoundComponent {}

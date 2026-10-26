@@ -3,6 +3,7 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TenantService } from '../../../../core/services/tenant.service';
 import { Account, TrialBalanceRow } from '../../models/journal';
 import { AccountingService } from '../../services/accounting.service';
 
@@ -14,12 +15,16 @@ import { AccountingService } from '../../services/accounting.service';
 })
 export class ChartOfAccounts {
   private readonly service = inject(AccountingService);
+  private readonly tenantService = inject(TenantService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly accounts = signal<Account[]>([]);
   readonly balance = signal<TrialBalanceRow[]>([]);
   readonly loading = signal(true);
   readonly loadFailed = signal(false);
+
+  /** The currency of the current workspace, used for all money displays. */
+  readonly currency = computed(() => this.tenantService.activeCurrency());
 
   readonly totalDebit = computed(() => this.balance().reduce((sum, row) => sum + row.debit, 0));
   readonly totalCredit = computed(() => this.balance().reduce((sum, row) => sum + row.credit, 0));

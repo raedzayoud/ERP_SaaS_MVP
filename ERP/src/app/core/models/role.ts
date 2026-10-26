@@ -43,6 +43,7 @@ export const ASSIGNEE_ROLES: Role[] = [
 
 const ALL_MODULES = [
   'dashboard',
+  'apps',
   'contacts',
   'products',
   'sales',
@@ -66,6 +67,7 @@ export const ROLE_MODULE_ACCESS: Record<Role, string[]> = {
   'admin-entreprise': [...ALL_MODULES],
   commercial: [
     'dashboard',
+    'apps',
     'contacts',
     'products',
     'sales',
@@ -74,10 +76,10 @@ export const ROLE_MODULE_ACCESS: Record<Role, string[]> = {
     'reports',
     'ai-assistant',
   ],
-  acheteur: ['dashboard', 'contacts', 'products', 'purchases', 'reports'],
-  magasinier: ['dashboard', 'products', 'stock'],
+  acheteur: ['apps', 'contacts', 'products', 'purchases', 'reports'],
+  magasinier: ['apps', 'products', 'stock'],
   comptable: [
-    'dashboard',
+    'apps',
     'invoices',
     'payments',
     'purchases',
@@ -87,6 +89,7 @@ export const ROLE_MODULE_ACCESS: Record<Role, string[]> = {
   ],
   directeur: [
     'dashboard',
+    'apps',
     'reports',
     'sales',
     'invoices',
@@ -140,11 +143,21 @@ export function isTenantRole(role: Role): boolean {
   return role !== 'super-admin';
 }
 
+/**
+ * First page after login for each tenant role.
+ * Roles without an entry land on the dashboard.
+ */
+const HOME_BY_ROLE: Partial<Record<Role, string>> = {
+  acheteur: '/purchases',
+  magasinier: '/stock',
+  comptable: '/invoices',
+};
+
 /** Where the user lands after signing in. */
 export function homeRouteForRole(role: Role): string {
   if (role === 'super-admin') return '/admin';
   if (role === 'client-externe') return '/portal/invoices';
-  return '/dashboard';
+  return HOME_BY_ROLE[role] ?? '/dashboard';
 }
 
 const LEGACY_ROLE_MAP: Record<string, Role> = {

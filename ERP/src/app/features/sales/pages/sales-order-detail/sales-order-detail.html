@@ -52,6 +52,16 @@
             </button>
           }
 
+          @if (canDeliver()) {
+            <a [routerLink]="['/deliveries', 'new']" [queryParams]="{ source: ord.id }" class="btn btn-primary">
+              {{ t('sales.detail.createDelivery') }}
+            </a>
+          }
+          @if (delivery(); as note) {
+            <a [routerLink]="['/deliveries', note.id]" class="btn btn-secondary">
+              {{ t('sales.detail.openDelivery', { number: note.deliveryNumber }) }}
+            </a>
+          }
           @if (canInvoice()) {
             <button
               type="button"
@@ -86,9 +96,23 @@
           {{ t('sales.detail.draftNotice') }} — {{ t('sales.detail.draftHint') }}
         </div>
       }
+      @if (delivery(); as note) {
+        <div class="alert alert-success" role="status">
+          {{ t('sales.detail.deliveredNotice', { number: note.deliveryNumber }) }}
+        </div>
+      }
       @if (ord.status === 'confirmed' && ord.invoiceId) {
         <div class="alert alert-success" role="status">
           {{ t('sales.detail.invoicedNotice') }}
+          @if (invoice()) {
+            <strong>
+              @switch (invoicePayment()) {
+                @case ('paid') { — {{ t('chain.paid') }} }
+                @case ('partial') { — {{ t('chain.partiallyPaid') }} }
+                @case ('unpaid') { — {{ t('chain.unpaid') }} }
+              }
+            </strong>
+          }
         </div>
       }
 

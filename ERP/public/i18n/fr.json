@@ -58,7 +58,10 @@
     "newSalesOrder": "Nouvelle commande de vente",
     "editSalesOrder": "Modifier la commande de vente",
     "salesOrderDetail": "Détail de la commande de vente",
-    "signup": "Créez votre espace de travail"
+    "signup": "Créez votre espace de travail",
+    "deliveries": "Bons de livraison",
+    "newDelivery": "Nouveau bon de livraison",
+    "deliveryDetail": "Bon de livraison"
   },
   "descriptions": {
     "contacts": "Les sociétés et les personnes avec lesquelles vous travaillez.",
@@ -72,7 +75,8 @@
     "reports": "Analyses avec export PDF, Excel et CSV.",
     "ai-assistant": "Assistant conversationnel et extraction de documents.",
     "quotes": "Préparez des devis et convertissez-les en factures",
-    "salesOrders": "Bons de commande clients, confirmation et facturation."
+    "salesOrders": "Bons de commande clients, confirmation et facturation.",
+    "deliveries": "Marchandises livrées à vos clients."
   },
   "navbar": {
     "toggleSidebar": "Afficher ou masquer le menu",
@@ -107,7 +111,8 @@
       "settings": "Paramètres",
       "quotes": "Devis",
       "apps": "Applications",
-      "salesOrders": "Commandes de vente"
+      "salesOrders": "Commandes de vente",
+      "deliveries": "Livraisons"
     }
   },
   "placeholder": {
@@ -902,7 +907,8 @@
       "products": "Produits actifs",
       "pendingOrders": "BC en attente",
       "lateOrders": "BC en retard"
-    }
+    },
+    "errorTitle": "Un problème est survenu lors du chargement du tableau de bord"
   },
   "accounting": {
     "journal": {
@@ -1380,14 +1386,13 @@
       }
     },
     "plans": {
-      "subtitle": "Plans d’abonnement proposés par la plateforme.",
-      "popular": "Populaire",
-      "month": "mois",
-      "year": "an",
-      "maxUsers": "utilisateurs",
-      "storage": "GB de stockage",
-      "aiQuota": "requêtes IA/mois",
-      "modules": "modules inclus"
+      "editPrice": "Modifier les prix",
+      "priceMonthly": "Prix mensuel",
+      "priceAnnual": "Prix annuel",
+      "invalidPrice": "Veuillez saisir des prix positifs.",
+      "priceSaved": "Prix du plan mis à jour.",
+      "pricesReset": "Prix rétablis sur le catalogue par défaut.",
+      "resetPrices": "Rétablir les prix par défaut"
     }
   },
   "apps": {
@@ -1526,7 +1531,10 @@
       "actionError": "Laction na pas pu être effectuée.",
       "draftNotice": "Ceci est un brouillon",
       "draftHint": "Confirmez la commande pour la verrouiller et créer la facture.",
-      "invoicedNotice": "Cette commande a déjà été facturée."
+      "invoicedNotice": "Cette commande a déjà été facturée.",
+      "createDelivery": "Bon de livraison",
+      "openDelivery": "Livré — {{number}}",
+      "deliveredNotice": "Livraison enregistrée : {{number}}"
     },
     "form": {
       "subtitle": "Renseignez le client, les dates et les lignes de la commande.",
@@ -1707,5 +1715,117 @@
     "error": {
       "generic": "Une erreur est survenue. Veuillez réessayer."
     }
+  },
+  "settings": {
+    "messages": {
+      "userInvalid": "Veuillez saisir un nom et un email valides.",
+      "userAdded": "Utilisateur ajouté avec succès.",
+      "userLimit": "Limite d'utilisateurs atteinte pour votre plan. Passez à un plan supérieur.",
+      "planUpgraded": "Abonnement mis à niveau vers {{plan}} !"
+    }
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "text": "La page que vous cherchez n'existe pas ou a été déplacée.",
+    "back": "Retour à l'accueil"
+  },
+  "deliveries": {
+    "subtitle": "Documents qui accompagnent la marchandise expédiée aux clients.",
+    "status": {
+      "issued": "Livré"
+    },
+    "form": {
+      "subtitle": "Livrez une commande confirmée et mettez à jour le stock.",
+      "sectionOrder": "Commande concernée",
+      "order": "Commande client",
+      "chooseOrder": "Choisir une commande confirmée…",
+      "linesCount": "{{count}} lignes",
+      "preview": "Lignes à livrer",
+      "sectionShipping": "Livraison",
+      "deliveryDate": "Date de livraison",
+      "warehouse": "Entrepôt",
+      "notes": "Remarques",
+      "notesPlaceholder": "Référence livraison, transporteur, contact réception…",
+      "stockWarning": "La création de ce bon de livraison diminue le stock de l'entrepôt sélectionné.",
+      "create": "Créer le bon de livraison",
+      "creating": "Création…",
+      "checkErrors": "Veuillez vérifier les champs signalés.",
+      "saveError": "Impossible de créer le bon de livraison. Veuillez réessayer.",
+      "loadError": "Impossible de charger le formulaire.",
+      "noConfirmedOrders": "Aucune commande confirmée à livrer",
+      "noConfirmedOrdersHint": "Confirmez d'abord une commande client, puis revenez ici pour la livrer.",
+      "goToOrders": "Aller aux commandes"
+    },
+    "detail": {
+      "title": "Bon de livraison",
+      "subtitle": "Preuve de la marchandise livrée au client.",
+      "noNumber": "(sans numéro)",
+      "taxId": "Identifiant fiscal",
+      "totalQuantity": "Quantité totale",
+      "hint": "Le stock de l'entrepôt sélectionné a été diminué pour les produits livrés.",
+      "pdf": "Télécharger le PDF",
+      "pdfBusy": "Génération…",
+      "pdfError": "Impossible de générer le PDF.",
+      "notFound": "Bon de livraison introuvable",
+      "notFoundHint": "Il a peut-être été créé dans un autre espace de travail."
+    },
+    "list": {
+      "newDelivery": "Nouveau bon de livraison",
+      "searchPlaceholder": "Rechercher par numéro, commande ou client…",
+      "from": "Date de début",
+      "to": "Date de fin",
+      "view": "Voir",
+      "count": "{{total}} bons de livraison",
+      "loadError": "Impossible de charger les bons de livraison.",
+      "noMatch": "Aucun bon de livraison ne correspond à vos filtres",
+      "noMatchHint": "Essayez de changer la recherche ou les dates.",
+      "emptyTitle": "Aucun bon de livraison",
+      "emptyHint": "Livrez une commande confirmée pour créer le premier bon de livraison."
+    },
+    "columns": {
+      "number": "N° BL",
+      "order": "Commande",
+      "customer": "Client",
+      "deliveryDate": "Date de livraison",
+      "lines": "Lignes",
+      "lineSingular": "ligne",
+      "linePlural": "lignes",
+      "actions": "Actions"
+    },
+    "summary": {
+      "issued": "Bons de livraison émis",
+      "thisYear": "Émis cette année"
+    },
+    "pdf": {
+      "title": "Bon de livraison",
+      "customer": "Client",
+      "deliveryDate": "Date de livraison",
+      "orderRef": "N° commande",
+      "colNo": "#",
+      "colRef": "Réf",
+      "colDescription": "Description",
+      "colUnit": "Unité",
+      "colQuantity": "Quantité",
+      "notes": "Remarques"
+    },
+    "errors": {
+      "orderNotFound": "La commande client est introuvable.",
+      "orderNotConfirmed": "Seules les commandes confirmées peuvent être livrées.",
+      "alreadyDelivered": "Cette commande a déjà été livrée.",
+      "insufficientStock": "Stock insuffisant dans l'entrepôt sélectionné.",
+      "notFound": "Ce bon de livraison n'existe plus.",
+      "originMissing": "La commande source de ce bon de livraison est introuvable.",
+      "alreadyInvoiced": "Ce bon de livraison est déjà facturé.",
+      "invoiceFailed": "Impossible de créer le brouillon de facture. Réessayez."
+    }
+  },
+  "chain": {
+    "delivered": "Livré",
+    "invoiced": "Facturé",
+    "invoiceDraft": "Facture en brouillon",
+    "createInvoice": "Créer la facture",
+    "paid": "Payée",
+    "partiallyPaid": "Partiellement payée",
+    "unpaid": "Impayée"
   }
 }

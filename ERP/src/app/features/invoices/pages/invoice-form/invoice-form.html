@@ -5,7 +5,9 @@
         <h1 class="page-title">{{ t(titleKey()) }}</h1>
         <p class="page-subtitle">{{ t(subtitleKey()) }}</p>
       </div>
-      <a routerLink="/invoices" class="btn btn-secondary">← {{ t('common.back') }}</a>
+      <a [routerLink]="kind() === 'quote' ? '/quotes' : '/invoices'" class="btn btn-secondary">
+        ← {{ t('common.back') }}
+      </a>
     </div>
 
     @if (loading()) {
@@ -275,7 +277,9 @@
         </fieldset>
 
         <div class="form-actions">
-          <a routerLink="/invoices" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+          <a [routerLink]="kind() === 'quote' ? '/quotes' : '/invoices'" class="btn btn-secondary">
+            {{ t('common.cancel') }}
+          </a>
           <button
             type="button"
             class="btn btn-secondary"

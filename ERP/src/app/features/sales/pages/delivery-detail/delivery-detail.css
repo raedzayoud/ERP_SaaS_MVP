@@ -1,0 +1,125 @@
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.delivery-chain {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-end: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  background: var(--gray-50, #f8fafc);
+}
+
+.chain-item {
+  color: var(--gray-700);
+  text-decoration: none;
+}
+
+a.chain-item:hover {
+  text-decoration: underline;
+}
+
+.chain-item.chain-current {
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.chain-item.chain-state {
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+}
+
+.chain-item.chain-paid {
+  background: var(--success-bg, #e7f6ec);
+  color: var(--success-fg, #1c7c40);
+}
+
+.chain-item.chain-partial {
+  background: var(--warning-bg, #fdf3e2);
+  color: var(--warning-fg, #a2630b);
+}
+
+.chain-item.chain-unpaid {
+  background: var(--danger-bg, #fdeaea);
+  color: var(--danger-fg, #b3261e);
+}
+
+.chain-sep {
+  color: var(--gray-400);
+}
+
+.delivery-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-block-end: 16px;
+  padding-block-end: 14px;
+  border-block-end: 1px solid var(--gray-200);
+}
+
+.delivery-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.delivery-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  text-align: end;
+}
+
+.meta-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-500);
+  margin-block-end: 3px;
+}
+
+.delivery-customer {
+  margin-block-end: 18px;
+}
+
+.customer-name {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.customer-line {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.col-line-no {
+  width: 36px;
+  color: var(--gray-500);
+}
+
+.total-qty {
+  font-weight: 700;
+}
+
+.delivery-notes {
+  margin-block-start: 16px;
+}
+
+.delivery-notes p:not(.meta-label) {
+  margin-block-start: 4px;
+}
+
+.delivery-hint {
+  margin-block-start: 16px;
+  font-size: 12px;
+  color: var(--gray-500);
+}

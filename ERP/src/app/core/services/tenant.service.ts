@@ -34,6 +34,11 @@ export class TenantService {
     return this.enabledModules().includes(moduleId);
   }
 
+  /** The display currency of the current workspace (fallback for pages without a tenant). */
+  activeCurrency(): string {
+    return this.currentTenant()?.currency ?? 'USD';
+  }
+
   isSubdomainAvailable(subdomain: string): boolean {
     if (!subdomain) return false;
     const reserved = ['admin', 'api', 'www', 'app', 'login', 'signup', 'dashboard'];

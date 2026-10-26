@@ -1,0 +1,161 @@
+<ng-container *transloco="let t">
+  <div class="delivery-detail-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">
+          {{ note()?.deliveryNumber || t('deliveries.detail.title') }}
+        </h1>
+        <p class="page-subtitle">{{ t('deliveries.detail.subtitle') }}</p>
+      </div>
+      <div class="header-actions">
+        @if (linkedInvoice(); as linked) {
+          <a [routerLink]="['/invoices', linked.id]" class="btn btn-secondary">
+            {{ linked.status === 'draft' ? t('chain.invoiceDraft') : t('chain.invoiced') }}
+          </a>
+        } @else if (note() && order()) {
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="invoiceBusy()"
+            (click)="createInvoice()"
+          >
+            {{ invoiceBusy() ? t('common.loading') : t('chain.createInvoice') }}
+          </button>
+        }
+        <button type="button" class="btn btn-secondary" [disabled]="pdfBusy()" (click)="downloadPdf()">
+          {{ pdfBusy() ? t('deliveries.detail.pdfBusy') : t('deliveries.detail.pdf') }}
+        </button>
+        <a routerLink="/deliveries" class="btn btn-secondary">← {{ t('common.back') }}</a>
+      </div>
+    </div>
+
+    @if (pdfError()) {
+      <div class="alert alert-danger">{{ t('deliveries.detail.pdfError') }}</div>
+    }
+
+    @if (invoiceFailed()) {
+      <div class="alert alert-danger">{{ t('deliveries.errors.invoiceFailed') }}</div>
+    }
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed() || !note()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('deliveries.detail.notFound') }}</p>
+          <p class="state-text">{{ t('deliveries.detail.notFoundHint') }}</p>
+          <a routerLink="/deliveries" class="btn btn-secondary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else {
+      <div class="delivery-doc card">
+        <div class="delivery-head">
+          <div>
+            <p class="delivery-number">{{ note()?.deliveryNumber }}</p>
+            <span class="badge badge-success">{{ t('deliveries.status.issued') }}</span>
+          </div>
+          <div class="delivery-meta">
+            <div>
+              <span class="meta-label">{{ t('deliveries.form.deliveryDate') }}</span>
+              <span>{{ note()?.deliveryDate | date: 'mediumDate' }}</span>
+            </div>
+            <div>
+              <span class="meta-label">{{ t('deliveries.columns.order') }}</span>
+              <span>{{ note()?.salesOrderNumber || t('deliveries.detail.noNumber') }}</span>
+            </div>
+            <div>
+              <span class="meta-label">{{ t('deliveries.form.warehouse') }}</span>
+              <span>{{ warehouseLabel(note()?.warehouseId || '') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="delivery-chain" aria-label="{{ t('deliveries.detail.subtitle') }}">
+          @if (order(); as orderRow) {
+            <a [routerLink]="['/sales-orders', orderRow.id]" class="chain-item">
+              {{ t('deliveries.columns.order') }}
+            </a>
+          } @else {
+            <span class="chain-item">{{ t('deliveries.columns.order') }}</span>
+          }
+          <span class="chain-sep" aria-hidden="true">→</span>
+          <span class="chain-item chain-current">{{ t('chain.delivered') }}</span>
+          @if (linkedInvoice(); as linked) {
+            <span class="chain-sep" aria-hidden="true">→</span>
+            <a [routerLink]="['/invoices', linked.id]" class="chain-item">
+              {{ linked.status === 'draft' ? t('chain.invoiceDraft') : t('chain.invoiced') }}
+            </a>
+            @switch (invoicePayment()) {
+              @case ('paid') {
+                <span class="chain-sep" aria-hidden="true">→</span>
+                <span class="chain-item chain-state chain-paid">{{ t('chain.paid') }}</span>
+              }
+              @case ('partial') {
+                <span class="chain-sep" aria-hidden="true">→</span>
+                <span class="chain-item chain-state chain-partial">{{ t('chain.partiallyPaid') }}</span>
+              }
+              @case ('unpaid') {
+                <span class="chain-sep" aria-hidden="true">→</span>
+                <span class="chain-item chain-state chain-unpaid">{{ t('chain.unpaid') }}</span>
+              }
+            }
+          }
+        </div>
+
+        <div class="delivery-customer">
+          <p class="meta-label">{{ t('deliveries.pdf.customer') }}</p>
+          <p class="customer-name">{{ note()?.customer?.name }}</p>
+          <p class="customer-line">{{ note()?.customer?.address }}</p>
+          @if (note()?.customer?.taxId) {
+            <p class="customer-line">{{ t('deliveries.detail.taxId') }}: {{ note()?.customer?.taxId }}</p>
+          }
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-line-no">#</th>
+                <th scope="col">{{ t('deliveries.pdf.colRef') }}</th>
+                <th scope="col">{{ t('deliveries.pdf.colDescription') }}</th>
+                <th scope="col">{{ t('deliveries.pdf.colUnit') }}</th>
+                <th scope="col" class="num">{{ t('deliveries.pdf.colQuantity') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of note()?.lines; track line.productId) {
+                <tr>
+                  <td class="col-line-no">{{ $index + 1 }}</td>
+                  <td>{{ line.reference }}</td>
+                  <td>{{ line.description }}</td>
+                  <td>{{ line.unit }}</td>
+                  <td class="num">{{ line.quantity | number }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="num">{{ t('deliveries.detail.totalQuantity') }}</td>
+                <td class="num total-qty">{{ totalQuantity() | number }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        @if (note()?.notes) {
+          <div class="delivery-notes">
+            <p class="meta-label">{{ t('deliveries.pdf.notes') }}</p>
+            <p>{{ note()?.notes }}</p>
+          </div>
+        }
+
+        <p class="delivery-hint">{{ t('deliveries.detail.hint') }}</p>
+      </div>
+    }
+  </div>
+</ng-container>

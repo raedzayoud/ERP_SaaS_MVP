@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthService } from '../../../../core/services/auth.service';
-import { PLANS } from '../../../../core/data/plans';
+import { getAllPlans } from '../../../../core/data/plans';
 
 @Component({
   selector: 'app-landing',
@@ -13,7 +13,7 @@ import { PLANS } from '../../../../core/data/plans';
 export class Landing {
   private readonly auth = inject(AuthService);
 
-  readonly plans = PLANS;
+  readonly plans = getAllPlans();
   readonly loggedIn = this.auth.isLoggedIn();
   readonly billingCycle = signal<'monthly' | 'annual'>('monthly');
 

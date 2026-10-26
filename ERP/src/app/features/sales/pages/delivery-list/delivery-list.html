@@ -1,0 +1,136 @@
+<ng-container *transloco="let t">
+  <div class="delivery-list-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('titles.deliveries') }}</h1>
+        <p class="page-subtitle">{{ t('deliveries.subtitle') }}</p>
+      </div>
+      <a routerLink="/deliveries/new" class="btn btn-primary">
+        + {{ t('deliveries.list.newDelivery') }}
+      </a>
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <p class="summary-label">{{ t('deliveries.summary.issued') }}</p>
+        <p class="summary-value">{{ totalIssued() }}</p>
+      </div>
+      <div class="summary-card">
+        <p class="summary-label">{{ t('deliveries.summary.thisYear') }}</p>
+        <p class="summary-value">{{ yearCount() }}</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="search-box">
+          <input
+            type="search"
+            class="form-control"
+            [placeholder]="t('deliveries.list.searchPlaceholder')"
+            [formControl]="searchControl"
+            [attr.aria-label]="t('deliveries.list.searchPlaceholder')"
+          />
+        </div>
+
+        <input
+          type="date"
+          class="form-control filter-date"
+          [value]="from()"
+          (change)="onDateFilter($event, 'from')"
+          [attr.aria-label]="t('deliveries.list.from')"
+        />
+        <input
+          type="date"
+          class="form-control filter-date"
+          [value]="to()"
+          (change)="onDateFilter($event, 'to')"
+          [attr.aria-label]="t('deliveries.list.to')"
+        />
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('deliveries.list.loadError') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (deliveries().length === 0) {
+        <div class="state-block">
+          <p class="state-title">
+            {{ hasFilters() ? t('deliveries.list.noMatch') : t('deliveries.list.emptyTitle') }}
+          </p>
+          <p class="state-text">
+            {{ hasFilters() ? t('deliveries.list.noMatchHint') : t('deliveries.list.emptyHint') }}
+          </p>
+          @if (hasFilters()) {
+            <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+              {{ t('common.clearFilters') }}
+            </button>
+          } @else {
+            <a routerLink="/deliveries/new" class="btn btn-primary">
+              {{ t('deliveries.list.newDelivery') }}
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('deliveries.columns.number') }}</th>
+                <th scope="col">{{ t('deliveries.columns.order') }}</th>
+                <th scope="col">{{ t('deliveries.columns.customer') }}</th>
+                <th scope="col" [attr.aria-sort]="ariaSort('deliveryDate')">
+                  <button type="button" class="th-sort" (click)="setSort('deliveryDate')">
+                    {{ t('deliveries.columns.deliveryDate') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('deliveryDate') }}</span>
+                  </button>
+                </th>
+                <th scope="col">{{ t('deliveries.columns.lines') }}</th>
+                <th scope="col" class="col-actions">{{ t('deliveries.columns.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (note of deliveries(); track note.id) {
+                <tr>
+                  <td class="col-number">
+                    <span class="number-main">{{ note.deliveryNumber }}</span>
+                  </td>
+                  <td>{{ orderLabelOf(note) }}</td>
+                  <td>{{ note.customer?.name }}</td>
+                  <td class="col-date">{{ note.deliveryDate | date: 'mediumDate' }}</td>
+                  <td>
+                    {{ note.lines.length }}
+                    {{ note.lines.length === 1 ? t('deliveries.columns.lineSingular') : t('deliveries.columns.linePlural') }}
+                  </td>
+                  <td class="col-actions">
+                    <a [routerLink]="['/deliveries', note.id]" class="btn btn-secondary btn-sm">
+                      {{ t('deliveries.list.view') }}
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">{{ t('deliveries.list.count', { total: total() }) }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

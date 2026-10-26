@@ -11,6 +11,7 @@ import { PurchaseError, PurchaseService } from '../../services/purchase.service'
 import {
   PurchaseTotals,
   isCancellable,
+  isEditable,
   isLate,
   isReceivable,
   lineNet,
@@ -184,7 +185,7 @@ export class PurchaseDetail {
 
   canDelete(): boolean {
     const order = this.order();
-    return !!order && order.status === 'draft';
+    return !!order && isEditable(order);
   }
 
   canDownloadPdf(): boolean {

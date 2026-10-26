@@ -135,19 +135,6 @@ export const AUTO_BUNDLED_APPS: Record<string, string[]> = {
 /** Flat list of all automatically provisioned app ids. */
 export const AUTO_BUNDLED_IDS: string[] = Object.values(AUTO_BUNDLED_APPS).flat();
 
-export function getAppsByCategory(): { category: string; apps: ErpApp[] }[] {
-  const categories: { category: string; apps: ErpApp[] }[] = [];
-  for (const app of ERP_APPS) {
-    let group = categories.find((c) => c.category === app.category);
-    if (!group) {
-      group = { category: app.category, apps: [] };
-      categories.push(group);
-    }
-    group.apps.push(app);
-  }
-  return categories;
-}
-
 /**
  * Returns the list of apps that must be added because they are
  * dependencies (direct or transitive) of the given app.
@@ -171,23 +158,4 @@ export function resolveDependencies(appId: string, alreadySelected: string[]): s
     visit(dep);
   }
   return toAdd;
-}
-
-/**
- * Returns apps that must be removed because they depend on the given app.
- */
-export function resolveDependents(appId: string, selected: string[]): string[] {
-  const toRemove: string[] = [];
-  const visit = (id: string) => {
-    if (toRemove.includes(id) || id === appId) return;
-    const dependents = ERP_APPS.filter(
-      (a) => a.dependencies.includes(id) && selected.includes(a.id),
-    );
-    for (const d of dependents) {
-      toRemove.push(d.id);
-      visit(d.id);
-    }
-  };
-  visit(appId);
-  return toRemove;
 }

@@ -17,6 +17,7 @@ import { PAYMENT_TERMS, PaymentTerms } from '../../../../shared/models/payment-t
 import { todayIso } from '../../../../shared/utils/money';
 import { Partner } from '../../../crm/models/partner';
 import { PartnerService } from '../../../crm/services/partner.service';
+import { TenantService } from '../../../../core/services/tenant.service';
 import { PRODUCT_VAT_RATES, Product } from '../../../products/models/product';
 import { ProductService } from '../../../products/services/product.service';
 import { ComboPicker, PickerItem } from '../../../invoices/components/combo-picker/combo-picker';
@@ -59,7 +60,13 @@ export class PurchaseForm {
 
   readonly terms = PAYMENT_TERMS;
   readonly vatRates = PRODUCT_VAT_RATES;
-  readonly currency = 'USD';
+
+  private readonly tenantService = inject(TenantService);
+
+  /** The currency of the current workspace, used for all money displays. */
+  get currency(): string {
+    return this.tenantService.activeCurrency();
+  }
 
   private orderId: string | null = this.route.snapshot.paramMap.get('id');
 

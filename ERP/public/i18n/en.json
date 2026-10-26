@@ -58,7 +58,10 @@
     "newSalesOrder": "New sales order",
     "editSalesOrder": "Edit sales order",
     "salesOrderDetail": "Sales order detail",
-    "signup": "Create your workspace"
+    "signup": "Create your workspace",
+    "deliveries": "Delivery notes",
+    "newDelivery": "New delivery note",
+    "deliveryDetail": "Delivery note"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -72,7 +75,8 @@
     "reports": "Business analytics with export to PDF, Excel and CSV.",
     "ai-assistant": "Chat assistant and document extraction.",
     "quotes": "Prepare quotes and convert them into invoices",
-    "salesOrders": "Customer orders from confirmation to invoice."
+    "salesOrders": "Customer orders from confirmation to invoice.",
+    "deliveries": "Goods delivered to your customers."
   },
   "navbar": {
     "toggleSidebar": "Toggle sidebar",
@@ -107,7 +111,8 @@
       "settings": "Settings",
       "quotes": "Quotes",
       "apps": "Apps",
-      "salesOrders": "Sales orders"
+      "salesOrders": "Sales orders",
+      "deliveries": "Deliveries"
     }
   },
   "placeholder": {
@@ -902,7 +907,8 @@
       "products": "Active products",
       "pendingOrders": "Pending purchase orders",
       "lateOrders": "Late purchase orders"
-    }
+    },
+    "errorTitle": "Something went wrong while loading the dashboard"
   },
   "accounting": {
     "journal": {
@@ -1380,14 +1386,13 @@
       }
     },
     "plans": {
-      "subtitle": "Subscription plans offered by the platform.",
-      "popular": "Popular",
-      "month": "month",
-      "year": "year",
-      "maxUsers": "users",
-      "storage": "GB storage",
-      "aiQuota": "AI queries/month",
-      "modules": "modules included"
+      "editPrice": "Edit prices",
+      "priceMonthly": "Monthly price",
+      "priceAnnual": "Annual price",
+      "invalidPrice": "Please enter positive prices.",
+      "priceSaved": "Plan prices updated.",
+      "pricesReset": "Prices restored to the default catalog.",
+      "resetPrices": "Restore default prices"
     }
   },
   "apps": {
@@ -1526,7 +1531,10 @@
       "actionError": "The action could not be completed.",
       "draftNotice": "This is a draft",
       "draftHint": "Confirm the order to lock it and create the invoice.",
-      "invoicedNotice": "This order has already been invoiced."
+      "invoicedNotice": "This order has already been invoiced.",
+      "createDelivery": "Delivery note",
+      "openDelivery": "Delivered — {{number}}",
+      "deliveredNotice": "Delivered: {{number}}"
     },
     "form": {
       "subtitle": "Fill in the customer, dates and lines of the order.",
@@ -1707,5 +1715,118 @@
     "error": {
       "generic": "Something went wrong. Please try again."
     }
-  }
+  },
+  "settings": {
+    "messages": {
+      "userInvalid": "Please enter a valid name and email.",
+      "userAdded": "User added successfully.",
+      "userLimit": "User limit reached for your plan. Please upgrade.",
+      "planUpgraded": "Plan upgraded to {{plan}}!"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The page you are looking for does not exist or has been moved.",
+    "back": "Back to home"
+  },
+  "deliveries": {
+    "subtitle": "Documents accompanying the goods shipped to customers.",
+    "status": {
+      "issued": "Delivered"
+    },
+    "form": {
+      "subtitle": "Deliver a confirmed sales order and update the stock.",
+      "sectionOrder": "Source order",
+      "order": "Sales order",
+      "chooseOrder": "Choose a confirmed order…",
+      "linesCount": "{{count}} lines",
+      "preview": "Lines to deliver",
+      "sectionShipping": "Delivery details",
+      "deliveryDate": "Delivery date",
+      "warehouse": "Warehouse",
+      "notes": "Notes",
+      "notesPlaceholder": "Delivery reference, carrier, reception contact…",
+      "stockWarning": "Creating this delivery note decreases the stock in the selected warehouse.",
+      "create": "Create delivery note",
+      "creating": "Creating…",
+      "checkErrors": "Please check the highlighted fields.",
+      "saveError": "Could not create the delivery note. Please try again.",
+      "loadError": "Could not load the form.",
+      "noConfirmedOrders": "No confirmed order left to deliver",
+      "noConfirmedOrdersHint": "Confirm a sales order first, then come back here to deliver it.",
+      "goToOrders": "Go to sales orders"
+    },
+    "detail": {
+      "title": "Delivery note",
+      "subtitle": "Proof of the goods delivered to the customer.",
+      "noNumber": "(no number)",
+      "taxId": "Tax ID",
+      "totalQuantity": "Total quantity",
+      "hint": "The stock of the selected warehouse has been decreased for the delivered products.",
+      "pdf": "Download PDF",
+      "pdfBusy": "Generating…",
+      "pdfError": "Could not generate the PDF.",
+      "notFound": "Delivery note not found",
+      "notFoundHint": "It may have been created in another workspace."
+    },
+    "list": {
+      "newDelivery": "New delivery note",
+      "searchPlaceholder": "Search by number, order or customer…",
+      "from": "From date",
+      "to": "To date",
+      "view": "View",
+      "count": "{{total}} delivery notes",
+      "loadError": "Could not load the delivery notes.",
+      "noMatch": "No delivery note matches your filters",
+      "noMatchHint": "Try to change the search or the dates.",
+      "emptyTitle": "No delivery note yet",
+      "emptyHint": "Deliver a confirmed sales order to create the first delivery note."
+    },
+    "columns": {
+      "number": "BL No.",
+      "order": "Sales order",
+      "customer": "Customer",
+      "deliveryDate": "Delivery date",
+      "lines": "Lines",
+      "lineSingular": "line",
+      "linePlural": "lines",
+      "actions": "Actions"
+    },
+    "summary": {
+      "issued": "Delivery notes issued",
+      "thisYear": "Issued this year"
+    },
+    "pdf": {
+      "title": "Delivery Note",
+      "customer": "Customer",
+      "deliveryDate": "Delivery date",
+      "orderRef": "Order No.",
+      "colNo": "#",
+      "colRef": "Ref",
+      "colDescription": "Description",
+      "colUnit": "Unit",
+      "colQuantity": "Quantity",
+      "notes": "Notes"
+    },
+    "errors": {
+      "orderNotFound": "The sales order could not be found.",
+      "orderNotConfirmed": "Only confirmed orders can be delivered.",
+      "alreadyDelivered": "This order was already delivered.",
+      "insufficientStock": "Not enough stock in the selected warehouse.",
+      "notFound": "This delivery note no longer exists.",
+      "originMissing": "The source sales order of this delivery note is missing.",
+      "alreadyInvoiced": "This delivery note is already invoiced.",
+      "invoiceFailed": "Could not create the draft invoice. Please try again."
+    }
+  },
+  "chain": {
+    "delivered": "Delivered",
+    "invoiced": "Invoiced",
+    "invoiceDraft": "Invoice draft",
+    "createInvoice": "Create invoice",
+    "paid": "Paid",
+    "partiallyPaid": "Partially paid",
+    "unpaid": "Unpaid"
+  },
+  "fr": {}
 }

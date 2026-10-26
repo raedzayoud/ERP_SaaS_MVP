@@ -79,6 +79,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.storageKey);
     this.currentUser.set(null);
+    this.tenantService.clearTenant();
     this.router.navigate(['/login']);
   }
 

@@ -1,4 +1,4 @@
-<ng-container *transloco="let t">
+﻿<ng-container *transloco="let t">
   <div class="reports-page">
     <div class="page-header">
       <div>
@@ -59,23 +59,23 @@
       <div class="kpi-row">
         <div class="kpi-card">
           <p class="kpi-label">{{ t('reports.kpi.sales') }}</p>
-          <p class="kpi-value">{{ report.totalSales | currency: 'USD' }}</p>
+          <p class="kpi-value">{{ report.totalSales | currency: currency() }}</p>
         </div>
         <div class="kpi-card">
           <p class="kpi-label">{{ t('reports.kpi.expenses') }}</p>
-          <p class="kpi-value">{{ report.totalExpenses | currency: 'USD' }}</p>
+          <p class="kpi-value">{{ report.totalExpenses | currency: currency() }}</p>
         </div>
         <div class="kpi-card">
           <p class="kpi-label">{{ t('reports.kpi.stockValue') }}</p>
-          <p class="kpi-value">{{ report.stockValue | currency: 'USD' }}</p>
+          <p class="kpi-value">{{ report.stockValue | currency: currency() }}</p>
         </div>
         <div class="kpi-card">
           <p class="kpi-label">{{ t('reports.kpi.outstanding') }}</p>
-          <p class="kpi-value">{{ report.outstanding | currency: 'USD' }}</p>
+          <p class="kpi-value">{{ report.outstanding | currency: currency() }}</p>
         </div>
         <div class="kpi-card kpi-danger">
           <p class="kpi-label">{{ t('reports.kpi.overdue') }}</p>
-          <p class="kpi-value">{{ report.overdue | currency: 'USD' }}</p>
+          <p class="kpi-value">{{ report.overdue | currency: currency() }}</p>
         </div>
       </div>
 
@@ -105,7 +105,7 @@
                 <tr>
                   <td>{{ row.name }}</td>
                   <td class="num">{{ row.quantity }}</td>
-                  <td class="num">{{ row.revenue | currency: 'USD' }}</td>
+                  <td class="num">{{ row.revenue | currency: currency() }}</td>
                 </tr>
               } @empty {
                 <tr>
@@ -136,7 +136,7 @@
                 <tr>
                   <td>{{ t('payments.modes.' + row.mode) }}</td>
                   <td class="num">{{ row.count }}</td>
-                  <td class="num">{{ row.total | currency: 'USD' }}</td>
+                  <td class="num">{{ row.total | currency: currency() }}</td>
                 </tr>
               } @empty {
                 <tr>
@@ -164,7 +164,7 @@
                 <tr>
                   <td>{{ row.name }}</td>
                   <td class="num">{{ row.quantity }}</td>
-                  <td class="num">{{ row.margin | currency: 'USD' }}</td>
+                  <td class="num">{{ row.margin | currency: currency() }}</td>
                 </tr>
               } @empty {
                 <tr>
@@ -192,9 +192,9 @@
               @for (row of report.trialBalance; track row.code) {
                 <tr>
                   <td>{{ row.code }}</td>
-                  <td class="num">{{ row.debit | currency: 'USD' }}</td>
-                  <td class="num">{{ row.credit | currency: 'USD' }}</td>
-                  <td class="num">{{ row.balance | currency: 'USD' }}</td>
+                  <td class="num">{{ row.debit | currency: currency() }}</td>
+                  <td class="num">{{ row.credit | currency: currency() }}</td>
+                  <td class="num">{{ row.balance | currency: currency() }}</td>
                 </tr>
               }
             </tbody>

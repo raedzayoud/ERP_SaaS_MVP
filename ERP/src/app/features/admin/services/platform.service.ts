@@ -1,6 +1,14 @@
 import { Injectable, signal } from '@angular/core';
 import { Observable, map, timer } from 'rxjs';
-import { getPlanById } from '../../../core/data/plans';
+import {
+  Plan,
+} from '../../../core/models/plan';
+import {
+  clearPlanPriceOverrides,
+  getAllPlans,
+  getPlanById,
+  savePlanPriceOverride,
+} from '../../../core/data/plans';
 import { PlatformStats, PlatformTenant } from '../models/platform';
 
 const LATENCY_MS = 300;
@@ -81,6 +89,26 @@ export class PlatformService {
         const updated: PlatformTenant = { ...tenant, status: nextStatus };
         this.items.update((list) => list.map((t) => (t.id === tenantId ? updated : t)));
         return updated;
+      }),
+    );
+  }
+
+  /** New price catalog for the super-admin console (single function). */
+  updatePlanPrice(planId: string, priceMonthly: number, priceAnnual: number): Observable<Plan> {
+    return timer(LATENCY_MS).pipe(
+      map(() => {
+        savePlanPriceOverride(planId, { priceMonthly, priceAnnual });
+        return getPlanById(planId);
+      }),
+    );
+  }
+
+  /** Removes every price override and returns the default plan list. */
+  resetPlanPrices(): Observable<Plan[]> {
+    return timer(LATENCY_MS).pipe(
+      map(() => {
+        clearPlanPriceOverrides();
+        return getAllPlans();
       }),
     );
   }
