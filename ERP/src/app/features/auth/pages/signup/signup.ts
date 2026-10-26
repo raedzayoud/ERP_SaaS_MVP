@@ -52,7 +52,15 @@ export class SignupComponent implements OnDestroy {
   private codeTimer: ReturnType<typeof setInterval> | null = null;
   private resendTimer: ReturnType<typeof setInterval> | null = null;
 
-  // ── Step 4: provisioning ──────────────────────
+  // ── Step 4: payment (Stripe-style demo form) ──
+  cardNumber = signal('');
+  cardExpiry = signal('');
+  cardCvc = signal('');
+  cardName = signal('');
+  paymentError = signal('');
+  paying = signal(false);
+
+  // ── Step 5: provisioning ──────────────────────
   provisioningStep = signal(0);
   private provisionTimers: ReturnType<typeof setTimeout>[] = [];
 
@@ -67,6 +75,12 @@ export class SignupComponent implements OnDestroy {
 
   selectableCount = computed(
     () => this.selectedApps().filter((id) => id !== 'dashboard').length,
+  );
+
+  selectedLabels = computed(() =>
+    this.selectedApps()
+      .map((id) => ERP_APPS.find((app) => app.id === id)?.label ?? id)
+      .join(' · '),
   );
 
   formValid = computed(() => {
@@ -132,6 +146,33 @@ export class SignupComponent implements OnDestroy {
     return ids
       .map((id) => ERP_APPS.find((a) => a.id === id)?.label || id)
       .join(', ');
+  }
+
+  /**
+   * Returns apps that are required by the current selection but missing.
+   * Resolves transitively (e.g. accounting needs invoices, which needs
+   * contacts and products).
+   */
+  private missingDependencies(): string[] {
+    const working = [...this.selectedApps()];
+    const added: string[] = [];
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const app of ERP_APPS) {
+        if (!working.includes(app.id)) continue;
+        for (const dep of app.dependencies) {
+          if (!working.includes(dep)) {
+            working.push(dep);
+            added.push(dep);
+            changed = true;
+          }
+        }
+      }
+    }
+
+    return added;
   }
 
   // ══════════════════════════════════════════════
@@ -222,7 +263,9 @@ export class SignupComponent implements OnDestroy {
     }
 
     if (this.codeInput() === this.verificationCode()) {
-      this.goToProvisioning();
+      this.error.set('');
+      this.paymentError.set('');
+      this.step.set(4);
     } else {
       this.verifyAttempts.update((n) => n + 1);
       this.verifyError.set('Incorrect code. Please try again.');
@@ -234,12 +277,113 @@ export class SignupComponent implements OnDestroy {
   }
 
   // ══════════════════════════════════════════════
-  // Step 4 — Provisioning
+  // Step 4 — Payment (Stripe-style demo)
+  // ══════════════════════════════════════════════
+  get cardDigits(): string {
+    return this.cardNumber().replace(/\D/g, '');
+  }
+
+  get cardBrand(): string {
+    const digits = this.cardDigits;
+    if (/^4/.test(digits)) return 'VISA';
+    if (/^(5[1-5]|2[2-7])/.test(digits)) return 'MASTERCARD';
+    if (/^3[47]/.test(digits)) return 'AMEX';
+    return 'CARD';
+  }
+
+  onCardNumberInput(event: Event): void {
+    const digits = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 19);
+    this.cardNumber.set(digits.replace(/(\d{4})(?=\d)/g, '$1 '));
+    this.paymentError.set('');
+  }
+
+  onCardExpiryInput(event: Event): void {
+    let digits = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 4);
+    if (digits.length >= 3) {
+      digits = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    }
+    this.cardExpiry.set(digits);
+    this.paymentError.set('');
+  }
+
+  onCardCvcInput(event: Event): void {
+    const digits = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 4);
+    this.cardCvc.set(digits);
+    this.paymentError.set('');
+  }
+
+  onCardNameInput(event: Event): void {
+    this.cardName.set((event.target as HTMLInputElement).value);
+    this.paymentError.set('');
+  }
+
+  pay(): void {
+    this.paymentError.set('');
+    const digits = this.cardDigits;
+
+    if (!this.cardName().trim()) {
+      this.paymentError.set('Please enter the cardholder name.');
+      return;
+    }
+    if ((digits.length !== 15 && digits.length !== 16) || !this.luhnValid(digits)) {
+      this.paymentError.set('Please enter a valid card number. Use 4242 4242 4242 4242 in demo mode.');
+      return;
+    }
+    if (!this.expiryValid()) {
+      this.paymentError.set('Please enter a valid expiry date (MM/YY).');
+      return;
+    }
+    if (this.cardCvc().length < 3) {
+      this.paymentError.set('Please enter a valid CVC (3 or 4 digits).');
+      return;
+    }
+
+    this.paying.set(true);
+    const t = setTimeout(() => {
+      this.paying.set(false);
+      this.goToProvisioning();
+    }, 1200);
+    this.provisionTimers.push(t);
+  }
+
+  private luhnValid(digits: string): boolean {
+    let sum = 0;
+    let double = false;
+
+    for (let i = digits.length - 1; i >= 0; i--) {
+      let n = digits.charCodeAt(i) - 48;
+      if (double) {
+        n *= 2;
+        if (n > 9) n -= 9;
+      }
+      sum += n;
+      double = !double;
+    }
+
+    return sum % 10 === 0;
+  }
+
+  private expiryValid(): boolean {
+    const [month, year] = this.cardExpiry().split('/');
+    if (!month || !year || month.length !== 2 || year.length !== 2) return false;
+
+    const m = Number(month);
+    const y = Number(year);
+    if (!Number.isInteger(m) || !Number.isInteger(y) || m < 1 || m > 12) return false;
+
+    const now = new Date();
+    const currentYear = now.getFullYear() % 100;
+    const currentMonth = now.getMonth() + 1;
+    return y > currentYear || (y === currentYear && m >= currentMonth);
+  }
+
+  // ══════════════════════════════════════════════
+  // Step 5 — Provisioning
   // ══════════════════════════════════════════════
   private goToProvisioning(): void {
     if (this.codeTimer) clearInterval(this.codeTimer);
     if (this.resendTimer) clearInterval(this.resendTimer);
-    this.step.set(4);
+    this.step.set(5);
     this.provisioningStep.set(0);
     this.runProvisioning();
   }
@@ -294,6 +438,13 @@ export class SignupComponent implements OnDestroy {
         this.error.set('Please select at least one application.');
         return;
       }
+
+      const missing = this.missingDependencies();
+      if (missing.length > 0) {
+        this.selectedApps.set([...new Set([...this.selectedApps(), ...missing])]);
+        this.depNotice.set(`Added: ${this.labelsFor(missing)} (required by your selection)`);
+      }
+
       this.step.set(2);
       return;
     }
@@ -311,7 +462,7 @@ export class SignupComponent implements OnDestroy {
 
   back(): void {
     this.error.set('');
-    if (this.step() > 1 && this.step() < 4) {
+    if (this.step() > 1 && this.step() < 5) {
       this.step.update((s) => s - 1);
     }
   }

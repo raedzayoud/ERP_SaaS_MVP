@@ -1,0 +1,65 @@
+<ng-container *transloco="let t">
+  <div class="portal-page">
+    <div class="portal-page-header">
+      <div>
+        <h1 class="portal-page-title">{{ t('portal.invoices.title') }}</h1>
+        <p class="portal-page-subtitle">{{ t('portal.invoices.subtitle') }}</p>
+      </div>
+      <button class="portal-btn" (click)="load()">{{ t('common.retry') }}</button>
+    </div>
+
+    @if (loading()) {
+      <div class="portal-empty">{{ t('common.loading') }}</div>
+    } @else if (loadFailed()) {
+      <div class="portal-alert">{{ t('portal.invoices.loadError') }}</div>
+    } @else if (invoices().length === 0) {
+      <div class="portal-empty">{{ t('portal.invoices.empty') }}</div>
+    } @else {
+      <div class="portal-card">
+        <table class="portal-table">
+          <thead>
+            <tr>
+              <th>{{ t('portal.invoices.number') }}</th>
+              <th>{{ t('portal.invoices.issueDate') }}</th>
+              <th>{{ t('portal.invoices.dueDate') }}</th>
+              <th class="col-right">{{ t('portal.invoices.total') }}</th>
+              <th class="col-right">{{ t('portal.invoices.due') }}</th>
+              <th>{{ t('portal.invoices.status') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (invoice of invoices(); track invoice.id) {
+              <tr>
+                <td class="cell-strong">{{ invoice.number }}</td>
+                <td>{{ invoice.issueDate | date: 'mediumDate' }}</td>
+                <td>
+                  {{ invoice.dueDate | date: 'mediumDate' }}
+                  @if (overdueOf(invoice)) {
+                    <span class="overdue-tag">{{ t('portal.invoices.overdue') }}</span>
+                  }
+                </td>
+                <td class="col-right">
+                  {{ totalOf(invoice) | currency: invoice.currency }}
+                </td>
+                <td class="col-right">
+                  {{ dueOf(invoice) | currency: invoice.currency }}
+                </td>
+                <td>
+                  <span class="portal-state" [class]="stateClass(invoice)">
+                    {{ t('portal.invoices.states.' + stateOf(invoice)) }}
+                  </span>
+                </td>
+                <td class="col-right">
+                  <a class="portal-link-btn" [routerLink]="['/portal/invoices', invoice.id]">
+                    {{ t('portal.invoices.view') }}
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

@@ -11,6 +11,8 @@ import { Invoice, PaymentState } from '../../models/invoice';
 import { InvoicePdfService, PdfContext } from '../../services/invoice-pdf.service';
 import { InvoiceError, InvoiceService } from '../../services/invoice.service';
 import { FacturXService } from '../../../invoicing/services/factur-x.service';
+import { SalesOrder } from '../../../sales/models/sales-order';
+import { SalesError, SalesOrderService } from '../../../sales/services/sales-order.service';
 import { InvoiceTotals, invoiceTotals, isOverdue, paymentState } from '../../utils/invoice-calc';
 
 @Component({
@@ -21,6 +23,7 @@ import { InvoiceTotals, invoiceTotals, isOverdue, paymentState } from '../../uti
 })
 export class InvoiceDetail {
   private readonly service = inject(InvoiceService);
+  private readonly salesOrders = inject(SalesOrderService);
   private readonly pdfService = inject(InvoicePdfService);
   private readonly facturXService = inject(FacturXService);
   private readonly tenantService = inject(TenantService);
@@ -33,7 +36,7 @@ export class InvoiceDetail {
 
   readonly invoice = signal<Invoice | null>(null);
   readonly creditNotes = signal<Invoice[]>([]);
-  readonly convertedInvoice = signal<Invoice | null>(null);
+  readonly convertedOrder = signal<SalesOrder | null>(null);
   readonly totals = signal<InvoiceTotals | null>(null);
   readonly payment = signal<PaymentState>('none');
   readonly overdue = signal(false);
@@ -68,11 +71,11 @@ export class InvoiceDetail {
     forkJoin({
       invoice: this.service.getInvoice(this.invoiceId),
       creditNotes: this.service.getCreditNotesFor(this.invoiceId),
-      convertedInvoice: this.service.getInvoiceForQuote(this.invoiceId),
+      convertedOrder: this.salesOrders.getOrderByQuote(this.invoiceId),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ invoice, creditNotes, convertedInvoice }) => {
+        next: ({ invoice, creditNotes, convertedOrder }) => {
           if (!invoice) {
             this.loadFailed.set(true);
             this.loading.set(false);
@@ -80,7 +83,7 @@ export class InvoiceDetail {
           }
           this.applyInvoice(invoice);
           this.creditNotes.set(creditNotes);
-          this.convertedInvoice.set(convertedInvoice ?? null);
+          this.convertedOrder.set(convertedOrder ?? null);
           this.loading.set(false);
         },
         error: () => {
@@ -130,13 +133,13 @@ export class InvoiceDetail {
     this.saving.set(true);
     this.errorKey.set(null);
 
-    this.service
-      .convertQuoteToInvoice(this.invoiceId)
+    this.salesOrders
+      .convertQuoteToOrder(this.invoiceId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (invoice) => {
+        next: (order) => {
           this.saving.set(false);
-          this.convertedInvoice.set(invoice);
+          this.convertedOrder.set(order);
           this.showNotice('quotes.converted');
         },
         error: (error: unknown) => this.showActionError(error),
@@ -200,6 +203,10 @@ export class InvoiceDetail {
 
   private showActionError(error: unknown): void {
     this.saving.set(false);
+    if (error instanceof SalesError) {
+      this.errorKey.set(`sales.errors.${error.code}`);
+      return;
+    }
     this.errorKey.set(
       error instanceof InvoiceError
         ? `invoices.errors.${error.code}`

@@ -2,6 +2,7 @@ import { Component, inject, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { TenantService } from '../../core/services/tenant.service';
+import { PermissionService } from '../../core/services/permission.service';
 
 interface MenuItem {
   labelKey: string;
@@ -23,6 +24,7 @@ interface MenuSection {
 })
 export class Sidebar {
   private tenantService = inject(TenantService);
+  private permissions = inject(PermissionService);
 
   collapsed = input<boolean>(false);
   mobileOpen = input<boolean>(false);
@@ -37,6 +39,12 @@ export class Sidebar {
           icon: '📊',
           route: '/dashboard',
           moduleId: 'dashboard',
+        },
+        {
+          labelKey: 'sidebar.items.apps',
+          icon: '🧩',
+          route: '/apps',
+          moduleId: 'apps',
         },
       ],
     },
@@ -59,6 +67,12 @@ export class Sidebar {
           icon: '📦',
           route: '/products',
           moduleId: 'products',
+        },
+        {
+          labelKey: 'sidebar.items.salesOrders',
+          icon: '📑',
+          route: '/sales-orders',
+          moduleId: 'sales',
         },
         {
           labelKey: 'sidebar.items.invoices',
@@ -145,9 +159,11 @@ export class Sidebar {
         ...section,
         items: section.items.filter(
           (item) =>
-            item.moduleId === 'dashboard' ||
-            item.moduleId === 'settings' ||
-            enabled.includes(item.moduleId),
+            this.permissions.canAccessModule(item.moduleId) &&
+            (item.moduleId === 'dashboard' ||
+              item.moduleId === 'apps' ||
+              item.moduleId === 'settings' ||
+              enabled.includes(item.moduleId)),
         ),
       }))
       .filter((section) => section.items.length > 0);

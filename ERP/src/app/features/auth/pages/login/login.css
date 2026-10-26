@@ -13,12 +13,12 @@
   box-shadow: var(--shadow-lg);
   padding: 40px;
   width: 100%;
-  max-width: 400px;
+  max-width: 540px;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .login-logo {
@@ -45,24 +45,6 @@
 .login-subtitle {
   font-size: 13px;
   color: var(--gray-500);
-}
-
-.login-error {
-  background: var(--danger-bg);
-  color: var(--danger);
-  padding: 10px 14px;
-  border-radius: var(--radius);
-  font-size: 13px;
-  margin-bottom: 16px;
-  border: 1px solid rgba(220, 53, 69, 0.2);
-}
-
-.login-btn {
-  width: 100%;
-  justify-content: center;
-  margin-top: 8px;
-  padding: 10px;
-  font-size: 14px;
 }
 
 .login-footer {
@@ -96,4 +78,51 @@
   .login-card {
     padding: 24px;
   }
+}
+
+.demo-section {
+  margin-top: 0;
+}
+
+.demo-hint {
+  font-size: 12px;
+  color: var(--gray-500, #6b7280);
+  text-align: center;
+  margin: 0 0 12px;
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .demo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.demo-account {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: var(--radius, 8px);
+  background: var(--white, #fff);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.demo-account:hover {
+  border-color: var(--primary, #6d28d9);
+  background: var(--primary-bg, #f3e8ff);
+}
+
+.demo-role {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700, #374151);
 }

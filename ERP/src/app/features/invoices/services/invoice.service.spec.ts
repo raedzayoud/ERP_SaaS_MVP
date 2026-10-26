@@ -31,27 +31,6 @@ describe('InvoiceService quotes', () => {
     expect(movements.items.some((movement) => movement.refId === posted.id)).toBe(false);
   });
 
-  it('converts a posted quote into a linked draft invoice without stock movement', async () => {
-    const invoice = await firstValueFrom(service.convertQuoteToInvoice(QUOTE_POSTED));
-
-    expect(invoice.kind).toBe('invoice');
-    expect(invoice.status).toBe('draft');
-    expect(invoice.number).toBeNull();
-    expect(invoice.originInvoiceId).toBe(QUOTE_POSTED);
-    expect(invoice.customerId).toBe(GLOBAL);
-    expect(invoice.lines.length).toBe(2);
-
-    const movements = await firstValueFrom(stock.getMovements({ page: 0, size: 500 }));
-    expect(movements.items.some((movement) => movement.refId === invoice.id)).toBe(false);
-  });
-
-  it('rejects a second conversion of the same quote', async () => {
-    await firstValueFrom(service.convertQuoteToInvoice(QUOTE_POSTED));
-
-    const promise = firstValueFrom(service.convertQuoteToInvoice(QUOTE_POSTED));
-    await expect(promise).rejects.toMatchObject({ code: 'quoteAlreadyConverted' });
-  });
-
   it('excludes quotes from invoice and credit note queries', async () => {
     const page = await firstValueFrom(
       service.getInvoices({
@@ -64,6 +43,15 @@ describe('InvoiceService quotes', () => {
 
     expect(page.items.every((invoice) => invoice.kind !== 'quote')).toBe(true);
     expect(page.total).toBe(5);
+  });
+
+  it('filters invoices by customerId', async () => {
+    const page = await firstValueFrom(
+      service.getInvoices({ page: 0, size: 500, customerId: GLOBAL }),
+    );
+
+    expect(page.items.length).toBeGreaterThan(0);
+    expect(page.items.every((invoice) => invoice.customerId === GLOBAL)).toBe(true);
   });
 
   it('refuses a payment on a quote', async () => {

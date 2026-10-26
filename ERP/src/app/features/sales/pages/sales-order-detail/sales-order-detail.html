@@ -1,0 +1,244 @@
+<ng-container *transloco="let t">
+  <div class="sales-order-detail-page">
+    @if (loading()) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('titles.salesOrderDetail') }}</h1>
+        </div>
+      </div>
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ t('titles.salesOrderDetail') }}</h1>
+        </div>
+        <a routerLink="/sales-orders" class="btn btn-secondary">← {{ t('common.back') }}</a>
+      </div>
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('sales.detail.notFound') }}</p>
+          <p class="state-text">{{ t('sales.detail.notFoundHint') }}</p>
+          <a routerLink="/sales-orders" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else if (order(); as ord) {
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{{ ord.number || t('sales.draftLabel') }}</h1>
+          <p class="page-subtitle">
+            {{ t('sales.status.' + ord.status) }}
+            @if (late()) {
+              · <span class="late-text">{{ t('sales.tags.late') }}</span>
+            }
+          </p>
+        </div>
+        <div class="page-actions">
+          <a routerLink="/sales-orders" class="btn btn-secondary">← {{ t('common.back') }}</a>
+
+          @if (canDelete()) {
+            <a [routerLink]="['/sales-orders', ord.id, 'edit']" class="btn btn-secondary">
+              {{ t('sales.detail.edit') }}
+            </a>
+            <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="confirm()">
+              {{ saving() ? t('sales.detail.confirming') : t('sales.detail.confirm') }}
+            </button>
+            <button type="button" class="btn btn-danger" [disabled]="saving()" (click)="remove()">
+              {{ t('sales.detail.delete') }}
+            </button>
+          }
+
+          @if (canInvoice()) {
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="saving()"
+              (click)="createInvoice()"
+            >
+              {{ saving() ? t('sales.detail.creatingInvoice') : t('sales.detail.createInvoice') }}
+            </button>
+          }
+          @if (ord.invoiceId) {
+            <a [routerLink]="['/invoices', ord.invoiceId]" class="btn btn-secondary">
+              {{ t('sales.detail.openInvoice') }}
+            </a>
+          }
+          @if (canCancel()) {
+            <button type="button" class="btn btn-danger" [disabled]="saving()" (click)="cancel()">
+              {{ t('sales.detail.cancelOrder') }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (notice()) {
+        <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+      }
+      @if (errorKey(); as key) {
+        <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+      }
+      @if (ord.status === 'draft') {
+        <div class="alert alert-warning" role="status">
+          {{ t('sales.detail.draftNotice') }} — {{ t('sales.detail.draftHint') }}
+        </div>
+      }
+      @if (ord.status === 'confirmed' && ord.invoiceId) {
+        <div class="alert alert-success" role="status">
+          {{ t('sales.detail.invoicedNotice') }}
+        </div>
+      }
+
+      <div class="card document">
+        <div class="document-head">
+          <div class="doc-party">
+            <p class="doc-company">{{ companyName() }}</p>
+            @if (companyAddress()) {
+              <p class="doc-line">{{ companyAddress() }}</p>
+            }
+            @if (companyTaxId()) {
+              <p class="doc-line">{{ t('sales.pdf.taxId') }}: {{ companyTaxId() }}</p>
+            }
+          </div>
+          <div class="doc-meta">
+            <p class="doc-title">{{ t('sales.pdf.title') }}</p>
+            <p class="doc-number">{{ ord.number || t('sales.draftLabel') }}</p>
+            <p class="doc-line">
+              {{ t('sales.detail.orderDate') }}: {{ ord.orderDate | date: 'mediumDate' }}
+            </p>
+            <p class="doc-line">
+              {{ t('sales.detail.expectedDate') }}: {{ ord.expectedDate | date: 'mediumDate' }}
+            </p>
+            <p class="doc-line">
+              {{ t('sales.detail.paymentTerms') }}: {{ t('invoices.terms.' + ord.paymentTerms) }}
+            </p>
+          </div>
+        </div>
+
+        <div class="document-parties">
+          <div class="doc-box">
+            <p class="doc-label">{{ t('sales.detail.customer') }}</p>
+            <p class="doc-strong">{{ ord.customerSnapshot?.name }}</p>
+            @if (ord.customerSnapshot?.address) {
+              <p class="doc-line">{{ ord.customerSnapshot?.address }}</p>
+            }
+            @if (ord.customerSnapshot?.taxId) {
+              <p class="doc-line">
+                {{ t('sales.pdf.taxId') }}: {{ ord.customerSnapshot?.taxId }}
+              </p>
+            }
+          </div>
+          <div class="doc-box">
+            <p class="doc-label">{{ t('sales.detail.status') }}</p>
+            <p class="doc-badges">
+              <app-status-badge [status]="ord.status" scope="sales" />
+            </p>
+            @if (late()) {
+              <p class="doc-line late-text">{{ t('sales.detail.lateHint') }}</p>
+            }
+            @if (ord.invoiceId) {
+              <p class="doc-line">
+                <a [routerLink]="['/invoices', ord.invoiceId]">
+                  {{ t('sales.detail.openInvoice') }}
+                </a>
+              </p>
+            }
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table lines-table document-lines">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('sales.form.reference') }}</th>
+                <th scope="col">{{ t('sales.form.description') }}</th>
+                <th scope="col">{{ t('sales.form.unit') }}</th>
+                <th scope="col" class="num">{{ t('sales.form.quantity') }}</th>
+                <th scope="col" class="num">{{ t('sales.form.unitPrice') }}</th>
+                <th scope="col" class="num">{{ t('sales.form.discount') }}</th>
+                <th scope="col" class="num">{{ t('sales.form.vatRate') }}</th>
+                <th scope="col" class="num">{{ t('sales.form.lineTotal') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of ord.lines; track line.id) {
+                <tr>
+                  <td>{{ line.reference }}</td>
+                  <td>{{ line.description }}</td>
+                  <td>{{ t('products.units.' + line.unit) }}</td>
+                  <td class="num" [attr.data-label]="t('sales.form.quantity')">
+                    {{ line.quantity }}
+                  </td>
+                  <td class="num" [attr.data-label]="t('sales.form.unitPrice')">
+                    {{ line.unitPrice | currency: ord.currency }}
+                  </td>
+                  <td class="num" [attr.data-label]="t('sales.form.discount')">
+                    {{ line.discountPct }} %
+                  </td>
+                  <td class="num" [attr.data-label]="t('sales.form.vatRate')">
+                    {{ line.vatRate }} %
+                  </td>
+                  <td class="num line-net" [attr.data-label]="t('sales.form.lineTotal')">
+                    {{ lineNetOf(ord, line) | currency: ord.currency }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (ord.notes.trim()) {
+          <div class="document-notes">
+            <p class="doc-label">{{ t('sales.detail.notes') }}</p>
+            <p class="doc-line">{{ ord.notes }}</p>
+          </div>
+        }
+
+        <div class="document-foot">
+          <div class="document-history">
+            <p class="doc-label">{{ t('sales.detail.history') }}</p>
+            <p class="doc-line">
+              {{ t('sales.detail.createdAt') }}: {{ ord.createdAt | date: 'medium' }}
+            </p>
+            @if (ord.confirmedAt) {
+              <p class="doc-line">
+                {{ t('sales.detail.confirmedAt') }}: {{ ord.confirmedAt | date: 'medium' }}
+              </p>
+            }
+            @if (ord.cancelledAt) {
+              <p class="doc-line">
+                {{ t('sales.detail.cancelledAt') }}: {{ ord.cancelledAt | date: 'medium' }}
+              </p>
+            }
+          </div>
+
+          @if (totals(); as total) {
+            <div class="totals-block">
+              <div class="totals-row">
+                <span>{{ t('sales.form.totals.net') }}</span>
+                <span>{{ total.totalNet | currency: ord.currency }}</span>
+              </div>
+              @for (vat of total.vatByRate; track vat.rate) {
+                <div class="totals-row">
+                  <span>{{ t('sales.form.totals.vatRate', { rate: vat.rate }) }}</span>
+                  <span>{{ vat.vat | currency: ord.currency }}</span>
+                </div>
+              }
+              <div class="totals-row">
+                <span>{{ t('sales.form.totals.vat') }}</span>
+                <span>{{ total.totalVat | currency: ord.currency }}</span>
+              </div>
+              <div class="totals-row totals-grand">
+                <span>{{ t('sales.form.totals.totalTtc') }}</span>
+                <strong>{{ total.totalTtc | currency: ord.currency }}</strong>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ng-container>

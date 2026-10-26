@@ -158,6 +158,13 @@
                   </td>
                   <td class="col-date">{{ partner.createdAt | date: 'mediumDate' }}</td>
                   <td class="col-actions">
+                    <a
+                      [routerLink]="['/contacts', partner.id, 'overview']"
+                      class="btn btn-sm"
+                      [attr.aria-label]="t('contacts.viewFor', { name: partner.name })"
+                    >
+                      👁
+                    </a>
                     <a [routerLink]="['/contacts', partner.id]" class="btn btn-secondary btn-sm">
                       {{ t('common.edit') }}
                     </a>

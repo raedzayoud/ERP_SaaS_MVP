@@ -62,6 +62,7 @@ export interface InvoiceQuery {
   size: number;
   search?: string;
   status?: InvoiceStatus;
+  customerId?: string;
   kinds?: InvoiceKind[];
   paid?: 'unpaid' | 'partial' | 'paid';
   from?: string;

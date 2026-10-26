@@ -1,0 +1,59 @@
+<ng-container *transloco="let t">
+  <div class="portal-page">
+    <div class="portal-page-header">
+      <div>
+        <h1 class="portal-page-title">{{ t('portal.quotes.title') }}</h1>
+        <p class="portal-page-subtitle">{{ t('portal.quotes.subtitle') }}</p>
+      </div>
+      <button class="portal-btn" (click)="load()">{{ t('common.retry') }}</button>
+    </div>
+
+    @if (loading()) {
+      <div class="portal-empty">{{ t('common.loading') }}</div>
+    } @else if (loadFailed()) {
+      <div class="portal-alert">{{ t('portal.quotes.loadError') }}</div>
+    } @else if (quotes().length === 0) {
+      <div class="portal-empty">{{ t('portal.quotes.empty') }}</div>
+    } @else {
+      <div class="portal-card">
+        <table class="portal-table">
+          <thead>
+            <tr>
+              <th>{{ t('portal.quotes.number') }}</th>
+              <th>{{ t('portal.quotes.issueDate') }}</th>
+              <th>{{ t('portal.quotes.validUntil') }}</th>
+              <th class="col-right">{{ t('portal.quotes.total') }}</th>
+              <th>{{ t('portal.quotes.status') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (quote of quotes(); track quote.id) {
+              <tr>
+                <td class="cell-strong">{{ quote.number }}</td>
+                <td>{{ quote.issueDate | date: 'mediumDate' }}</td>
+                <td>
+                  {{ quote.dueDate | date: 'mediumDate' }}
+                  @if (expiredOf(quote)) {
+                    <span class="overdue-tag">{{ t('portal.quotes.overdue') }}</span>
+                  }
+                </td>
+                <td class="col-right">{{ totalOf(quote) | currency: quote.currency }}</td>
+                <td>
+                  <span class="portal-state state-unpaid">
+                    {{ t('portal.quotes.states.' + quote.status) }}
+                  </span>
+                </td>
+                <td class="col-right">
+                  <a class="portal-link-btn" [routerLink]="['/portal/quotes', quote.id]">
+                    {{ t('portal.quotes.view') }}
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

@@ -10,7 +10,8 @@
     "retry": "Réessayer",
     "actions": "Actions",
     "save": "Enregistrer",
-    "saving": "Enregistrement…"
+    "saving": "Enregistrement…",
+    "contactFilter": "Contact : {{name}}"
   },
   "titles": {
     "dashboard": "Tableau de bord",
@@ -50,7 +51,13 @@
     "newQuote": "Nouveau devis",
     "editQuote": "Modifier le devis",
     "quoteDetail": "Détail du devis",
-    "quotes": "Devis"
+    "quotes": "Devis",
+    "apps": "Applications",
+    "contactOverview": "Fiche contact",
+    "salesOrders": "Commandes de vente",
+    "newSalesOrder": "Nouvelle commande de vente",
+    "editSalesOrder": "Modifier la commande de vente",
+    "salesOrderDetail": "Détail de la commande de vente"
   },
   "descriptions": {
     "contacts": "Les sociétés et les personnes avec lesquelles vous travaillez.",
@@ -63,7 +70,8 @@
     "invoicing": "Numérotation, taxes et facturation électronique.",
     "reports": "Analyses avec export PDF, Excel et CSV.",
     "ai-assistant": "Assistant conversationnel et extraction de documents.",
-    "quotes": "Préparez des devis et convertissez-les en factures"
+    "quotes": "Préparez des devis et convertissez-les en factures",
+    "salesOrders": "Bons de commande clients, confirmation et facturation."
   },
   "navbar": {
     "toggleSidebar": "Afficher ou masquer le menu",
@@ -96,7 +104,9 @@
       "reports": "Rapports",
       "aiAssistant": "Assistant IA",
       "settings": "Paramètres",
-      "quotes": "Devis"
+      "quotes": "Devis",
+      "apps": "Applications",
+      "salesOrders": "Commandes de vente"
     }
   },
   "placeholder": {
@@ -201,7 +211,8 @@
       "suppliedCatalogPrice": "Prix négocié",
       "suppliedMinQty": "Qté min",
       "suppliedDelayDays": "Délai (jours)"
-    }
+    },
+    "viewFor": "Voir {{ name }}"
   },
   "products": {
     "title": "Produits",
@@ -1067,8 +1078,8 @@
   },
   "quotes": {
     "title": "Devis",
-    "subtitle": "Préparez des devis et convertissez-les en factures",
-    "converted": "Le devis a été converti en facture brouillon",
+    "subtitle": "Préparez les devis et transformez-les en commandes de vente",
+    "converted": "Le devis a été converti en commande de vente.",
     "list": {
       "newQuote": "Nouveau devis"
     },
@@ -1077,10 +1088,11 @@
       "editSubtitle": "Modifier le devis avant validation"
     },
     "detail": {
-      "convert": "Convertir en facture",
+      "convert": "Convertir en commande de vente",
       "converting": "Conversion…",
-      "viewInvoice": "Voir la facture {{number}}",
-      "fromQuote": "Issu du devis"
+      "fromQuote": "Issu du devis",
+      "viewOrder": "Commande {{number}} créée",
+      "orderDraft": "Commande créée en brouillon — à confirmer dans Commandes de vente"
     }
   },
   "reports": {
@@ -1164,5 +1176,368 @@
       "facturX": "Factur-X"
     },
     "facturXDownloaded": "Fichier XML Factur-X téléchargé"
+  },
+  "login": {
+    "subtitle": "Connectez-vous à votre compte",
+    "demoHint": "Cliquez sur un profil pour ouvrir sa page de connexion dédiée.",
+    "noAccount": "Pas encore de compte ?",
+    "createWorkspace": "Créer votre espace",
+    "footer": "ERP Cloud SaaS — Plateforme multi-entreprises",
+    "chooseProfile": "Choisissez votre profil",
+    "credentials": {
+      "title": "Connexion {{role}}",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Saisissez votre mot de passe",
+      "signIn": "Se connecter",
+      "signingIn": "Connexion...",
+      "missing": "Veuillez saisir votre e-mail et votre mot de passe.",
+      "error": "Identifiants invalides pour ce profil.",
+      "back": "Choisir un autre profil",
+      "demoHint": "Mode démo : l’e-mail est pré-rempli, tout mot de passe est accepté."
+    }
+  },
+  "roles": {
+    "super-admin": {
+      "label": "Super-administrateur",
+      "description": "Gère la plateforme : tenants, plans d’abonnement et supervision."
+    },
+    "admin-entreprise": {
+      "label": "Administrateur d’entreprise",
+      "description": "Accès complet : utilisateurs, rôles, paramétrage et tous les modules."
+    },
+    "commercial": {
+      "label": "Commercial",
+      "description": "Contacts, leads, devis et commandes."
+    },
+    "acheteur": {
+      "label": "Acheteur",
+      "description": "Fournisseurs, commandes d’achat et réceptions."
+    },
+    "magasinier": {
+      "label": "Magasinier",
+      "description": "Mouvements de stock et inventaires."
+    },
+    "comptable": {
+      "label": "Comptable",
+      "description": "Écritures, journaux, balance et TVA."
+    },
+    "directeur": {
+      "label": "Directeur",
+      "description": "Tableaux de bord et KPI."
+    },
+    "client-externe": {
+      "label": "Client externe",
+      "description": "Portail : consulte et paie ses factures."
+    }
+  },
+  "portal": {
+    "badge": "Portail client",
+    "footer": "Portail client sécurisé",
+    "nav": {
+      "invoices": "Mes factures",
+      "quotes": "Mes devis",
+      "orders": "Mes commandes"
+    },
+    "invoices": {
+      "title": "Mes factures",
+      "subtitle": "Consultez et payez vos factures en ligne.",
+      "number": "Numéro",
+      "issueDate": "Date d’émission",
+      "dueDate": "Date d’échéance",
+      "total": "Total",
+      "due": "Reste dû",
+      "status": "Statut",
+      "overdue": "En retard",
+      "empty": "Aucune facture pour le moment.",
+      "loadError": "Impossible de charger les factures.",
+      "view": "Voir",
+      "states": {
+        "none": "—",
+        "unpaid": "Impayée",
+        "partial": "Partiellement payée",
+        "paid": "Payée"
+      }
+    },
+    "detail": {
+      "title": "Facture",
+      "back": "Retour à mes factures",
+      "notFound": "Facture introuvable.",
+      "issuedOn": "Émise le",
+      "dueDate": "Échéance",
+      "seller": "Facturée à",
+      "description": "Description",
+      "qty": "Qté",
+      "price": "Prix unitaire",
+      "vat": "TVA",
+      "total": "Total",
+      "net": "Total HT",
+      "vatTotal": "Total TVA",
+      "grandTotal": "Total TTC",
+      "alreadyPaid": "Déjà payé",
+      "due": "Reste dû",
+      "payment": "Paiement",
+      "payHelp": "Payez le solde restant par carte (paiement Stripe de démonstration).",
+      "payNow": "Payer maintenant",
+      "paying": "Paiement en cours...",
+      "paySuccess": "Paiement reçu. Merci !",
+      "payError": "Le paiement a échoué. Veuillez réessayer.",
+      "demoNote": "Mode démo : aucun paiement réel n’est effectué.",
+      "fullyPaid": "Cette facture est entièrement payée."
+    },
+    "quotes": {
+      "title": "Mes devis",
+      "subtitle": "Consultez et acceptez les devis que nous vous envoyons.",
+      "number": "Numéro",
+      "issueDate": "Date d'émission",
+      "validUntil": "Valide jusqu'au",
+      "total": "Total",
+      "status": "Statut",
+      "empty": "Aucun devis pour le moment.",
+      "loadError": "Impossible de charger les devis.",
+      "view": "Voir",
+      "overdue": "Expiré",
+      "states": {
+        "draft": "Brouillon",
+        "posted": "En attente de votre réponse"
+      },
+      "answer": "Votre réponse",
+      "answerHelp": "Acceptez ce devis pour le transformer en commande de vente confirmée.",
+      "accept": "Accepter le devis",
+      "accepting": "Envoi…",
+      "accepted": "Devis accepté. Votre demande de commande a bien été reçue.",
+      "acceptedBadge": "Confirmée — commande {{order}}",
+      "acceptError": "Impossible d'accepter ce devis.",
+      "emailLabel": "E-mail de confirmation (démo)",
+      "email": {
+        "subject": "Devis {{quote}} accepté — demande de commande reçue",
+        "body": "Bonjour,\n\nMerci d’avoir accepté le devis {{quote}}. Votre demande de commande a bien été reçue et sera confirmée par notre équipe.\n\nL’équipe Demo SARL"
+      },
+      "orderPending": "🕓 Commande en préparation"
+    },
+    "orders": {
+      "title": "Mes commandes",
+      "subtitle": "Suivez les commandes passées par votre société.",
+      "number": "Numéro",
+      "orderDate": "Date de commande",
+      "expectedDate": "Livraison prévue",
+      "total": "Total",
+      "status": "Statut",
+      "empty": "Aucune commande pour le moment.",
+      "loadError": "Impossible de charger les commandes.",
+      "states": {
+        "confirmed": "Confirmée",
+        "cancelled": "Annulée",
+        "invoiced": "Facturée",
+        "draft": "En attente de confirmation"
+      },
+      "pendingNumber": "En attente de confirmation"
+    },
+    "quoteDetail": {
+      "title": "Devis",
+      "back": "Retour à mes devis",
+      "notFound": "Devis introuvable."
+    }
+  },
+  "admin": {
+    "badge": "Plateforme",
+    "title": "Console plateforme",
+    "nav": {
+      "supervision": "Supervision",
+      "tenants": "Tenants",
+      "plans": "Plans"
+    },
+    "stats": {
+      "totalTenants": "Tenants au total",
+      "activeTenants": "Actifs",
+      "trialTenants": "En essai",
+      "suspendedTenants": "Suspendus",
+      "totalUsers": "Utilisateurs au total",
+      "monthlyRevenue": "Revenu mensuel (MRR)"
+    },
+    "supervision": {
+      "subtitle": "Vue d’ensemble de la plateforme SaaS.",
+      "recentTenants": "Tenants récents",
+      "viewAll": "Tout voir"
+    },
+    "tenants": {
+      "subtitle": "Toutes les entreprises abonnées à la plateforme.",
+      "company": "Entreprise",
+      "subdomain": "Sous-domaine",
+      "email": "E-mail",
+      "plan": "Plan",
+      "status": "Statut",
+      "users": "Utilisateurs",
+      "storage": "Stockage",
+      "created": "Créé le",
+      "suspend": "Suspendre",
+      "activate": "Réactiver",
+      "statuses": {
+        "trial": "Essai",
+        "active": "Actif",
+        "suspended": "Suspendu"
+      }
+    },
+    "plans": {
+      "subtitle": "Plans d’abonnement proposés par la plateforme.",
+      "popular": "Populaire",
+      "month": "mois",
+      "year": "an",
+      "maxUsers": "utilisateurs",
+      "storage": "GB de stockage",
+      "aiQuota": "requêtes IA/mois",
+      "modules": "modules inclus"
+    }
+  },
+  "apps": {
+    "title": "Vos applications",
+    "subtitle": "Ouvrez une application pour commencer.",
+    "empty": "Aucune application activée."
+  },
+  "contactOverview": {
+    "notFound": "Contact introuvable.",
+    "invoices": "Factures",
+    "outstanding": "{{amount}} dus",
+    "quotes": "Devis",
+    "purchases": "Bons de commande",
+    "products": "Produits fournis",
+    "information": "Informations",
+    "taxId": "Identifiant fiscal",
+    "address": "Adresse"
+  },
+  "sales": {
+    "title": "Commandes de vente",
+    "subtitle": "Créez et confirmez les commandes clients, puis facturez-les.",
+    "draftLabel": "Brouillon",
+    "confirmed": "Commande confirmée.",
+    "cancelled": "Commande annulée.",
+    "invoiceCreated": "Facture brouillon créée à partir de cette commande.",
+    "tags": {
+      "late": "En retard"
+    },
+    "status": {
+      "draft": "Brouillon",
+      "confirmed": "Confirmée",
+      "cancelled": "Annulée"
+    },
+    "summary": {
+      "awaiting": "À facturer",
+      "late": "Commandes en retard"
+    },
+    "filters": {
+      "allStatuses": "Tous les statuts"
+    },
+    "list": {
+      "newOrder": "Nouvelle commande de vente",
+      "searchPlaceholder": "Rechercher un numéro ou un client…",
+      "loadError": "Impossible de charger les commandes de vente.",
+      "loadErrorHint": "Vérifiez votre connexion et réessayez.",
+      "emptyTitle": "Aucune commande de vente pour le moment",
+      "emptyHint": "Créez votre première commande de vente pour vendre à un client.",
+      "noMatch": "Aucune commande de vente correspondante",
+      "noMatchHint": "Essayez de modifier vos filtres.",
+      "showing": "Affichage de {{ from }}–{{ to }} sur {{ total }}",
+      "view": "Voir"
+    },
+    "columns": {
+      "number": "Numéro",
+      "customer": "Client",
+      "orderDate": "Date de commande",
+      "expectedDate": "Date prévue",
+      "total": "Total (TTC)",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "detail": {
+      "notFound": "Commande de vente introuvable",
+      "notFoundHint": "Cette commande nexiste pas ou a été supprimée.",
+      "orderDate": "Date de commande",
+      "expectedDate": "Date prévue",
+      "paymentTerms": "Conditions de paiement",
+      "customer": "Client",
+      "status": "Statut",
+      "lateHint": "Cette commande a dépassé sa date prévue.",
+      "notes": "Notes",
+      "history": "Historique",
+      "createdAt": "Créée le",
+      "confirmedAt": "Confirmée le",
+      "cancelledAt": "Annulée le",
+      "edit": "Modifier",
+      "confirm": "Confirmer la commande",
+      "confirming": "Confirmation…",
+      "cancelOrder": "Annuler la commande",
+      "delete": "Supprimer le brouillon",
+      "createInvoice": "Créer la facture",
+      "creatingInvoice": "Création de la facture…",
+      "openInvoice": "Voir la facture",
+      "confirmCancel": "Annuler cette commande de vente ? Cette action est définitive.",
+      "confirmDelete": "Supprimer ce brouillon de commande de vente ?",
+      "actionError": "Laction na pas pu être effectuée.",
+      "draftNotice": "Ceci est un brouillon",
+      "draftHint": "Confirmez la commande pour la verrouiller et créer la facture.",
+      "invoicedNotice": "Cette commande a déjà été facturée."
+    },
+    "form": {
+      "subtitle": "Renseignez le client, les dates et les lignes de la commande.",
+      "sectionCustomer": "Client",
+      "customer": "Client",
+      "customerPlaceholder": "Rechercher un client…",
+      "customerRequired": "Le client est obligatoire.",
+      "createCustomer": "Créer un client",
+      "orderDate": "Date de commande",
+      "expectedDate": "Date prévue",
+      "dateRequired": "La date est obligatoire.",
+      "expectedBeforeOrder": "La date prévue ne peut pas être avant la date de commande.",
+      "paymentTerms": "Conditions de paiement",
+      "currency": "Devise",
+      "currencyHint": "La devise provient des paramètres de votre entreprise.",
+      "sectionLines": "Lignes",
+      "product": "Produit",
+      "productPlaceholder": "Rechercher un produit…",
+      "reference": "Référence",
+      "description": "Description",
+      "unit": "Unité",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire",
+      "priceInvalid": "Le prix unitaire ne peut pas être négatif.",
+      "discount": "Remise",
+      "discountInvalid": "La remise doit être comprise entre 0 et 100.",
+      "vatRate": "Taux de TVA",
+      "lineTotal": "Total net",
+      "descriptionRequired": "La description est obligatoire.",
+      "quantityPositive": "La quantité doit être supérieure à 0.",
+      "removeLineFor": "Supprimer la ligne {{ line }}",
+      "addLine": "Ajouter une ligne",
+      "shortcutHint": "Ctrl + Entrée ajoute une ligne",
+      "sectionNotes": "Notes et totaux",
+      "notes": "Notes",
+      "save": "Enregistrer le brouillon",
+      "saving": "Enregistrement…",
+      "checkErrors": "Veuillez corriger les erreurs avant denregistrer.",
+      "notFound": "Commande de vente introuvable",
+      "notFoundHint": "Cette commande nexiste pas ou a été supprimée.",
+      "saveError": "La commande de vente na pas pu être enregistrée.",
+      "totals": {
+        "net": "Net (HT)",
+        "vatRate": "TVA {{ rate }}%",
+        "vat": "Total TVA",
+        "totalTtc": "Total (TTC)"
+      }
+    },
+    "errors": {
+      "notFound": "Commande de vente introuvable.",
+      "notDraft": "Seuls les brouillons peuvent être modifiés.",
+      "notConfirmed": "Seules les commandes confirmées peuvent être modifiées.",
+      "noLines": "Ajoutez au moins une ligne.",
+      "missingCustomer": "Le client est obligatoire.",
+      "expectedDateBeforeOrder": "La date prévue ne peut pas être avant la date de commande.",
+      "hasInvoice": "Cette commande est facturée et ne peut plus être modifiée.",
+      "notQuote": "Ce document n'est pas un devis.",
+      "quoteAlreadyConverted": "Ce devis a déjà été converti."
+    },
+    "pdf": {
+      "title": "Commande de vente",
+      "taxId": "Numéro fiscal"
+    }
   }
 }

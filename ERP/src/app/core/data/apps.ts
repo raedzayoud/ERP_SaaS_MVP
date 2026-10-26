@@ -33,6 +33,14 @@ export const ERP_APPS: ErpApp[] = [
     dependencies: [],
   },
   {
+    id: 'sales',
+    label: 'Sales Orders',
+    icon: '📑',
+    description: 'Customer orders from confirmation to invoice',
+    category: 'Sales',
+    dependencies: ['contacts', 'products'],
+  },
+  {
     id: 'invoices',
     label: 'Invoices',
     icon: '🧾',

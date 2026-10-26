@@ -1,7 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -36,9 +36,13 @@ type SortField = 'orderDate' | 'expectedDate';
 export class Purchases {
   private readonly service = inject(PurchaseService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
 
   readonly pageSize = 10;
   readonly statuses: PurchaseStatus[] = ['draft', 'confirmed', 'cancelled'];
+
+  contactFilterId = signal(this.route.snapshot.queryParamMap.get('supplier'));
+  contactFilterName = signal(this.route.snapshot.queryParamMap.get('supplierName'));
 
   orders = signal<PurchaseOrder[]>([]);
   total = signal(0);
@@ -55,7 +59,10 @@ export class Purchases {
   totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
   pageStart = computed(() => (this.total() === 0 ? 0 : this.page() * this.pageSize + 1));
   pageEnd = computed(() => Math.min(this.total(), (this.page() + 1) * this.pageSize));
-  hasFilters = computed(() => this.search() !== '' || this.statusFilter() !== '');
+  hasFilters = computed(
+    () =>
+      this.search() !== '' || this.statusFilter() !== '' || this.contactFilterId() !== null,
+  );
 
   constructor() {
     this.searchControl.valueChanges
@@ -83,12 +90,21 @@ export class Purchases {
     };
 
     this.service
-      .getOrders(query)
+      .getOrders(this.contactFilterId() ? { ...query, page: 0, size: 500 } : query)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
-          this.orders.set(result.items);
-          this.total.set(result.total);
+          if (this.contactFilterId()) {
+            const filtered = result.items.filter(
+              (order) => order.supplierId === this.contactFilterId(),
+            );
+            const start = this.page() * this.pageSize;
+            this.orders.set(filtered.slice(start, start + this.pageSize));
+            this.total.set(filtered.length);
+          } else {
+            this.orders.set(result.items);
+            this.total.set(result.total);
+          }
           this.loading.set(false);
         },
         error: () => {
@@ -96,6 +112,13 @@ export class Purchases {
           this.loading.set(false);
         },
       });
+  }
+
+  clearContactFilter(): void {
+    this.contactFilterId.set(null);
+    this.contactFilterName.set(null);
+    this.page.set(0);
+    this.load();
   }
 
   setPage(nextPage: number): void {

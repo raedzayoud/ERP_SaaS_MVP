@@ -1,22 +1,29 @@
 import { Component, signal, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PLANS, getPlanById } from '../../../../core/data/plans';
 import { Tenant } from '../../../../core/models/tenant';
 import { COUNTRIES, LANGUAGES, COMPANY_SIZES } from '../../../../core/data/countries';
+import { ASSIGNEE_ROLES, ROLE_INFO, Role, roleLabelKey } from '../../../../core/models/role';
 
 type SettingsTab = 'company' | 'users' | 'roles' | 'subscription';
 
-interface RoleDef {
-  name: string;
-  description: string;
-  permissions: string[];
-}
+const ROLE_BADGE_CLASS: Record<Role, string> = {
+  'super-admin': 'badge-primary',
+  'admin-entreprise': 'badge-primary',
+  commercial: 'badge-success',
+  acheteur: 'badge-info',
+  magasinier: 'badge-warning',
+  comptable: 'badge-info',
+  directeur: 'badge-primary',
+  'client-externe': 'badge-warning',
+};
 
 @Component({
   selector: 'app-settings',
-  imports: [RouterLink],
+  imports: [RouterLink, TranslocoDirective],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
@@ -49,33 +56,21 @@ export class SettingsComponent {
   showAddUser = signal(false);
   newUserName = signal('');
   newUserEmail = signal('');
-  newUserRole = signal('Viewer');
+  newUserRole = signal<Role>('commercial');
   userError = signal('');
   userSuccess = signal('');
 
   // ── Roles definitions ───────────────────────
-  roles: RoleDef[] = [
-    {
-      name: 'Administrator',
-      description: 'Full access to all modules and settings',
-      permissions: ['All modules', 'Manage users', 'Billing', 'Settings', 'Audit log'],
-    },
-    {
-      name: 'Accountant',
-      description: 'Access to accounting, invoicing, and reports',
-      permissions: ['Accounting', 'Invoicing', 'Reports', 'View contacts', 'View products'],
-    },
-    {
-      name: 'Sales',
-      description: 'Access to CRM, products, and sales documents',
-      permissions: ['Contacts', 'Products', 'Invoices', 'Payments', 'Reports'],
-    },
-    {
-      name: 'Viewer',
-      description: 'Read-only access to dashboards and reports',
-      permissions: ['Dashboard', 'View reports'],
-    },
-  ];
+  readonly assigneeRoles = ASSIGNEE_ROLES;
+  readonly roleInfo = ROLE_INFO.filter((r) => ASSIGNEE_ROLES.includes(r.role));
+
+  roleLabel(role: Role): string {
+    return roleLabelKey(role);
+  }
+
+  roleBadgeClass(role: Role): string {
+    return `badge ${ROLE_BADGE_CLASS[role] ?? 'badge-info'}`;
+  }
 
   // ── Subscription tab ─────────────────────────
   billingCycle = signal<'monthly' | 'annual'>('monthly');
@@ -139,7 +134,7 @@ export class SettingsComponent {
     this.userSuccess.set('');
     this.newUserName.set('');
     this.newUserEmail.set('');
-    this.newUserRole.set('Viewer');
+    this.newUserRole.set('commercial');
   }
 
   addUser(): void {
@@ -210,6 +205,6 @@ export class SettingsComponent {
   }
 
   onRoleChange(event: Event): void {
-    this.newUserRole.set((event.target as HTMLSelectElement).value);
+    this.newUserRole.set((event.target as HTMLSelectElement).value as Role);
   }
 }

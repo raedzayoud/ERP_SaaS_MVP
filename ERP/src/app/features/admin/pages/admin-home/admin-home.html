@@ -1,0 +1,70 @@
+<ng-container *transloco="let t">
+  <div class="admin-page">
+    <h2 class="admin-page-heading">{{ t('admin.nav.supervision') }}</h2>
+    <p class="admin-page-sub">{{ t('admin.supervision.subtitle') }}</p>
+
+    @if (loading()) {
+      <div class="admin-empty">{{ t('common.loading') }}</div>
+    } @else if (stats(); as st) {
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">{{ t('admin.stats.totalTenants') }}</div>
+          <div class="admin-stat-value">{{ st.totalTenants }}</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">{{ t('admin.stats.activeTenants') }}</div>
+          <div class="admin-stat-value admin-stat-good">{{ st.activeTenants }}</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">{{ t('admin.stats.trialTenants') }}</div>
+          <div class="admin-stat-value">{{ st.trialTenants }}</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">{{ t('admin.stats.suspendedTenants') }}</div>
+          <div class="admin-stat-value admin-stat-warn">{{ st.suspendedTenants }}</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">{{ t('admin.stats.totalUsers') }}</div>
+          <div class="admin-stat-value">{{ st.totalUsers }}</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">{{ t('admin.stats.monthlyRevenue') }}</div>
+          <div class="admin-stat-value">{{ st.monthlyRevenue | currency: 'USD' }}</div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h3 class="admin-card-title">{{ t('admin.supervision.recentTenants') }}</h3>
+          <a class="admin-link" routerLink="/admin/tenants">{{ t('admin.supervision.viewAll') }}</a>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>{{ t('admin.tenants.company') }}</th>
+              <th>{{ t('admin.tenants.plan') }}</th>
+              <th>{{ t('admin.tenants.status') }}</th>
+              <th>{{ t('admin.tenants.users') }}</th>
+              <th>{{ t('admin.tenants.created') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tenant of recentTenants(); track tenant.id) {
+              <tr>
+                <td class="admin-cell-strong">{{ tenant.companyName }}</td>
+                <td>{{ planName(tenant.planId) }}</td>
+                <td>
+                  <span class="admin-status" [class]="statusClass(tenant.status)">
+                    {{ t('admin.tenants.statuses.' + tenant.status) }}
+                  </span>
+                </td>
+                <td>{{ tenant.usersCount }}</td>
+                <td>{{ tenant.createdAt | date: 'mediumDate' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

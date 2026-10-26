@@ -1,0 +1,131 @@
+<div class="overview-page" *transloco="let t">
+  @if (loading()) {
+    <div class="card">
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    </div>
+  } @else if (loadFailed() || !partner()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('contactOverview.notFound') }}</p>
+        <a routerLink="/contacts" class="btn btn-secondary">← {{ t('common.back') }}</a>
+      </div>
+    </div>
+  } @else {
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ partner()!.name }}</h1>
+        <p class="page-subtitle">
+          @if (partner()!.isCustomer) {
+            <span class="badge badge-primary">{{ t('contacts.tags.customer') }}</span>
+          }
+          @if (partner()!.isSupplier) {
+            <span class="badge badge-info">{{ t('contacts.tags.supplier') }}</span>
+          }
+          @if (!partner()!.active) {
+            <span class="badge badge-warning">{{ t('contacts.tags.archived') }}</span>
+          }
+          @if (partner()!.jobTitle) {
+            <span class="job-title">{{ partner()!.jobTitle }}</span>
+          }
+        </p>
+      </div>
+      <div class="header-actions">
+        <a [routerLink]="['/contacts', partner()!.id]" class="btn btn-primary">
+          {{ t('common.edit') }}
+        </a>
+        <a routerLink="/contacts" class="btn btn-secondary">← {{ t('common.back') }}</a>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      @if (hasModule('invoices')) {
+        <a
+          class="stat-card"
+          [routerLink]="['/invoices']"
+          [queryParams]="{ customer: partner()!.id, customerName: partner()!.name }"
+        >
+          <span class="stat-icon" aria-hidden="true">🧾</span>
+          <span class="stat-count">{{ invoiceCount() }}</span>
+          <span class="stat-label">{{ t('contactOverview.invoices') }}</span>
+          @if (invoiceDue() > 0) {
+            <span class="stat-sub stat-sub-danger">
+              {{ t('contactOverview.outstanding', { amount: invoiceDue() | currency: currency() }) }}
+            </span>
+          }
+        </a>
+
+        <a
+          class="stat-card"
+          [routerLink]="['/quotes']"
+          [queryParams]="{ customer: partner()!.id, customerName: partner()!.name }"
+        >
+          <span class="stat-icon" aria-hidden="true">📋</span>
+          <span class="stat-count">{{ quoteCount() }}</span>
+          <span class="stat-label">{{ t('contactOverview.quotes') }}</span>
+        </a>
+      }
+
+      @if (hasModule('purchases') && partner()!.isSupplier) {
+        <a
+          class="stat-card"
+          [routerLink]="['/purchases']"
+          [queryParams]="{ supplier: partner()!.id, supplierName: partner()!.name }"
+        >
+          <span class="stat-icon" aria-hidden="true">🛒</span>
+          <span class="stat-count">{{ purchaseCount() }}</span>
+          <span class="stat-label">{{ t('contactOverview.purchases') }}</span>
+          <span class="stat-sub">{{ purchaseTotal() | currency: currency() }}</span>
+        </a>
+      }
+
+      @if (hasModule('products') && partner()!.isSupplier) {
+        <a
+          class="stat-card"
+          [routerLink]="['/products']"
+          [queryParams]="{ supplier: partner()!.id, supplierName: partner()!.name }"
+        >
+          <span class="stat-icon" aria-hidden="true">📦</span>
+          <span class="stat-count">{{ productCount() }}</span>
+          <span class="stat-label">{{ t('contactOverview.products') }}</span>
+        </a>
+      }
+    </div>
+
+    <div class="card details-card">
+      <h2 class="details-title">{{ t('contactOverview.information') }}</h2>
+      <dl class="details-grid">
+        <div class="details-item">
+          <dt>{{ t('contacts.columns.email') }}</dt>
+          <dd>
+            @if (partner()!.email) {
+              <a [href]="'mailto:' + partner()!.email">{{ partner()!.email }}</a>
+            } @else {
+              <span class="text-muted">—</span>
+            }
+          </dd>
+        </div>
+        <div class="details-item">
+          <dt>{{ t('contacts.columns.phone') }}</dt>
+          <dd>{{ partner()!.phone || '—' }}</dd>
+        </div>
+        <div class="details-item">
+          <dt>{{ t('contactOverview.taxId') }}</dt>
+          <dd>{{ partner()!.taxId || '—' }}</dd>
+        </div>
+        <div class="details-item">
+          <dt>{{ t('contactOverview.address') }}</dt>
+          <dd>
+            {{
+              [partner()!.address.street, partner()!.address.city, partner()!.address.country]
+                .filter((part) => part)
+                .join(', ') || '—'
+            }}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  }
+</div>

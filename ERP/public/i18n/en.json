@@ -10,7 +10,8 @@
     "retry": "Try again",
     "actions": "Actions",
     "save": "Save",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "contactFilter": "Contact: {{name}}"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -50,7 +51,13 @@
     "newQuote": "New quote",
     "editQuote": "Edit quote",
     "quoteDetail": "Quote detail",
-    "quotes": "Quotes"
+    "quotes": "Quotes",
+    "apps": "Apps",
+    "contactOverview": "Contact",
+    "salesOrders": "Sales orders",
+    "newSalesOrder": "New sales order",
+    "editSalesOrder": "Edit sales order",
+    "salesOrderDetail": "Sales order detail"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -63,7 +70,8 @@
     "invoicing": "Numbering, taxes and e-invoicing compliance.",
     "reports": "Business analytics with export to PDF, Excel and CSV.",
     "ai-assistant": "Chat assistant and document extraction.",
-    "quotes": "Prepare quotes and convert them into invoices"
+    "quotes": "Prepare quotes and convert them into invoices",
+    "salesOrders": "Customer orders from confirmation to invoice."
   },
   "navbar": {
     "toggleSidebar": "Toggle sidebar",
@@ -96,7 +104,9 @@
       "reports": "Reports",
       "aiAssistant": "AI assistant",
       "settings": "Settings",
-      "quotes": "Quotes"
+      "quotes": "Quotes",
+      "apps": "Apps",
+      "salesOrders": "Sales orders"
     }
   },
   "placeholder": {
@@ -201,7 +211,8 @@
       "suppliedCatalogPrice": "Negotiated price",
       "suppliedMinQty": "Min. qty",
       "suppliedDelayDays": "Lead time (days)"
-    }
+    },
+    "viewFor": "View {{ name }}"
   },
   "products": {
     "title": "Products",
@@ -1067,8 +1078,8 @@
   },
   "quotes": {
     "title": "Quotes",
-    "subtitle": "Prepare quotes and convert them into invoices",
-    "converted": "The quote has been converted into an invoice draft",
+    "subtitle": "Prepare quotes and turn them into sales orders",
+    "converted": "The quote has been converted into a sales order.",
     "list": {
       "newQuote": "New quote"
     },
@@ -1077,10 +1088,11 @@
       "editSubtitle": "Update the quote before validation"
     },
     "detail": {
-      "convert": "Convert to invoice",
+      "convert": "Convert to sales order",
       "converting": "Converting…",
-      "viewInvoice": "View invoice {{number}}",
-      "fromQuote": "From quote"
+      "fromQuote": "From quote",
+      "viewOrder": "Order {{number}} created",
+      "orderDraft": "Draft order created — confirm it in Sales orders"
     }
   },
   "reports": {
@@ -1164,5 +1176,368 @@
       "facturX": "Factur-X"
     },
     "facturXDownloaded": "Factur-X XML file downloaded"
+  },
+  "login": {
+    "subtitle": "Sign in to your account",
+    "demoHint": "Click a profile to open its dedicated login page.",
+    "noAccount": "Don't have an account?",
+    "createWorkspace": "Create your workspace",
+    "footer": "ERP Cloud SaaS — Multi-Company Platform",
+    "chooseProfile": "Choose your profile",
+    "credentials": {
+      "title": "{{role}} login",
+      "email": "Email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "signIn": "Sign in",
+      "signingIn": "Signing in...",
+      "missing": "Please enter your email and password.",
+      "error": "Invalid credentials for this profile.",
+      "back": "Choose another profile",
+      "demoHint": "Demo mode: the email is pre-filled, any password is accepted."
+    }
+  },
+  "roles": {
+    "super-admin": {
+      "label": "Super administrator",
+      "description": "Manages the platform: tenants, subscription plans and supervision."
+    },
+    "admin-entreprise": {
+      "label": "Company administrator",
+      "description": "Full access: users, roles, settings and every module."
+    },
+    "commercial": {
+      "label": "Sales",
+      "description": "Contacts, leads, quotes and sales orders."
+    },
+    "acheteur": {
+      "label": "Purchaser",
+      "description": "Suppliers, purchase orders and receptions."
+    },
+    "magasinier": {
+      "label": "Storekeeper",
+      "description": "Stock movements and inventories."
+    },
+    "comptable": {
+      "label": "Accountant",
+      "description": "Entries, journals, balance and VAT."
+    },
+    "directeur": {
+      "label": "Director",
+      "description": "Dashboards and KPIs."
+    },
+    "client-externe": {
+      "label": "External client",
+      "description": "Portal: views and pays their invoices."
+    }
+  },
+  "portal": {
+    "badge": "Client portal",
+    "footer": "Secure customer portal",
+    "nav": {
+      "invoices": "My invoices",
+      "quotes": "My quotes",
+      "orders": "My orders"
+    },
+    "invoices": {
+      "title": "My invoices",
+      "subtitle": "Consult and pay your invoices online.",
+      "number": "Number",
+      "issueDate": "Issue date",
+      "dueDate": "Due date",
+      "total": "Total",
+      "due": "Due",
+      "status": "Status",
+      "overdue": "Overdue",
+      "empty": "No invoices yet.",
+      "loadError": "Could not load invoices.",
+      "view": "View",
+      "states": {
+        "none": "—",
+        "unpaid": "Unpaid",
+        "partial": "Partially paid",
+        "paid": "Paid"
+      }
+    },
+    "detail": {
+      "title": "Invoice",
+      "back": "Back to my invoices",
+      "notFound": "Invoice not found.",
+      "issuedOn": "Issued on",
+      "dueDate": "Due date",
+      "seller": "Billed to",
+      "description": "Description",
+      "qty": "Qty",
+      "price": "Unit price",
+      "vat": "VAT",
+      "total": "Total",
+      "net": "Net total",
+      "vatTotal": "VAT total",
+      "grandTotal": "Total (VAT incl.)",
+      "alreadyPaid": "Already paid",
+      "due": "Amount due",
+      "payment": "Payment",
+      "payHelp": "Pay the remaining amount by card (demo Stripe checkout).",
+      "payNow": "Pay now",
+      "paying": "Processing payment...",
+      "paySuccess": "Payment received. Thank you!",
+      "payError": "Payment failed. Please try again.",
+      "demoNote": "Demo mode: no real payment is processed.",
+      "fullyPaid": "This invoice is fully paid."
+    },
+    "quotes": {
+      "title": "My quotes",
+      "subtitle": "Review and accept the quotes we sent you.",
+      "number": "Number",
+      "issueDate": "Issue date",
+      "validUntil": "Valid until",
+      "total": "Total",
+      "status": "Status",
+      "empty": "No quotes yet.",
+      "loadError": "Could not load quotes.",
+      "view": "View",
+      "overdue": "Expired",
+      "states": {
+        "draft": "Draft",
+        "posted": "Awaiting your answer"
+      },
+      "answer": "Your answer",
+      "answerHelp": "Accept this quote to turn it into a confirmed sales order.",
+      "accept": "Accept quote",
+      "accepting": "Sending…",
+      "accepted": "Quote accepted. Your order request has been received.",
+      "acceptedBadge": "Confirmed — order {{order}}",
+      "acceptError": "Could not accept this quote.",
+      "emailLabel": "Confirmation e-mail (demo)",
+      "email": {
+        "subject": "Quote {{quote}} accepted — order request received",
+        "body": "Hello,\n\nThank you for accepting quote {{quote}}. Your order request has been received and will be confirmed by our team.\n\nThe Demo SARL team"
+      },
+      "orderPending": "🕓 Order in preparation"
+    },
+    "orders": {
+      "title": "My orders",
+      "subtitle": "Track the orders placed by your company.",
+      "number": "Number",
+      "orderDate": "Order date",
+      "expectedDate": "Expected delivery",
+      "total": "Total",
+      "status": "Status",
+      "empty": "No orders yet.",
+      "loadError": "Could not load orders.",
+      "states": {
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "invoiced": "Invoiced",
+        "draft": "Awaiting confirmation"
+      },
+      "pendingNumber": "Pending confirmation"
+    },
+    "quoteDetail": {
+      "title": "Quote",
+      "back": "Back to my quotes",
+      "notFound": "Quote not found."
+    }
+  },
+  "admin": {
+    "badge": "Platform",
+    "title": "Platform console",
+    "nav": {
+      "supervision": "Supervision",
+      "tenants": "Tenants",
+      "plans": "Plans"
+    },
+    "stats": {
+      "totalTenants": "Total tenants",
+      "activeTenants": "Active",
+      "trialTenants": "In trial",
+      "suspendedTenants": "Suspended",
+      "totalUsers": "Total users",
+      "monthlyRevenue": "MRR"
+    },
+    "supervision": {
+      "subtitle": "Overview of the SaaS platform.",
+      "recentTenants": "Recent tenants",
+      "viewAll": "View all"
+    },
+    "tenants": {
+      "subtitle": "All companies subscribed to the platform.",
+      "company": "Company",
+      "subdomain": "Subdomain",
+      "email": "Email",
+      "plan": "Plan",
+      "status": "Status",
+      "users": "Users",
+      "storage": "Storage",
+      "created": "Created",
+      "suspend": "Suspend",
+      "activate": "Activate",
+      "statuses": {
+        "trial": "Trial",
+        "active": "Active",
+        "suspended": "Suspended"
+      }
+    },
+    "plans": {
+      "subtitle": "Subscription plans offered by the platform.",
+      "popular": "Popular",
+      "month": "month",
+      "year": "year",
+      "maxUsers": "users",
+      "storage": "GB storage",
+      "aiQuota": "AI queries/month",
+      "modules": "modules included"
+    }
+  },
+  "apps": {
+    "title": "Your applications",
+    "subtitle": "Open an application to start working.",
+    "empty": "No application enabled."
+  },
+  "contactOverview": {
+    "notFound": "Contact not found.",
+    "invoices": "Invoices",
+    "outstanding": "{{amount}} outstanding",
+    "quotes": "Quotes",
+    "purchases": "Purchase orders",
+    "products": "Supplied products",
+    "information": "Information",
+    "taxId": "Tax ID",
+    "address": "Address"
+  },
+  "sales": {
+    "title": "Sales orders",
+    "subtitle": "Create and confirm customer orders, then invoice them.",
+    "draftLabel": "Draft",
+    "confirmed": "Order confirmed.",
+    "cancelled": "Order cancelled.",
+    "invoiceCreated": "Draft invoice created from this order.",
+    "tags": {
+      "late": "Late"
+    },
+    "status": {
+      "draft": "Draft",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled"
+    },
+    "summary": {
+      "awaiting": "To invoice",
+      "late": "Late orders"
+    },
+    "filters": {
+      "allStatuses": "All statuses"
+    },
+    "list": {
+      "newOrder": "New sales order",
+      "searchPlaceholder": "Search number or customer…",
+      "loadError": "Could not load sales orders.",
+      "loadErrorHint": "Check your connection and try again.",
+      "emptyTitle": "No sales orders yet",
+      "emptyHint": "Create your first sales order to start selling to a customer.",
+      "noMatch": "No matching sales orders",
+      "noMatchHint": "Try changing your filters.",
+      "showing": "Showing {{ from }}–{{ to }} of {{ total }}",
+      "view": "View"
+    },
+    "columns": {
+      "number": "Number",
+      "customer": "Customer",
+      "orderDate": "Order date",
+      "expectedDate": "Expected date",
+      "total": "Total (incl. VAT)",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "detail": {
+      "notFound": "Sales order not found",
+      "notFoundHint": "This order does not exist or was deleted.",
+      "orderDate": "Order date",
+      "expectedDate": "Expected date",
+      "paymentTerms": "Payment terms",
+      "customer": "Customer",
+      "status": "Status",
+      "lateHint": "This order is past its expected date.",
+      "notes": "Notes",
+      "history": "History",
+      "createdAt": "Created",
+      "confirmedAt": "Confirmed",
+      "cancelledAt": "Cancelled",
+      "edit": "Edit",
+      "confirm": "Confirm order",
+      "confirming": "Confirming…",
+      "cancelOrder": "Cancel order",
+      "delete": "Delete draft",
+      "createInvoice": "Create invoice",
+      "creatingInvoice": "Creating invoice…",
+      "openInvoice": "Open invoice",
+      "confirmCancel": "Cancel this sales order? This cannot be undone.",
+      "confirmDelete": "Delete this draft sales order?",
+      "actionError": "The action could not be completed.",
+      "draftNotice": "This is a draft",
+      "draftHint": "Confirm the order to lock it and create the invoice.",
+      "invoicedNotice": "This order has already been invoiced."
+    },
+    "form": {
+      "subtitle": "Fill in the customer, dates and lines of the order.",
+      "sectionCustomer": "Customer",
+      "customer": "Customer",
+      "customerPlaceholder": "Search a customer…",
+      "customerRequired": "A customer is required.",
+      "createCustomer": "Create a customer",
+      "orderDate": "Order date",
+      "expectedDate": "Expected date",
+      "dateRequired": "A date is required.",
+      "expectedBeforeOrder": "The expected date cannot be before the order date.",
+      "paymentTerms": "Payment terms",
+      "currency": "Currency",
+      "currencyHint": "The currency comes from your company settings.",
+      "sectionLines": "Lines",
+      "product": "Product",
+      "productPlaceholder": "Search a product…",
+      "reference": "Reference",
+      "description": "Description",
+      "unit": "Unit",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "priceInvalid": "The unit price cannot be negative.",
+      "discount": "Discount",
+      "discountInvalid": "The discount must be between 0 and 100.",
+      "vatRate": "VAT rate",
+      "lineTotal": "Net total",
+      "descriptionRequired": "A description is required.",
+      "quantityPositive": "The quantity must be greater than 0.",
+      "removeLineFor": "Remove line {{ line }}",
+      "addLine": "Add a line",
+      "shortcutHint": "Ctrl + Enter adds a line",
+      "sectionNotes": "Notes and totals",
+      "notes": "Notes",
+      "save": "Save draft",
+      "saving": "Saving…",
+      "checkErrors": "Please fix the errors before saving.",
+      "notFound": "Sales order not found",
+      "notFoundHint": "This order does not exist or was deleted.",
+      "saveError": "The sales order could not be saved.",
+      "totals": {
+        "net": "Net (HT)",
+        "vatRate": "VAT {{ rate }}%",
+        "vat": "Total VAT",
+        "totalTtc": "Total (incl. VAT)"
+      }
+    },
+    "errors": {
+      "notFound": "Sales order not found.",
+      "notDraft": "Only drafts can be modified.",
+      "notConfirmed": "Only confirmed orders can be modified.",
+      "noLines": "Add at least one line.",
+      "missingCustomer": "A customer is required.",
+      "expectedDateBeforeOrder": "The expected date cannot be before the order date.",
+      "hasInvoice": "This order is invoiced and can no longer be changed.",
+      "notQuote": "This document is not a quote.",
+      "quoteAlreadyConverted": "This quote has already been converted."
+    },
+    "pdf": {
+      "title": "Sales order",
+      "taxId": "Tax ID"
+    }
   }
 }

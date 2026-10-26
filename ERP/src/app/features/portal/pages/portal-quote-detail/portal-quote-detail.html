@@ -1,0 +1,124 @@
+<ng-container *transloco="let t">
+  <div class="portal-page">
+    <a class="portal-back" routerLink="/portal/quotes">← {{ t('portal.quoteDetail.back') }}</a>
+
+    @if (loading()) {
+      <div class="portal-empty">{{ t('common.loading') }}</div>
+    } @else if (loadFailed() || !quote()) {
+      <div class="portal-empty">{{ t('portal.quoteDetail.notFound') }}</div>
+    } @else if (quote(); as q) {
+      @if (notice()) {
+        <div class="portal-alert portal-alert-success">{{ t(notice()) }}</div>
+      }
+      @if (errorKey()) {
+        <div class="portal-alert">{{ t(errorKey() ?? '') }}</div>
+      }
+
+      <div class="portal-detail-grid">
+        <div class="portal-card">
+          <div class="portal-card-header">
+            <div>
+              <h1 class="portal-invoice-number">{{ q.number }}</h1>
+              <p class="portal-muted">
+                {{ t('portal.detail.issuedOn') }} {{ q.issueDate | date: 'mediumDate' }}
+              </p>
+            </div>
+            <span class="portal-state state-unpaid">
+              {{ t('portal.quotes.states.' + q.status) }}
+            </span>
+          </div>
+
+          <div class="portal-info-row">
+            <div>
+              <div class="portal-label">{{ t('portal.quotes.validUntil') }}</div>
+              <div class="portal-value">{{ q.dueDate | date: 'mediumDate' }}</div>
+            </div>
+            <div>
+              <div class="portal-label">{{ t('portal.detail.seller') }}</div>
+              <div class="portal-value">{{ q.customerSnapshot?.name }}</div>
+            </div>
+          </div>
+
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>{{ t('portal.detail.description') }}</th>
+                <th class="col-right">{{ t('portal.detail.qty') }}</th>
+                <th class="col-right">{{ t('portal.detail.price') }}</th>
+                <th class="col-right">{{ t('portal.detail.vat') }}</th>
+                <th class="col-right">{{ t('portal.detail.total') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of q.lines; track line.id) {
+                <tr>
+                  <td>{{ line.description }}</td>
+                  <td class="col-right">{{ line.quantity }}</td>
+                  <td class="col-right">{{ line.unitPrice | currency: q.currency }}</td>
+                  <td class="col-right">{{ line.vatRate }}%</td>
+                  <td class="col-right">
+                    {{
+                      line.quantity * line.unitPrice * (1 - line.discountPct / 100)
+                        | currency: q.currency
+                    }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <div class="portal-totals">
+            <div class="portal-total-row">
+              <span>{{ t('portal.detail.net') }}</span>
+              <span>{{ netOf(q) | currency: q.currency }}</span>
+            </div>
+            <div class="portal-total-row">
+              <span>{{ t('portal.detail.vatTotal') }}</span>
+              <span>{{ vatOf(q) | currency: q.currency }}</span>
+            </div>
+            <div class="portal-total-row portal-total-grand">
+              <span>{{ t('portal.detail.grandTotal') }}</span>
+              <span>{{ totalOf(q) | currency: q.currency }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="portal-card portal-accept-card">
+          <h2 class="portal-accept-title">{{ t('portal.quotes.answer') }}</h2>
+
+          @if (existingOrder(); as order) {
+            @if (order.number) {
+              <p class="portal-accepted-badge">✓ {{ t('portal.quotes.acceptedBadge', { order: order.number }) }}</p>
+            } @else {
+              <p class="portal-pending-badge">🕓 {{ t('portal.quotes.orderPending') }}</p>
+            }
+          } @else {
+            <p class="portal-muted">{{ t('portal.quotes.answerHelp') }}</p>
+            <button class="portal-accept-btn" (click)="accept()" [disabled]="saving()">
+              @if (saving()) {
+                {{ t('portal.quotes.accepting') }}
+              } @else {
+                {{ t('portal.quotes.accept') }}
+              }
+            </button>
+          }
+
+          @if (mailPreview(); as mail) {
+            <div class="portal-mail-card">
+              <div class="portal-mail-label">{{ t('portal.quotes.emailLabel') }}</div>
+              <div class="portal-mail-row">
+                <span class="portal-mail-key">To</span>
+                <span>{{ mail.to }}</span>
+              </div>
+              <div class="portal-mail-row">
+                <span class="portal-mail-key">Subject</span>
+                <span>{{ mail.subject }}</span>
+              </div>
+              <p class="portal-mail-body">{{ mail.body }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ng-container>

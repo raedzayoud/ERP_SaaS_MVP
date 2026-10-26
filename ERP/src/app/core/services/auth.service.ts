@@ -1,6 +1,8 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { User } from '../models/user';
+import { Role, homeRouteForRole, normalizeRole, roleDisplayName } from '../models/role';
+import { DEMO_USERS, DemoUser } from '../data/demo-users';
 import { TenantService, RegisterTenantData } from './tenant.service';
 
 @Injectable({ providedIn: 'root' })
@@ -11,20 +13,45 @@ export class AuthService {
 
   currentUser = signal<User | null>(this.loadUser());
 
-  login(email: string, password: string): boolean {
-    if (!email || !password) {
+  /**
+   * Signs in on a role-specific login page.
+   * Demo mode: the email must match the demo email of that role,
+   * any non-empty password is accepted.
+   */
+  loginWithCredentials(role: Role, email: string, password: string): boolean {
+    if (!email.trim() || !password) {
       return false;
     }
 
+    const demo = DEMO_USERS.find((user) => user.role === role);
+    if (!demo) {
+      return false;
+    }
+
+    if (demo.email.toLowerCase() !== email.trim().toLowerCase()) {
+      return false;
+    }
+
+    return this.loginAsDemo(demo);
+  }
+
+  /** Signs in directly from a demo account card on the login page. */
+  loginAsDemo(demo: DemoUser): boolean {
+    const role = demo.role;
+
+    // Tenant roles need a workspace; create the demo one on first login.
+    if (role !== 'super-admin') {
+      this.tenantService.ensureDemoTenant();
+    }
+
     const user: User = {
-      id: 1,
-      name: email.split('@')[0],
-      email: email,
-      role: 'Administrator',
+      id: demo.id,
+      name: roleDisplayName(role),
+      email: demo.email,
+      role,
     };
 
-    localStorage.setItem(this.storageKey, JSON.stringify(user));
-    this.currentUser.set(user);
+    this.saveUser(user);
     return true;
   }
 
@@ -42,11 +69,10 @@ export class AuthService {
       id: 1,
       name: data.fullName,
       email: data.email,
-      role: 'Administrator',
+      role: 'admin-entreprise',
     };
 
-    localStorage.setItem(this.storageKey, JSON.stringify(user));
-    this.currentUser.set(user);
+    this.saveUser(user);
     return true;
   }
 
@@ -60,11 +86,24 @@ export class AuthService {
     return this.currentUser() !== null;
   }
 
+  /** Route to open after signing in, based on the role. */
+  homeRouteForCurrentUser(): string {
+    const user = this.currentUser();
+    return user ? homeRouteForRole(user.role) : '/login';
+  }
+
+  private saveUser(user: User): void {
+    localStorage.setItem(this.storageKey, JSON.stringify(user));
+    this.currentUser.set(user);
+  }
+
   private loadUser(): User | null {
     const data = localStorage.getItem(this.storageKey);
     if (data) {
       try {
-        return JSON.parse(data) as User;
+        const parsed = JSON.parse(data) as User;
+        // Migrate older stored roles ("Administrator", ...) to the new Role type.
+        return { ...parsed, role: normalizeRole(parsed.role) };
       } catch {
         return null;
       }

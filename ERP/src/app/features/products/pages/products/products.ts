@@ -1,7 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -22,8 +22,12 @@ export class Products {
   private readonly service = inject(ProductService);
   private readonly tenantService = inject(TenantService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
 
   readonly pageSize = 10;
+
+  contactFilterId = signal(this.route.snapshot.queryParamMap.get('supplier'));
+  contactFilterName = signal(this.route.snapshot.queryParamMap.get('supplierName'));
 
   products = signal<Product[]>([]);
   total = signal(0);
@@ -49,7 +53,8 @@ export class Products {
       this.search() !== '' ||
       this.typeFilter() !== '' ||
       this.categoryFilter() !== '' ||
-      this.activeFilter() !== 'active',
+      this.activeFilter() !== 'active' ||
+      this.contactFilterId() !== null,
   );
 
   constructor() {
@@ -79,12 +84,21 @@ export class Products {
     };
 
     this.service
-      .getProducts(query)
+      .getProducts(this.contactFilterId() ? { ...query, page: 0, size: 500 } : query)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
-          this.products.set(result.items);
-          this.total.set(result.total);
+          if (this.contactFilterId()) {
+            const filtered = result.items.filter((product) =>
+              product.suppliers.some((entry) => entry.supplierId === this.contactFilterId()),
+            );
+            const start = this.page() * this.pageSize;
+            this.products.set(filtered.slice(start, start + this.pageSize));
+            this.total.set(filtered.length);
+          } else {
+            this.products.set(result.items);
+            this.total.set(result.total);
+          }
           this.loading.set(false);
         },
         error: () => {
@@ -92,6 +106,13 @@ export class Products {
           this.loading.set(false);
         },
       });
+  }
+
+  clearContactFilter(): void {
+    this.contactFilterId.set(null);
+    this.contactFilterName.set(null);
+    this.page.set(0);
+    this.load();
   }
 
   setPage(nextPage: number): void {

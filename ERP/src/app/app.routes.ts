@@ -1,14 +1,26 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { moduleGuard } from './core/guards/module.guard';
+import { guestGuard, roleGuard } from './core/guards/role.guard';
+import { TENANT_ROLES } from './core/models/role';
 
 export const routes: Routes = [
   {
     path: 'login',
+    canActivate: [guestGuard],
     loadComponent: () => import('./features/auth/pages/login/login').then((m) => m.LoginComponent),
   },
   {
+    path: 'login/:role',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/pages/login-credentials/login-credentials').then(
+        (m) => m.LoginCredentials,
+      ),
+  },
+  {
     path: 'signup',
+    canActivate: [guestGuard],
     loadComponent: () =>
       import('./features/auth/pages/signup/signup').then((m) => m.SignupComponent),
   },
@@ -19,9 +31,87 @@ export const routes: Routes = [
     data: { title: 'titles.landing' },
   },
   {
+    path: 'portal',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['client-externe'] },
+    loadComponent: () =>
+      import('./layout/portal-layout/portal-layout').then((m) => m.PortalLayout),
+    children: [
+      {
+        path: 'quotes/:id',
+        loadComponent: () =>
+          import('./features/portal/pages/portal-quote-detail/portal-quote-detail').then(
+            (m) => m.PortalQuoteDetail,
+          ),
+        data: { title: 'portal.quoteDetail.title' },
+      },
+      {
+        path: 'quotes',
+        loadComponent: () =>
+          import('./features/portal/pages/portal-quotes/portal-quotes').then(
+            (m) => m.PortalQuotes,
+          ),
+        data: { title: 'portal.quotes.title' },
+      },
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./features/portal/pages/portal-orders/portal-orders').then(
+            (m) => m.PortalOrders,
+          ),
+        data: { title: 'portal.orders.title' },
+      },
+      {
+        path: 'invoices/:id',
+        loadComponent: () =>
+          import('./features/portal/pages/portal-invoice-detail/portal-invoice-detail').then(
+            (m) => m.PortalInvoiceDetail,
+          ),
+        data: { title: 'portal.detail.title' },
+      },
+      {
+        path: 'invoices',
+        loadComponent: () =>
+          import('./features/portal/pages/portal-invoices/portal-invoices').then(
+            (m) => m.PortalInvoices,
+          ),
+        data: { title: 'portal.invoices.title' },
+      },
+      { path: '', redirectTo: 'invoices', pathMatch: 'full' },
+    ],
+  },
+  {
+    path: 'admin',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['super-admin'] },
+    loadComponent: () => import('./layout/admin-layout/admin-layout').then((m) => m.AdminLayout),
+    children: [
+      {
+        path: 'tenants',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-tenants/admin-tenants').then(
+            (m) => m.AdminTenants,
+          ),
+        data: { title: 'admin.nav.tenants' },
+      },
+      {
+        path: 'plans',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-plans/admin-plans').then((m) => m.AdminPlans),
+        data: { title: 'admin.nav.plans' },
+      },
+      {
+        path: '',
+        loadComponent: () => import('./features/admin/pages/admin-home/admin-home').then((m) => m.AdminHome),
+        data: { title: 'admin.nav.supervision' },
+      },
+    ],
+  },
+  {
     path: '',
     loadComponent: () => import('./layout/main-layout/main-layout').then((m) => m.MainLayout),
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: TENANT_ROLES },
     children: [
       {
         path: 'dashboard',
@@ -30,6 +120,20 @@ export const routes: Routes = [
             (m) => m.DashboardHome,
           ),
         data: { title: 'titles.dashboard', moduleId: 'dashboard' },
+      },
+      {
+        path: 'apps',
+        loadComponent: () => import('./features/apps/pages/apps/apps').then((m) => m.Apps),
+        data: { title: 'titles.apps' },
+      },
+      {
+        path: 'contacts/:id/overview',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/crm/pages/contact-overview/contact-overview').then(
+            (m) => m.ContactOverview,
+          ),
+        data: { title: 'titles.contactOverview', moduleId: 'contacts' },
       },
       {
         path: 'contacts/new',
@@ -152,6 +256,47 @@ export const routes: Routes = [
           icon: '📋',
           moduleId: 'invoices',
           kind: 'quote',
+        },
+      },
+      {
+        path: 'sales-orders/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/sales/pages/sales-order-form/sales-order-form').then(
+            (m) => m.SalesOrderForm,
+          ),
+        data: { title: 'titles.newSalesOrder', moduleId: 'sales' },
+      },
+      {
+        path: 'sales-orders/:id/edit',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/sales/pages/sales-order-form/sales-order-form').then(
+            (m) => m.SalesOrderForm,
+          ),
+        data: { title: 'titles.editSalesOrder', moduleId: 'sales' },
+      },
+      {
+        path: 'sales-orders/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/sales/pages/sales-order-detail/sales-order-detail').then(
+            (m) => m.SalesOrderDetail,
+          ),
+        data: { title: 'titles.salesOrderDetail', moduleId: 'sales' },
+      },
+      {
+        path: 'sales-orders',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/sales/pages/sales-order-list/sales-order-list').then(
+            (m) => m.SalesOrderList,
+          ),
+        data: {
+          title: 'titles.salesOrders',
+          description: 'descriptions.salesOrders',
+          icon: '📑',
+          moduleId: 'sales',
         },
       },
       {
@@ -356,9 +501,10 @@ export const routes: Routes = [
       },
       {
         path: 'settings',
+        canActivate: [roleGuard],
         loadComponent: () =>
           import('./features/settings/pages/settings/settings').then((m) => m.SettingsComponent),
-        data: { title: 'titles.settings' },
+        data: { title: 'titles.settings', roles: ['admin-entreprise'] },
       },
       {
         path: '',

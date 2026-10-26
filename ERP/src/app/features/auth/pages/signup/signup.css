@@ -274,6 +274,148 @@
   color: var(--primary);
 }
 
+.selection-apps {
+  text-align: center;
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 8px;
+}
+
+/* ═══ Step 4: Payment (Stripe-style) ═══ */
+.plan-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.plan-summary-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 2px;
+}
+
+.plan-summary-meta {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.plan-summary-price {
+  font-size: 13px;
+  color: var(--gray-600);
+  white-space: nowrap;
+}
+
+.plan-summary-price strong {
+  font-size: 22px;
+  color: var(--gray-900);
+}
+
+.stripe-card {
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  padding: 4px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stripe-card:focus-within {
+  border-color: #635bff;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.15);
+}
+
+.stripe-field {
+  padding: 10px 0;
+}
+
+.stripe-field + .stripe-field,
+.stripe-field-row + .stripe-field {
+  border-top: 1px solid var(--gray-200);
+}
+
+.stripe-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.stripe-field-row .stripe-field {
+  padding-bottom: 0;
+}
+
+.stripe-field-row .stripe-field + .stripe-field {
+  border-top: none;
+  border-left: 1px solid var(--gray-200);
+  padding-left: 16px;
+}
+
+.stripe-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+}
+
+.stripe-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stripe-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--gray-800);
+  padding: 0;
+}
+
+.stripe-input::placeholder {
+  color: var(--gray-400);
+}
+
+.card-brand {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--white);
+  background: #1a1f71;
+  border-radius: 3px;
+  padding: 3px 6px;
+}
+
+.stripe-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-top: 12px;
+}
+
+.stripe-pay-btn {
+  background: #635bff;
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.stripe-pay-btn:hover:not(:disabled) {
+  background: #5145e5;
+}
+
 /* ═══ Step 2: Form ═══ */
 .form-row {
   display: grid;
@@ -521,6 +663,17 @@
   .form-row,
   .form-row-3 {
     grid-template-columns: 1fr;
+  }
+
+  .stripe-field-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .stripe-field-row .stripe-field + .stripe-field {
+    border-left: none;
+    border-top: 1px solid var(--gray-200);
+    padding-left: 0;
   }
 
   .app-cards {

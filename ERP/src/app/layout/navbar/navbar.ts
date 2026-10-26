@@ -4,6 +4,8 @@ import { TranslocoDirective, TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService } from '../../core/services/language.service';
 import { TenantService } from '../../core/services/tenant.service';
+import { PermissionService } from '../../core/services/permission.service';
+import { roleLabelKey } from '../../core/models/role';
 
 @Component({
   selector: 'app-navbar',
@@ -18,6 +20,7 @@ export class Navbar {
   private readonly authServiceSvc = inject(AuthService);
   private readonly tenantService = inject(TenantService);
   private readonly languageService = inject(LanguageService);
+  private readonly permissions = inject(PermissionService);
 
   readonly availableLangs = this.languageService.availableLangs;
   readonly currentLang = this.languageService.currentLang;
@@ -61,5 +64,14 @@ export class Navbar {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  }
+
+  get roleLabel(): string {
+    const user = this.authServiceSvc.currentUser();
+    return user ? roleLabelKey(user.role) : '';
+  }
+
+  get canOpenSettings(): boolean {
+    return this.permissions.canAccessModule('settings');
   }
 }

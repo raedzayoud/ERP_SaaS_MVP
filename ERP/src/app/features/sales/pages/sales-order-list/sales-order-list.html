@@ -1,0 +1,190 @@
+<ng-container *transloco="let t">
+  <div class="sales-order-list-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('titles.salesOrders') }}</h1>
+        <p class="page-subtitle">{{ t('sales.subtitle') }}</p>
+      </div>
+      <a routerLink="/sales-orders/new" class="btn btn-primary">+ {{ t('sales.list.newOrder') }}</a>
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <p class="summary-label">{{ t('sales.summary.awaiting') }}</p>
+        <p class="summary-value">{{ summary().awaiting }}</p>
+      </div>
+      <div class="summary-card summary-danger">
+        <p class="summary-label">{{ t('sales.summary.late') }}</p>
+        <p class="summary-value">{{ summary().late }}</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="search-box">
+          <input
+            type="search"
+            class="form-control"
+            [placeholder]="t('sales.list.searchPlaceholder')"
+            [formControl]="searchControl"
+            [attr.aria-label]="t('sales.list.searchPlaceholder')"
+          />
+        </div>
+
+        <select
+          class="form-control filter-select"
+          [value]="statusFilter()"
+          (change)="onStatusFilter($event)"
+          [attr.aria-label]="t('sales.filters.allStatuses')"
+        >
+          <option value="">{{ t('sales.filters.allStatuses') }}</option>
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ t('sales.status.' + status) }}</option>
+          }
+        </select>
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (contactFilterId(); as customerId) {
+        <div class="active-filters">
+          <span class="badge badge-info">
+            {{ t('common.contactFilter', { name: contactFilterName() || customerId }) }}
+            <button
+              type="button"
+              class="filter-remove"
+              (click)="clearContactFilter()"
+              [attr.aria-label]="t('common.clearFilters')"
+            >
+              ×
+            </button>
+          </span>
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('sales.list.loadError') }}</p>
+          <p class="state-text">{{ t('sales.list.loadErrorHint') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (orders().length === 0) {
+        <div class="state-block">
+          <p class="state-title">
+            {{ hasFilters() ? t('sales.list.noMatch') : t('sales.list.emptyTitle') }}
+          </p>
+          <p class="state-text">
+            {{ hasFilters() ? t('sales.list.noMatchHint') : t('sales.list.emptyHint') }}
+          </p>
+          @if (hasFilters()) {
+            <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+              {{ t('common.clearFilters') }}
+            </button>
+          } @else {
+            <a routerLink="/sales-orders/new" class="btn btn-primary">
+              {{ t('sales.list.newOrder') }}
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('sales.columns.number') }}</th>
+                <th scope="col">{{ t('sales.columns.customer') }}</th>
+                <th scope="col" [attr.aria-sort]="ariaSort('orderDate')">
+                  <button type="button" class="th-sort" (click)="setSort('orderDate')">
+                    {{ t('sales.columns.orderDate') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('orderDate') }}</span>
+                  </button>
+                </th>
+                <th scope="col" [attr.aria-sort]="ariaSort('expectedDate')">
+                  <button type="button" class="th-sort" (click)="setSort('expectedDate')">
+                    {{ t('sales.columns.expectedDate') }}
+                    <span class="sort-icon" aria-hidden="true">{{
+                      sortIcon('expectedDate')
+                    }}</span>
+                  </button>
+                </th>
+                <th scope="col" class="num">{{ t('sales.columns.total') }}</th>
+                <th scope="col">{{ t('sales.columns.status') }}</th>
+                <th scope="col" class="col-actions">{{ t('sales.columns.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of orders(); track order.id) {
+                <tr>
+                  <td class="col-number">
+                    <span class="number-main">{{ order.number || t('sales.draftLabel') }}</span>
+                  </td>
+                  <td>{{ order.customerSnapshot?.name }}</td>
+                  <td class="col-date">{{ order.orderDate | date: 'mediumDate' }}</td>
+                  <td class="col-date" [class.overdue-date]="lateOf(order)">
+                    {{ order.expectedDate | date: 'mediumDate' }}
+                  </td>
+                  <td class="num">{{ totalOf(order) | currency: order.currency }}</td>
+                  <td>
+                    <app-status-badge [status]="order.status" scope="sales" />
+                    @if (lateOf(order)) {
+                      <span class="badge badge-danger">{{ t('sales.tags.late') }}</span>
+                    }
+                  </td>
+                  <td class="col-actions">
+                    <a [routerLink]="['/sales-orders', order.id]" class="btn btn-secondary btn-sm">
+                      {{ t('sales.list.view') }}
+                    </a>
+                    @if (order.status === 'draft') {
+                      <a
+                        [routerLink]="['/sales-orders', order.id, 'edit']"
+                        class="btn btn-secondary btn-sm"
+                      >
+                        {{ t('common.edit') }}
+                      </a>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('sales.list.showing', { from: pageStart(), to: pageEnd(), total: total() }) }}
+          </span>
+          <div class="pager">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() === 0"
+              (click)="setPage(page() - 1)"
+            >
+              ← {{ t('common.previous') }}
+            </button>
+            <span class="page-count">{{ page() + 1 }} / {{ totalPages() }}</span>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() + 1 >= totalPages()"
+              (click)="setPage(page() + 1)"
+            >
+              {{ t('common.next') }} →
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

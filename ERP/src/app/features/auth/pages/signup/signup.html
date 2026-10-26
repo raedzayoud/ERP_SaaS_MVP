@@ -24,8 +24,13 @@
         <div class="step-label">Verify</div>
       </div>
       <div class="step-line" [class.done]="step() > 3"></div>
-      <div class="step" [class.active]="step() >= 4">
+      <div class="step" [class.active]="step() >= 4" [class.done]="step() > 4">
         <div class="step-circle">4</div>
+        <div class="step-label">Payment</div>
+      </div>
+      <div class="step-line" [class.done]="step() > 4"></div>
+      <div class="step" [class.active]="step() >= 5">
+        <div class="step-circle">5</div>
         <div class="step-label">Setup</div>
       </div>
     </div>
@@ -85,6 +90,7 @@
             — ${{ selectedPlan().priceMonthly }}/mo
           </span>
         </div>
+        <p class="selection-apps">{{ selectedLabels() }}</p>
       </div>
     }
 
@@ -244,8 +250,99 @@
       </div>
     }
 
-    <!-- ═══ STEP 4: Provisioning ═══ -->
+    <!-- ═══ STEP 4: Payment ═══ -->
     @if (step() === 4) {
+      <div class="step-content">
+        <div class="plan-summary">
+          <div class="plan-summary-info">
+            <p class="plan-summary-name">{{ selectedPlan().name }} plan</p>
+            <p class="plan-summary-meta">
+              {{ selectableCount() }} apps · billed monthly · cancel anytime
+            </p>
+          </div>
+          <p class="plan-summary-price">
+            <strong>${{ selectedPlan().priceMonthly }}</strong>/mo
+          </p>
+        </div>
+
+        <div class="demo-banner">
+          Demo mode — no real payment. Use test card
+          <strong class="demo-code">4242 4242 4242 4242</strong>
+        </div>
+
+        @if (paymentError()) {
+          <div class="signup-error">{{ paymentError() }}</div>
+        }
+
+        <div class="stripe-card">
+          <div class="stripe-field">
+            <label class="stripe-label" for="cardNumber">Card number</label>
+            <div class="stripe-input-row">
+              <input
+                id="cardNumber"
+                type="text"
+                inputmode="numeric"
+                class="stripe-input"
+                autocomplete="cc-number"
+                placeholder="1234 1234 1234 1234"
+                [value]="cardNumber()"
+                (input)="onCardNumberInput($event)"
+              />
+              @if (cardBrand !== 'CARD') {
+                <span class="card-brand">{{ cardBrand }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="stripe-field-row">
+            <div class="stripe-field">
+              <label class="stripe-label" for="cardExpiry">Expiry</label>
+              <input
+                id="cardExpiry"
+                type="text"
+                inputmode="numeric"
+                class="stripe-input"
+                autocomplete="cc-exp"
+                placeholder="MM/YY"
+                [value]="cardExpiry()"
+                (input)="onCardExpiryInput($event)"
+              />
+            </div>
+            <div class="stripe-field">
+              <label class="stripe-label" for="cardCvc">CVC</label>
+              <input
+                id="cardCvc"
+                type="text"
+                inputmode="numeric"
+                class="stripe-input"
+                autocomplete="cc-csc"
+                placeholder="CVC"
+                [value]="cardCvc()"
+                (input)="onCardCvcInput($event)"
+              />
+            </div>
+          </div>
+
+          <div class="stripe-field">
+            <label class="stripe-label" for="cardName">Cardholder name</label>
+            <input
+              id="cardName"
+              type="text"
+              class="stripe-input"
+              autocomplete="cc-name"
+              placeholder="Full name on card"
+              [value]="cardName()"
+              (input)="onCardNameInput($event)"
+            />
+          </div>
+        </div>
+
+        <p class="stripe-footer">🔒 Powered by Stripe · Demo mode</p>
+      </div>
+    }
+
+    <!-- ═══ STEP 5: Provisioning ═══ -->
+    @if (step() === 5) {
       <div class="step-content provision-content">
         <div class="provision-spinner"></div>
         <h3 class="provision-title">Setting up your workspace…</h3>
@@ -283,7 +380,7 @@
     }
 
     <!-- Actions -->
-    @if (step() < 4) {
+    @if (step() < 5) {
       <div class="step-actions">
         @if (step() > 1) {
           <button class="btn btn-secondary" (click)="back()">← Back</button>
@@ -297,11 +394,19 @@
           <button class="btn btn-primary" (click)="next()">Send code →</button>
         } @else if (step() === 3) {
           <button
-            class="btn btn-success"
+            class="btn btn-primary"
             (click)="verifyCode()"
             [disabled]="codeInput().length !== 6"
           >
-            Verify & launch →
+            Verify & continue →
+          </button>
+        } @else if (step() === 4) {
+          <button class="btn stripe-pay-btn" (click)="pay()" [disabled]="paying()">
+            @if (paying()) {
+              <span class="mini-spinner" aria-hidden="true"></span> Processing…
+            } @else {
+              Pay ${{ selectedPlan().priceMonthly }} & create workspace →
+            }
           </button>
         }
       </div>

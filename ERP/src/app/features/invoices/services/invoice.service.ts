@@ -307,51 +307,6 @@ export class InvoiceService {
     );
   }
 
-  getInvoiceForQuote(quoteId: string): Observable<Invoice | undefined> {
-    return timer(LATENCY_MS).pipe(
-      map(() => this.items().find((invoice) => invoice.originInvoiceId === quoteId)),
-    );
-  }
-
-  convertQuoteToInvoice(quoteId: string): Observable<Invoice> {
-    return this.getInvoice(quoteId).pipe(
-      switchMap((quote) => {
-        if (!quote) return this.fail('notFound');
-        if (quote.kind !== 'quote') return this.fail('notQuote');
-        if (quote.status !== 'posted') return this.fail('notDraft');
-        if (this.items().some((invoice) => invoice.originInvoiceId === quote.id)) {
-          return this.fail('quoteAlreadyConverted');
-        }
-
-        return this.withPartner(quote.customerId, (partner) => {
-          const now = new Date().toISOString();
-          const created: Invoice = {
-            id: this.newId(),
-            number: null,
-            kind: 'invoice',
-            status: 'draft',
-            customerId: quote.customerId,
-            customerSnapshot: toSnapshot(partner),
-            issueDate: todayIso(),
-            dueDate: quote.dueDate,
-            paymentTerms: quote.paymentTerms,
-            currency: quote.currency,
-            lines: quote.lines.map((item) => ({ ...item, id: this.newId() })),
-            stampDuty: quote.stampDuty,
-            amountPaid: 0,
-            notes: quote.notes,
-            originInvoiceId: quote.id,
-            createdAt: now,
-            updatedAt: now,
-            postedAt: null,
-          };
-          this.items.update((list) => [...list, created]);
-          return created;
-        });
-      }),
-    );
-  }
-
   addPayment(invoiceId: string, amount: number): Observable<Invoice> {
     const existing = this.items().find((invoice) => invoice.id === invoiceId);
     if (!existing) return this.fail('notFound');
@@ -574,6 +529,7 @@ export class InvoiceService {
 
     const filtered = this.items().filter((invoice) => {
       if (query.status && invoice.status !== query.status) return false;
+      if (query.customerId && invoice.customerId !== query.customerId) return false;
       if (query.kinds && !query.kinds.includes(invoice.kind)) return false;
       if (query.paid && paymentState(invoice) !== query.paid) return false;
       if (query.from && invoice.issueDate < query.from) return false;

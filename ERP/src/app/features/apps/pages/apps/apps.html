@@ -1,0 +1,26 @@
+<div class="apps-page" *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('apps.title') }}</h1>
+      <p class="page-subtitle">{{ t('apps.subtitle') }}</p>
+    </div>
+  </div>
+
+  @if (tiles().length === 0) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('apps.empty') }}</p>
+      </div>
+    </div>
+  } @else {
+    <div class="apps-grid">
+      @for (app of tiles(); track app.id) {
+        <a class="app-tile" [routerLink]="app.route">
+          <span class="app-icon" aria-hidden="true">{{ app.icon }}</span>
+          <span class="app-label">{{ app.label }}</span>
+          <span class="app-description">{{ app.description }}</span>
+        </a>
+      }
+    </div>
+  }
+</div>

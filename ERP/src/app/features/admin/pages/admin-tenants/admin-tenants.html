@@ -1,0 +1,63 @@
+<ng-container *transloco="let t">
+  <div class="admin-page">
+    <h2 class="admin-page-heading">{{ t('admin.nav.tenants') }}</h2>
+    <p class="admin-page-sub">{{ t('admin.tenants.subtitle') }}</p>
+
+    @if (loading()) {
+      <div class="admin-empty">{{ t('common.loading') }}</div>
+    } @else {
+      <div class="admin-card">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>{{ t('admin.tenants.company') }}</th>
+              <th>{{ t('admin.tenants.subdomain') }}</th>
+              <th>{{ t('admin.tenants.email') }}</th>
+              <th>{{ t('admin.tenants.plan') }}</th>
+              <th>{{ t('admin.tenants.status') }}</th>
+              <th class="col-right">{{ t('admin.tenants.users') }}</th>
+              <th class="col-right">{{ t('admin.tenants.storage') }}</th>
+              <th>{{ t('admin.tenants.created') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tenant of tenants(); track tenant.id) {
+              <tr>
+                <td class="admin-cell-strong">{{ tenant.companyName }}</td>
+                <td>{{ tenant.subdomain }}.erpcloud.com</td>
+                <td class="admin-muted">{{ tenant.email }}</td>
+                <td>{{ planOf(tenant).name }}</td>
+                <td>
+                  <span class="admin-status" [class]="statusClass(tenant.status)">
+                    {{ t('admin.tenants.statuses.' + tenant.status) }}
+                  </span>
+                </td>
+                <td class="col-right">{{ tenant.usersCount }}</td>
+                <td class="col-right">{{ tenant.storageUsedGb }} GB</td>
+                <td>{{ tenant.createdAt | date: 'mediumDate' }}</td>
+                <td class="col-right">
+                  @if (tenant.status !== 'trial') {
+                    <button
+                      class="admin-action-btn"
+                      [class.action-suspend]="tenant.status === 'active'"
+                      [class.action-activate]="tenant.status === 'suspended'"
+                      [disabled]="updatingId() === tenant.id"
+                      (click)="toggleStatus(tenant)"
+                    >
+                      {{
+                        tenant.status === 'active'
+                          ? t('admin.tenants.suspend')
+                          : t('admin.tenants.activate')
+                      }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

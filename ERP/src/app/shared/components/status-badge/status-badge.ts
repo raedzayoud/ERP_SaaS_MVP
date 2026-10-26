@@ -3,7 +3,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 export type BadgeStatus = 'draft' | 'posted' | 'confirmed' | 'cancelled';
 export type BadgePaymentState = 'none' | 'unpaid' | 'partial' | 'paid';
-export type BadgeScope = 'invoices' | 'purchases';
+export type BadgeScope = 'invoices' | 'purchases' | 'sales';
 
 const STATUS_BADGE: Record<BadgeStatus, string> = {
   draft: 'badge-info',

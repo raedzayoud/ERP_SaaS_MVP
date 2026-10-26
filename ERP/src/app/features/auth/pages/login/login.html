@@ -1,59 +1,28 @@
-<div class="login-page">
+<div class="login-page" *transloco="let t">
   <div class="login-card">
     <div class="login-header">
       <div class="login-logo">E</div>
       <h1 class="login-title">ERP Cloud</h1>
-      <p class="login-subtitle">Sign in to your account</p>
+      <p class="login-subtitle">{{ t('login.chooseProfile') }}</p>
     </div>
 
-    <form class="login-form" (ngSubmit)="onSubmit()">
-      @if (error()) {
-        <div class="login-error">{{ error() }}</div>
-      }
-
-      <div class="form-group">
-        <label class="form-label" for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          class="form-control"
-          placeholder="you@company.com"
-          [value]="email()"
-          (input)="onEmailInput($event)"
-          autocomplete="email"
-          required
-        />
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          class="form-control"
-          placeholder="Enter your password"
-          [value]="password()"
-          (input)="onPasswordInput($event)"
-          autocomplete="current-password"
-          required
-        />
-      </div>
-
-      <button type="submit" class="btn btn-primary btn-lg login-btn" [disabled]="loading()">
-        @if (loading()) {
-          Signing in...
-        } @else {
-          Sign In
+    <div class="demo-section">
+      <p class="demo-hint">{{ t('login.demoHint') }}</p>
+      <div class="demo-grid">
+        @for (user of demoUsers; track user.email) {
+          <button type="button" class="demo-account" (click)="openLogin(user)">
+            <span class="demo-role">{{ t(roleKey(user)) }}</span>
+          </button>
         }
-      </button>
-    </form>
+      </div>
+    </div>
 
     <div class="login-footer">
       <p class="signup-prompt">
-        Don't have an account?
-        <a routerLink="/signup">Create your workspace</a>
+        {{ t('login.noAccount') }}
+        <a routerLink="/signup">{{ t('login.createWorkspace') }}</a>
       </p>
-      <p class="login-footer-text">ERP Cloud SaaS — Multi-Enterprise Platform</p>
+      <p class="login-footer-text">{{ t('login.footer') }}</p>
     </div>
   </div>
 </div>

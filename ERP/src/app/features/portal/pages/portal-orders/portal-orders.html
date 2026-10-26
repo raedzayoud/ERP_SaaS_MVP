@@ -1,0 +1,50 @@
+<ng-container *transloco="let t">
+  <div class="portal-page">
+    <div class="portal-page-header">
+      <div>
+        <h1 class="portal-page-title">{{ t('portal.orders.title') }}</h1>
+        <p class="portal-page-subtitle">{{ t('portal.orders.subtitle') }}</p>
+      </div>
+      <button class="portal-btn" (click)="load()">{{ t('common.retry') }}</button>
+    </div>
+
+    @if (loading()) {
+      <div class="portal-empty">{{ t('common.loading') }}</div>
+    } @else if (loadFailed()) {
+      <div class="portal-alert">{{ t('portal.orders.loadError') }}</div>
+    } @else if (orders().length === 0) {
+      <div class="portal-empty">{{ t('portal.orders.empty') }}</div>
+    } @else {
+      <div class="portal-card">
+        <table class="portal-table">
+          <thead>
+            <tr>
+              <th>{{ t('portal.orders.number') }}</th>
+              <th>{{ t('portal.orders.orderDate') }}</th>
+              <th>{{ t('portal.orders.expectedDate') }}</th>
+              <th class="col-right">{{ t('portal.orders.total') }}</th>
+              <th>{{ t('portal.orders.status') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (order of orders(); track order.id) {
+              <tr>
+                <td class="cell-strong">
+                  {{ order.number ?? t('portal.orders.pendingNumber') }}
+                </td>
+                <td>{{ order.orderDate | date: 'mediumDate' }}</td>
+                <td>{{ order.expectedDate | date: 'mediumDate' }}</td>
+                <td class="col-right">{{ totalOf(order) | currency: order.currency }}</td>
+                <td>
+                  <span class="portal-state" [class]="stateClass(order)">
+                    {{ t('portal.orders.states.' + statusOf(order)) }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

@@ -1,0 +1,54 @@
+<ng-container *transloco="let t">
+  <div class="portal-shell">
+    <header class="portal-navbar">
+      <div class="portal-brand">
+        <span class="portal-logo">E</span>
+        <span class="portal-name">ERP Cloud</span>
+        <span class="portal-badge">{{ t('portal.badge') }}</span>
+      </div>
+
+      <div class="portal-nav-right">
+        <a class="portal-link" routerLink="/portal/invoices" routerLinkActive="active">
+          {{ t('portal.nav.invoices') }}
+        </a>
+
+        <a class="portal-link" routerLink="/portal/quotes" routerLinkActive="active">
+          {{ t('portal.nav.quotes') }}
+        </a>
+
+        <a class="portal-link" routerLink="/portal/orders" routerLinkActive="active">
+          {{ t('portal.nav.orders') }}
+        </a>
+
+        <select
+          class="portal-lang-select"
+          [value]="currentLang()"
+          [attr.aria-label]="t('navbar.language')"
+          (change)="onLangChange($event)"
+        >
+          @for (lang of availableLangs; track lang.code) {
+            <option [value]="lang.code">{{ lang.label }}</option>
+          }
+        </select>
+
+        <div class="portal-user">
+          <span class="portal-avatar">{{ userInitials }}</span>
+          <span class="portal-user-name">{{ authService.currentUser()?.name }}</span>
+        </div>
+
+        <button class="portal-logout" (click)="logout()">{{ t('navbar.signOut') }}</button>
+      </div>
+    </header>
+
+    <main class="portal-content">
+      <router-outlet />
+    </main>
+
+    <footer class="portal-footer">
+      {{ t('portal.footer') }}
+      @if (tenantService.currentTenant(); as tenant) {
+        <span class="portal-footer-company"> — {{ tenant.companyName }}</span>
+      }
+    </footer>
+  </div>
+</ng-container>

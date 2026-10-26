@@ -1,0 +1,117 @@
+<ng-container *transloco="let t">
+  <div class="portal-page">
+    <a class="portal-back" routerLink="/portal/invoices">← {{ t('portal.detail.back') }}</a>
+
+    @if (loading()) {
+      <div class="portal-empty">{{ t('common.loading') }}</div>
+    } @else if (loadFailed() || !invoice()) {
+      <div class="portal-empty">{{ t('portal.detail.notFound') }}</div>
+    } @else if (invoice(); as inv) {
+      @if (paySuccess()) {
+        <div class="portal-alert portal-alert-success">{{ t('portal.detail.paySuccess') }}</div>
+      }
+      @if (payFailed()) {
+        <div class="portal-alert">{{ t('portal.detail.payError') }}</div>
+      }
+
+      <div class="portal-detail-grid">
+        <div class="portal-card">
+          <div class="portal-card-header">
+            <div>
+              <h1 class="portal-invoice-number">{{ inv.number }}</h1>
+              <p class="portal-muted">
+                {{ t('portal.detail.issuedOn') }} {{ inv.issueDate | date: 'mediumDate' }}
+              </p>
+            </div>
+            <span
+              class="portal-state"
+              [class]="stateOf(inv) === 'paid' ? 'state-paid' : 'state-unpaid'"
+            >
+              {{ t('portal.invoices.states.' + stateOf(inv)) }}
+            </span>
+          </div>
+
+          <div class="portal-info-row">
+            <div>
+              <div class="portal-label">{{ t('portal.detail.dueDate') }}</div>
+              <div class="portal-value">{{ inv.dueDate | date: 'mediumDate' }}</div>
+            </div>
+            <div>
+              <div class="portal-label">{{ t('portal.detail.seller') }}</div>
+              <div class="portal-value">{{ inv.customerSnapshot?.name }}</div>
+            </div>
+          </div>
+
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th>{{ t('portal.detail.description') }}</th>
+                <th class="col-right">{{ t('portal.detail.qty') }}</th>
+                <th class="col-right">{{ t('portal.detail.price') }}</th>
+                <th class="col-right">{{ t('portal.detail.vat') }}</th>
+                <th class="col-right">{{ t('portal.detail.total') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of inv.lines; track line.id) {
+                <tr>
+                  <td>{{ line.description }}</td>
+                  <td class="col-right">{{ line.quantity }}</td>
+                  <td class="col-right">{{ line.unitPrice | currency: inv.currency }}</td>
+                  <td class="col-right">{{ line.vatRate }}%</td>
+                  <td class="col-right">
+                    {{
+                      line.quantity * line.unitPrice * (1 - line.discountPct / 100)
+                        | currency: inv.currency
+                    }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <div class="portal-totals">
+            <div class="portal-total-row">
+              <span>{{ t('portal.detail.net') }}</span>
+              <span>{{ netOf(inv) | currency: inv.currency }}</span>
+            </div>
+            <div class="portal-total-row">
+              <span>{{ t('portal.detail.vatTotal') }}</span>
+              <span>{{ vatOf(inv) | currency: inv.currency }}</span>
+            </div>
+            <div class="portal-total-row portal-total-grand">
+              <span>{{ t('portal.detail.grandTotal') }}</span>
+              <span>{{ totalOf(inv) | currency: inv.currency }}</span>
+            </div>
+            <div class="portal-total-row">
+              <span>{{ t('portal.detail.alreadyPaid') }}</span>
+              <span>{{ paidOf(inv) | currency: inv.currency }}</span>
+            </div>
+            <div class="portal-total-row portal-total-due">
+              <span>{{ t('portal.detail.due') }}</span>
+              <span>{{ dueOf(inv) | currency: inv.currency }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="portal-card portal-pay-card">
+          <h2 class="portal-pay-title">{{ t('portal.detail.payment') }}</h2>
+
+          @if (dueOf(inv) > 0) {
+            <p class="portal-muted">{{ t('portal.detail.payHelp') }}</p>
+            <button class="portal-pay-btn" (click)="payNow()" [disabled]="paying()">
+              @if (paying()) {
+                {{ t('portal.detail.paying') }}
+              } @else {
+                {{ t('portal.detail.payNow') }} — {{ dueOf(inv) | currency: inv.currency }}
+              }
+            </button>
+            <p class="portal-demo-note">{{ t('portal.detail.demoNote') }}</p>
+          } @else {
+            <p class="portal-paid-note">✓ {{ t('portal.detail.fullyPaid') }}</p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ng-container>

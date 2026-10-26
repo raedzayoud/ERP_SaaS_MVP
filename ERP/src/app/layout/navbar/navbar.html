@@ -45,15 +45,20 @@
             <div class="dropdown-header">
               <div class="dropdown-name">{{ authService.currentUser()?.name }}</div>
               <div class="dropdown-email">{{ authService.currentUser()?.email }}</div>
+              @if (roleLabel) {
+                <div class="dropdown-role">{{ roleLabel | transloco }}</div>
+              }
               @if (tenant) {
                 <div class="dropdown-company">🏢 {{ tenant.companyName }}</div>
               }
             </div>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" routerLink="/settings" (click)="closeUserMenu()">
-              <span aria-hidden="true">⚙️</span> {{ t('navbar.settings') }}
-            </a>
-            <div class="dropdown-divider"></div>
+            @if (canOpenSettings) {
+              <a class="dropdown-item" routerLink="/settings" (click)="closeUserMenu()">
+                <span aria-hidden="true">⚙️</span> {{ t('navbar.settings') }}
+              </a>
+              <div class="dropdown-divider"></div>
+            }
             <button class="dropdown-item logout-item" (click)="logout()">
               <span aria-hidden="true">🚪</span> {{ t('navbar.signOut') }}
             </button>

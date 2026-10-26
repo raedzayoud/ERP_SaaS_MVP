@@ -67,10 +67,14 @@
               {{ pdfBusy() ? t('invoices.detail.pdfBusy') : t('invoices.detail.pdf') }}
             </button>
             @if (isQuote()) {
-              @if (convertedInvoice(); as converted) {
-                <a [routerLink]="['/invoices', converted.id]" class="btn btn-secondary">
-                  {{ t('quotes.detail.viewInvoice', { number: converted.number || '' }) }}
-                </a>
+              @if (convertedOrder(); as converted) {
+                <span class="btn btn-secondary" aria-disabled="true">
+                  {{
+                    converted.number
+                      ? t('quotes.detail.viewOrder', { number: converted.number })
+                      : t('quotes.detail.orderDraft')
+                  }}
+                </span>
               } @else {
                 <button
                   type="button"

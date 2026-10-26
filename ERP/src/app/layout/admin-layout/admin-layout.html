@@ -1,0 +1,43 @@
+<ng-container *transloco="let t">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <span class="admin-logo">E</span>
+        <div class="admin-brand-text">
+          <span class="admin-brand-name">ERP Cloud</span>
+          <span class="admin-brand-badge">{{ t('admin.badge') }}</span>
+        </div>
+      </div>
+
+      <nav class="admin-nav">
+        @for (item of navItems; track item.route) {
+          <a
+            class="admin-nav-item"
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.exact }"
+          >
+            <span class="admin-nav-icon" aria-hidden="true">{{ item.icon }}</span>
+            {{ t(item.labelKey) }}
+          </a>
+        }
+      </nav>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-navbar">
+        <h1 class="admin-page-title">{{ t('admin.title') }}</h1>
+
+        <div class="admin-user">
+          <span class="admin-avatar">{{ userInitials }}</span>
+          <span class="admin-user-name">{{ authService.currentUser()?.name }}</span>
+          <button class="admin-logout" (click)="logout()">{{ t('navbar.signOut') }}</button>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <router-outlet />
+      </main>
+    </div>
+  </div>
+</ng-container>

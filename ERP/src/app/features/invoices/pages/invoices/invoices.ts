@@ -43,6 +43,9 @@ export class Invoices {
   readonly pageSize = 10;
   readonly fixedKind = this.route.snapshot.data['kind'] as InvoiceKind | undefined;
 
+  contactFilterId = signal(this.route.snapshot.queryParamMap.get('customer'));
+  contactFilterName = signal(this.route.snapshot.queryParamMap.get('customerName'));
+
   invoices = signal<Invoice[]>([]);
   total = signal(0);
   page = signal(0);
@@ -71,7 +74,8 @@ export class Invoices {
       this.statusFilter() !== '' ||
       this.paidFilter() !== '' ||
       this.fromFilter() !== '' ||
-      this.toFilter() !== '',
+      this.toFilter() !== '' ||
+      this.contactFilterId() !== null,
   );
 
   constructor() {
@@ -104,12 +108,21 @@ export class Invoices {
     };
 
     this.service
-      .getInvoices(query)
+      .getInvoices(this.contactFilterId() ? { ...query, page: 0, size: 500 } : query)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
-          this.invoices.set(result.items);
-          this.total.set(result.total);
+          if (this.contactFilterId()) {
+            const filtered = result.items.filter(
+              (invoice) => invoice.customerId === this.contactFilterId(),
+            );
+            const start = this.page() * this.pageSize;
+            this.invoices.set(filtered.slice(start, start + this.pageSize));
+            this.total.set(filtered.length);
+          } else {
+            this.invoices.set(result.items);
+            this.total.set(result.total);
+          }
           this.loading.set(false);
         },
         error: () => {
@@ -117,6 +130,13 @@ export class Invoices {
           this.loading.set(false);
         },
       });
+  }
+
+  clearContactFilter(): void {
+    this.contactFilterId.set(null);
+    this.contactFilterName.set(null);
+    this.page.set(0);
+    this.load();
   }
 
   setPage(nextPage: number): void {

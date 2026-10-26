@@ -41,6 +41,12 @@
           [formControl]="searchControl"
         />
 
+        @if (contactFilterId()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearContactFilter()">
+            {{ t('common.contactFilter', { name: contactFilterName() || '' }) }} ×
+          </button>
+        }
+
         @if (fixedKind === undefined) {
           <select
             class="form-control filter-select"

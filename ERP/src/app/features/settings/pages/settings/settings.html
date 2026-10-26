@@ -1,4 +1,4 @@
-<div class="settings-page">
+<div class="settings-page" *transloco="let t">
   <div class="page-header">
     <div>
       <h1 class="page-title">Settings</h1>
@@ -201,10 +201,9 @@
             <div class="form-group">
               <label class="form-label">Role</label>
               <select class="form-control" [value]="newUserRole()" (change)="onRoleChange($event)">
-                <option value="Administrator">Administrator</option>
-                <option value="Accountant">Accountant</option>
-                <option value="Sales">Sales</option>
-                <option value="Viewer">Viewer</option>
+                @for (role of assigneeRoles; track role) {
+                  <option [value]="role">{{ t(roleLabel(role)) }}</option>
+                }
               </select>
             </div>
           </div>
@@ -236,18 +235,12 @@
               </td>
               <td class="text-muted">{{ user.email }}</td>
               <td>
-                <span
-                  class="badge"
-                  [class.badge-primary]="user.role === 'Administrator'"
-                  [class.badge-info]="user.role === 'Accountant'"
-                  [class.badge-success]="user.role === 'Sales'"
-                  [class.badge-warning]="user.role === 'Viewer'"
-                >
-                  {{ user.role }}
+                <span [class]="roleBadgeClass(user.role)">
+                  {{ t(roleLabel(user.role)) }}
                 </span>
               </td>
               <td>
-                @if (user.role !== 'Administrator') {
+                @if (user.role !== 'admin-entreprise') {
                   <button class="btn btn-sm btn-danger" (click)="removeUser(user.id)" title="Remove user">
                     ✕
                   </button>
@@ -264,23 +257,17 @@
   @if (activeTab() === 'roles') {
     <div class="tab-content">
       <div class="roles-grid">
-        @for (role of roles; track role.name) {
+        @for (role of roleInfo; track role.role) {
           <div class="card role-card">
             <div class="role-header">
-              <span
-                class="badge"
-                [class.badge-primary]="role.name === 'Administrator'"
-                [class.badge-info]="role.name === 'Accountant'"
-                [class.badge-success]="role.name === 'Sales'"
-                [class.badge-warning]="role.name === 'Viewer'"
-              >
-                {{ role.name }}
+              <span [class]="roleBadgeClass(role.role)">
+                {{ t(role.labelKey) }}
               </span>
             </div>
-            <p class="role-description">{{ role.description }}</p>
+            <p class="role-description">{{ t(role.descriptionKey) }}</p>
             <div class="role-permissions">
-              @for (perm of role.permissions; track perm) {
-                <span class="permission-chip">✓ {{ perm }}</span>
+              @for (module of role.modules; track module) {
+                <span class="permission-chip">✓ {{ module }}</span>
               }
             </div>
           </div>
@@ -292,8 +279,8 @@
         <p class="text-muted" style="font-size: 13px; line-height: 1.6;">
           Roles control what each team member can see and do in the ERP.
           When you add a user, assign them the role that matches their job.
-          Administrators can always access everything, including settings and billing.
-          These roles are a starting point — finer permission controls will be available in a future release.
+          The company administrator always has full access, including settings and billing.
+          The external client only sees the customer portal (their invoices).
         </p>
       </div>
     </div>

@@ -1,8 +1,10 @@
+import { Role } from './role';
+
 export interface TenantUser {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: Role;
 }
 
 export interface Tenant {

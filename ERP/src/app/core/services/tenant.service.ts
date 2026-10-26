@@ -60,7 +60,7 @@ export class TenantService {
           id: 1,
           name: data.fullName,
           email: data.email,
-          role: 'Administrator',
+          role: 'admin-entreprise',
         },
       ],
       currency: 'USD',
@@ -71,6 +71,40 @@ export class TenantService {
 
     this.saveTenant(tenant);
     this.saveSubdomain(data.subdomain);
+    this.currentTenant.set(tenant);
+    return tenant;
+  }
+
+  /**
+   * Creates a full-access demo workspace on first login of a tenant role.
+   * Does nothing if a workspace already exists.
+   */
+  ensureDemoTenant(): Tenant {
+    const existing = this.currentTenant();
+    if (existing) return existing;
+
+    const plan = getPlanById('enterprise');
+    const tenant: Tenant = {
+      id: Date.now(),
+      companyName: 'Demo SARL',
+      email: 'admin@demo.com',
+      subdomain: 'demo',
+      country: 'TN',
+      language: 'en',
+      companySize: '1-5',
+      planId: plan.id,
+      enabledModules: [...plan.modules],
+      users: [
+        { id: 1, name: 'Amira Ben Salah', email: 'admin@demo.com', role: 'admin-entreprise' },
+      ],
+      currency: 'USD',
+      taxId: '12034567/A/M/000',
+      address: '12 Rue de la République, Tunis',
+      createdAt: new Date().toISOString(),
+    };
+
+    this.saveTenant(tenant);
+    this.saveSubdomain('demo');
     this.currentTenant.set(tenant);
     return tenant;
   }
