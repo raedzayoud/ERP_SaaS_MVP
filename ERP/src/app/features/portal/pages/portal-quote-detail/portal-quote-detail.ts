@@ -55,7 +55,12 @@ export class PortalQuoteDetail {
       order: this.orders.getOrderByQuote(this.quoteId),
     }).subscribe({
       next: ({ quote, order }) => {
-        if (!quote || quote.kind !== 'quote') {
+        const isMine =
+          !!quote &&
+          quote.kind === 'quote' &&
+          quote.customerId === this.portal.customerId;
+
+        if (!isMine) {
           this.loadFailed.set(true);
         } else {
           this.quote.set(quote);

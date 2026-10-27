@@ -123,9 +123,20 @@ export class InvoiceDetail {
       .subscribe({
         next: () => {
           this.saving.set(false);
+          this.unlinkDraftFromOrder();
           this.router.navigate([this.listRoute()]);
         },
         error: (error: unknown) => this.showActionError(error),
+      });
+  }
+
+  /** A deleted draft frees the order again: the "create invoice" button comes back. */
+  private unlinkDraftFromOrder(): void {
+    this.salesOrders
+      .getOrderByInvoice(this.invoiceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((order) => {
+        if (order) this.salesOrders.clearInvoiceLink(order.id);
       });
   }
 

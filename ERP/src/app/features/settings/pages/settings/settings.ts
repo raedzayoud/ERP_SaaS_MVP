@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { PLANS, getPlanById, getAllPlans } from '../../../../core/data/plans';
+import { getPlanById, getAllPlans } from '../../../../core/data/plans';
 import { Tenant } from '../../../../core/models/tenant';
 import { COUNTRIES, LANGUAGES, COMPANY_SIZES } from '../../../../core/data/countries';
 import { ASSIGNEE_ROLES, ROLE_INFO, Role, roleLabelKey } from '../../../../core/models/role';

@@ -389,6 +389,9 @@ export class StockService {
         if (!product) return this.fail('missingProduct');
         if (product.type !== 'good') return this.fail('notStockedProduct');
 
+        const available = levelFor(this.movements(), data.fromWarehouseId, product.id);
+        if (available < data.quantity) return this.fail('insufficientStock');
+
         return timer(LATENCY_MS).pipe(
           map(() => {
             const out = movement(

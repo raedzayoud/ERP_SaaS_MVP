@@ -2,11 +2,15 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { SalesError, SalesOrderService } from './sales-order.service';
 import { StockService } from '../../stock/services/stock.service';
+import { DeliveryNoteService } from './delivery-note.service';
+import { MAIN_WAREHOUSE_ID } from '../../stock/models/warehouse';
+import { InvoicingSettingsService } from '../../invoicing/services/invoicing-settings.service';
 
 const QUOTE_POSTED = 'c3000000-0000-4000-8000-000000000008';
 const QUOTE_DRAFT = 'c3000000-0000-4000-8000-000000000007';
 const INVOICE_FAC_0001 = 'c3000000-0000-4000-8000-000000000002';
 const GLOBAL = 'f4a1c2e0-8a01-4a10-9d21-000000000002';
+const CONFIRMED_ORDER = 'e5000000-0000-4000-8000-000000000002';
 
 describe('SalesOrderService quote conversion', () => {
   let service: SalesOrderService;
@@ -89,4 +93,59 @@ describe('SalesOrderService quote conversion', () => {
       expect(error).toBeInstanceOf(SalesError);
     });
   });
+});
+
+describe('SalesOrderService delivery and invoice guards', () => {
+  let service: SalesOrderService;
+  let deliveries: DeliveryNoteService;
+  let invoicingSettings: InvoicingSettingsService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(SalesOrderService);
+    deliveries = TestBed.inject(DeliveryNoteService);
+    invoicingSettings = TestBed.inject(InvoicingSettingsService);
+  });
+
+  it('refuses direct invoice creation for a delivered order', async () => {
+    await firstValueFrom(
+      deliveries.create({
+        salesOrderId: CONFIRMED_ORDER,
+        warehouseId: MAIN_WAREHOUSE_ID,
+        deliveryDate: '2026-10-25',
+      }),
+    );
+
+    await expect(firstValueFrom(service.createInvoice(CONFIRMED_ORDER))).rejects.toMatchObject({
+      code: 'hasDelivery',
+    });
+  }, 15000);
+
+  it('refuses cancelling an order that already has a delivery note', async () => {
+    await firstValueFrom(
+      deliveries.create({
+        salesOrderId: CONFIRMED_ORDER,
+        warehouseId: MAIN_WAREHOUSE_ID,
+        deliveryDate: '2026-10-25',
+      }),
+    );
+
+    await expect(firstValueFrom(service.cancelOrder(CONFIRMED_ORDER))).rejects.toMatchObject({
+      code: 'hasDelivery',
+    });
+  }, 15000);
+
+  it('keeps the direct invoice draft linked to the order', async () => {
+    const invoice = await firstValueFrom(service.createInvoice(CONFIRMED_ORDER));
+
+    expect(invoice.salesOrderId).toBe(CONFIRMED_ORDER);
+    expect(invoice.deliveryNoteId).toBeNull();
+    expect(invoice.stampDuty).toBe(invoicingSettings.settings().defaultStampDuty);
+
+    const order = await firstValueFrom(service.getOrder(CONFIRMED_ORDER));
+    expect(order?.invoiceId).toBe(invoice.id);
+
+    const found = await firstValueFrom(service.getOrderByInvoice(invoice.id));
+    expect(found?.id).toBe(CONFIRMED_ORDER);
+  }, 15000);
 });

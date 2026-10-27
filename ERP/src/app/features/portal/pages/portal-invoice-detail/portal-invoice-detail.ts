@@ -3,6 +3,9 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { InvoiceService } from '../../../invoices/services/invoice.service';
+import { PortalService } from '../../services/portal.service';
+import { PaymentService } from '../../../payments/services/payment.service';
+import { todayIso } from '../../../../shared/utils/money';
 import { Invoice } from '../../../invoices/models/invoice';
 import { dueFor, invoiceTotals, paymentState } from '../../../invoices/utils/invoice-calc';
 
@@ -14,6 +17,8 @@ import { dueFor, invoiceTotals, paymentState } from '../../../invoices/utils/inv
 })
 export class PortalInvoiceDetail {
   private readonly invoiceService = inject(InvoiceService);
+  private readonly portalService = inject(PortalService);
+  private readonly paymentService = inject(PaymentService);
   private readonly route = inject(ActivatedRoute);
 
   invoice = signal<Invoice | null>(null);
@@ -40,7 +45,7 @@ export class PortalInvoiceDetail {
 
     this.invoiceService.getInvoice(id).subscribe({
       next: (invoice) => {
-        if (invoice && invoice.kind === 'invoice') {
+        if (invoice && this.canView(invoice)) {
           this.invoice.set(invoice);
         } else {
           this.loadFailed.set(true);
@@ -54,10 +59,20 @@ export class PortalInvoiceDetail {
     });
   }
 
-  /** Mock Stripe checkout: records the remaining amount as paid. */
+  /** The client can only open its own posted invoices. */
+  private canView(invoice: Invoice | undefined): boolean {
+    return (
+      !!invoice &&
+      invoice.kind === 'invoice' &&
+      invoice.status === 'posted' &&
+      invoice.customerId === this.portalService.customerId
+    );
+  }
+
+  /** Mock Stripe checkout: records the remaining amount through the payment ledger. */
   payNow(): void {
     const invoice = this.invoice();
-    if (!invoice) return;
+    if (!invoice || invoice.status !== 'posted') return;
 
     const remaining = dueFor(invoice);
     if (remaining <= 0) return;
@@ -66,17 +81,26 @@ export class PortalInvoiceDetail {
     this.paySuccess.set(false);
     this.payFailed.set(false);
 
-    this.invoiceService.addPayment(invoice.id, remaining).subscribe({
-      next: (updated) => {
-        this.invoice.set(updated);
-        this.paying.set(false);
-        this.paySuccess.set(true);
-      },
-      error: () => {
-        this.paying.set(false);
-        this.payFailed.set(true);
-      },
-    });
+    this.paymentService
+      .createPayment({
+        invoiceId: invoice.id,
+        date: todayIso(),
+        amount: remaining,
+        mode: 'card',
+        reference: 'PORTAL-WEB',
+        notes: '',
+      })
+      .subscribe({
+        next: () => {
+          this.paying.set(false);
+          this.paySuccess.set(true);
+          this.load(invoice.id);
+        },
+        error: () => {
+          this.paying.set(false);
+          this.payFailed.set(true);
+        },
+      });
   }
 
   totalOf(invoice: Invoice): number {

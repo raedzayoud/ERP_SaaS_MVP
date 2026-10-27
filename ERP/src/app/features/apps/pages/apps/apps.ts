@@ -40,11 +40,11 @@ export class Apps {
 
   readonly tiles = computed<AppTile[]>(() => {
     const enabled = this.tenantService.enabledModules();
-    const canSeeDashboard = this.permissions.canAccessModule('dashboard');
 
-    return ERP_APPS.filter((app) => app.id === 'dashboard' || enabled.includes(app.id))
-      // Hide the dashboard tile for roles that cannot open the dashboard page.
-      .filter((app) => app.id !== 'dashboard' || canSeeDashboard)
+    // A tile shows up when the tenant owns the module AND
+    // the current role is allowed to open it. One simple rule for every tile.
+    return ERP_APPS.filter((app) => enabled.includes(app.id))
+      .filter((app) => this.permissions.canAccessModule(app.id))
       .filter((app) => APP_ROUTES[app.id] !== undefined)
       .map((app) => ({
         id: app.id,

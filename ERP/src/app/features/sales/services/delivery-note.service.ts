@@ -100,7 +100,12 @@ export class DeliveryNoteService {
               switchMap((order) => {
                 if (!order) return throwError(() => new DeliveryError('originMissing'));
 
-                return this.invoices.saveDraft(this.draftInput(delivery, order));
+                return this.invoices.saveDraft(this.draftInput(delivery, order)).pipe(
+                map((invoice) => {
+                  this.orders.linkInvoice(order.id, invoice.id);
+                  return invoice;
+                }),
+              );
               }),
             );
           }),
@@ -177,7 +182,11 @@ export class DeliveryNoteService {
             })),
           })
           .pipe(
-            map(() => this.store(order, input, stockId)),
+            map(() => {
+              const note = this.store(order, input, stockId);
+              this.orders.linkDelivery(order.id, note.id);
+              return note;
+            }),
             catchError((error: unknown) =>
               throwError(() =>
                 error instanceof StockError && error.code === 'insufficientStock'

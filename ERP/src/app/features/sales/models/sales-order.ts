@@ -35,6 +35,7 @@ export interface SalesOrder {
   notes: string;
   lines: SalesLine[];
   invoiceId: string | null;
+  deliveryNoteId: string | null;
   originQuoteId: string | null;
   createdAt: string;
   updatedAt: string;

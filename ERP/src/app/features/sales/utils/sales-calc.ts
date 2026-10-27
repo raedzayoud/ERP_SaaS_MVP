@@ -38,11 +38,20 @@ export function isEditable(order: SalesOrder): boolean {
 }
 
 export function isCancellable(order: SalesOrder): boolean {
-  return order.status === 'confirmed' && order.invoiceId === null;
+  return (
+    order.status === 'confirmed' &&
+    order.invoiceId === null &&
+    order.deliveryNoteId === null
+  );
 }
 
 export function isInvoiceable(order: SalesOrder): boolean {
-  return order.status === 'confirmed' && order.invoiceId === null && order.lines.length > 0;
+  return (
+    order.status === 'confirmed' &&
+    order.invoiceId === null &&
+    order.deliveryNoteId === null &&
+    order.lines.length > 0
+  );
 }
 
 export function isLate(order: SalesOrder, today = todayIso()): boolean {

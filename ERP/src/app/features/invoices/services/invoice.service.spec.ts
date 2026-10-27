@@ -3,10 +3,14 @@ import { firstValueFrom } from 'rxjs';
 import { InvoiceService } from './invoice.service';
 import { PaymentService } from '../../payments/services/payment.service';
 import { StockService } from '../../stock/services/stock.service';
+import { todayIso } from '../../../shared/utils/money';
 
 const QUOTE_DRAFT = 'c3000000-0000-4000-8000-000000000007';
 const QUOTE_POSTED = 'c3000000-0000-4000-8000-000000000008';
 const GLOBAL = 'f4a1c2e0-8a01-4a10-9d21-000000000002';
+const ACME = 'f4a1c2e0-8a01-4a10-9d21-000000000001';
+const ORIGIN_INVOICE = 'c3000000-0000-4000-8000-000000000005';
+const LAPTOP = 'a1000000-0000-4000-8000-000000000001';
 
 describe('InvoiceService quotes', () => {
   let service: InvoiceService;
@@ -67,5 +71,54 @@ describe('InvoiceService quotes', () => {
     );
 
     await expect(promise).rejects.toMatchObject({ code: 'invoiceNotPosted' });
+  });
+});
+
+describe('InvoiceService credit note cap', () => {
+  let service: InvoiceService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(InvoiceService);
+  });
+
+  const creditNoteDraft = (quantity: number) => ({
+    id: null as string | null,
+    kind: 'credit_note' as const,
+    customerId: ACME,
+    issueDate: todayIso(),
+    dueDate: todayIso(),
+    paymentTerms: 'immediate' as const,
+    currency: 'USD',
+    stampDuty: 0,
+    notes: '',
+    originInvoiceId: ORIGIN_INVOICE,
+    salesOrderId: null as string | null,
+    deliveryNoteId: null as string | null,
+    lines: [
+      {
+        productId: LAPTOP,
+        reference: 'SKU-1001',
+        description: 'Laptop Pro 14',
+        unit: 'piece',
+        quantity,
+        unitPrice: 1299,
+        discountPct: 0,
+        vatRate: 19,
+      },
+    ],
+  });
+
+  it('accepts a credit note that stays under the original total', async () => {
+    await expect(firstValueFrom(service.saveDraft(creditNoteDraft(1)))).resolves.toMatchObject({
+      kind: 'credit_note',
+      status: 'draft',
+    });
+  });
+
+  it('rejects a credit note that would go over the original total', async () => {
+    const promise = firstValueFrom(service.saveDraft(creditNoteDraft(3)));
+
+    await expect(promise).rejects.toMatchObject({ code: 'creditLimitExceeded' });
   });
 });

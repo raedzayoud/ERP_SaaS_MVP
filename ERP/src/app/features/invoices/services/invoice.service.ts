@@ -36,6 +36,7 @@ export type InvoiceErrorCode =
   | 'insufficientStock'
   | 'invalidAmount'
   | 'overpaid'
+  | 'creditLimitExceeded'
   | 'notQuote'
   | 'quoteAlreadyConverted';
 
@@ -510,8 +511,37 @@ export class InvoiceService {
       if (!data.originInvoiceId) return 'originMissing';
       const origin = this.items().find((invoice) => invoice.id === data.originInvoiceId);
       if (!origin || origin.status !== 'posted') return 'originNotPosted';
+      if (this.creditNoteCapExceeded(origin, data)) return 'creditLimitExceeded';
     }
     return null;
+  }
+
+  /**
+   * The posted credit notes of one invoice can never go over its total:
+   * partial refunds add up instead of replacing the previous refunds.
+   */
+  private creditNoteCapExceeded(origin: Invoice, draft: InvoiceDraftInput): boolean {
+    const originTotal = invoiceTotals(origin).totalTtc;
+
+    let alreadyRefunded = 0;
+    for (const note of this.items()) {
+      if (note.kind !== 'credit_note') continue;
+      if (note.originInvoiceId !== origin.id) continue;
+      if (note.status !== 'posted') continue;
+      alreadyRefunded += invoiceTotals(note).totalTtc;
+    }
+
+    const currentDraft = invoiceTotals({
+      lines: draft.lines.map((line, index) => ({ ...line, id: `draft-${index}` })),
+      stampDuty: draft.stampDuty,
+      amountPaid: 0,
+      currency: draft.currency,
+    }).totalTtc;
+
+    return (
+      roundMoney(alreadyRefunded + currentDraft, origin.currency) >
+      roundMoney(originTotal, origin.currency)
+    );
   }
 
   private withPartner<T>(customerId: string, next: (partner: Partner) => T): Observable<T> {

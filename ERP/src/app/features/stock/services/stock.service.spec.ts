@@ -113,6 +113,21 @@ describe('StockService', () => {
     await expect(promise).rejects.toMatchObject({ code: 'sameWarehouse' });
   });
 
+  it('rejects a transfer bigger than the source warehouse stock', async () => {
+    const promise = firstValueFrom(
+      service.createTransfer({
+        productId: MOUSE,
+        fromWarehouseId: MAIN_WAREHOUSE_ID,
+        toWarehouseId: SECONDARY_WAREHOUSE_ID,
+        quantity: 10000,
+        date: '2026-10-22',
+        reason: 'Rebalance',
+      }),
+    );
+
+    await expect(promise).rejects.toMatchObject({ code: 'insufficientStock' });
+  });
+
   it('reports availability issues for insufficient stock', async () => {
     const issues = await firstValueFrom(
       service.checkAvailability(MAIN_WAREHOUSE_ID, [

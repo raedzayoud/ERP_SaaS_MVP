@@ -7,6 +7,7 @@ import { todayIso } from '../../../shared/utils/money';
 import { Invoice, InvoiceDraftInput } from '../../invoices/models/invoice';
 import { InvoiceService } from '../../invoices/services/invoice.service';
 import { dueDateFrom } from '../../invoices/utils/invoice-calc';
+import { InvoicingSettingsService } from '../../invoicing/services/invoicing-settings.service';
 import { Product } from '../../products/models/product';
 import { ProductService } from '../../products/services/product.service';
 import {
@@ -31,6 +32,7 @@ export type SalesErrorCode =
   | 'missingCustomer'
   | 'expectedDateBeforeOrder'
   | 'hasInvoice'
+  | 'hasDelivery'
   | 'notQuote'
   | 'quoteAlreadyConverted';
 
@@ -93,6 +95,7 @@ const SEED_ORDERS: SalesOrder[] = [
       line('sl-1002', TONER, 'SKU-3002', 'Toner Cartridge', 'piece', 10, 95, 19),
     ],
     invoiceId: null,
+    deliveryNoteId: null,
     originQuoteId: null,
     createdAt: '2026-10-21T09:00:00.000Z',
     updatedAt: '2026-10-21T09:00:00.000Z',
@@ -116,6 +119,7 @@ const SEED_ORDERS: SalesOrder[] = [
     notes: '',
     lines: [line('sl-1003', LAPTOP, 'SKU-1001', 'Laptop Pro 14', 'piece', 4, 1450, 19)],
     invoiceId: null,
+    deliveryNoteId: null,
     originQuoteId: null,
     createdAt: '2026-10-12T10:00:00.000Z',
     updatedAt: '2026-10-12T10:10:00.000Z',
@@ -139,6 +143,7 @@ const SEED_ORDERS: SalesOrder[] = [
     notes: 'Customer asked for an urgent delivery.',
     lines: [line('sl-1004', DOCK, 'SKU-1003', 'USB-C Docking Station', 'piece', 6, 199, 19)],
     invoiceId: null,
+    deliveryNoteId: null,
     originQuoteId: null,
     createdAt: '2026-09-15T08:30:00.000Z',
     updatedAt: '2026-09-15T08:40:00.000Z',
@@ -165,6 +170,7 @@ const SEED_ORDERS: SalesOrder[] = [
       line('sl-1006', PAPER, 'SKU-3001', 'Printer Paper A4', 'box', 20, 12, 7),
     ],
     invoiceId: null,
+    deliveryNoteId: null,
     originQuoteId: null,
     createdAt: '2026-09-20T09:00:00.000Z',
     updatedAt: '2026-09-20T09:05:00.000Z',
@@ -188,6 +194,7 @@ const SEED_ORDERS: SalesOrder[] = [
     notes: '',
     lines: [line('sl-1007', CONSULT, 'SKU-2003', 'Consulting Day', 'day', 5, 650, 7)],
     invoiceId: null,
+    deliveryNoteId: null,
     originQuoteId: null,
     createdAt: '2026-08-25T10:00:00.000Z',
     updatedAt: '2026-08-25T10:05:00.000Z',
@@ -207,6 +214,7 @@ const SEED_ORDERS: SalesOrder[] = [
     notes: 'Customer cancelled, needs were covered by the existing contract.',
     lines: [line('sl-1008', DOCK, 'SKU-1003', 'USB-C Docking Station', 'piece', 2, 199, 19)],
     invoiceId: null,
+    deliveryNoteId: null,
     originQuoteId: null,
     createdAt: '2026-10-01T08:00:00.000Z',
     updatedAt: '2026-10-09T15:00:00.000Z',
@@ -221,6 +229,7 @@ export class SalesOrderService {
   private readonly partners = inject(PartnerService);
   private readonly invoices = inject(InvoiceService);
   private readonly products = inject(ProductService);
+  private readonly invoicingSettings = inject(InvoicingSettingsService);
 
   getOrders(query: SalesQuery): Observable<Page<SalesOrder>> {
     return timer(LATENCY_MS).pipe(map(() => this.buildPage(query)));
@@ -252,6 +261,30 @@ export class SalesOrderService {
     return timer(LATENCY_MS).pipe(
       map(() => this.items().find((order) => order.originQuoteId === quoteId)),
     );
+  }
+
+  getOrderByInvoice(invoiceId: string): Observable<SalesOrder | undefined> {
+    return timer(LATENCY_MS).pipe(
+      map(() => this.items().find((order) => order.invoiceId === invoiceId)),
+    );
+  }
+
+  linkDelivery(orderId: string, deliveryId: string): void {
+    const existing = this.items().find((order) => order.id === orderId);
+    if (!existing) return;
+    this.replace({ ...existing, deliveryNoteId: deliveryId });
+  }
+
+  linkInvoice(orderId: string, invoiceId: string): void {
+    const existing = this.items().find((order) => order.id === orderId);
+    if (!existing) return;
+    this.replace({ ...existing, invoiceId, updatedAt: new Date().toISOString() });
+  }
+
+  clearInvoiceLink(orderId: string): void {
+    const existing = this.items().find((order) => order.id === orderId);
+    if (!existing) return;
+    this.replace({ ...existing, invoiceId: null });
   }
 
   convertQuoteToOrder(quoteId: string): Observable<SalesOrder> {
@@ -330,6 +363,7 @@ export class SalesOrderService {
         notes: data.notes,
         lines: data.lines.map((item) => ({ id: this.newId(), ...item })),
         invoiceId: null,
+        deliveryNoteId: null,
         originQuoteId: null,
         createdAt: now,
         updatedAt: now,
@@ -368,6 +402,7 @@ export class SalesOrderService {
     if (!existing) return this.fail('notFound');
     if (existing.status !== 'confirmed') return this.fail('notConfirmed');
     if (existing.invoiceId !== null) return this.fail('hasInvoice');
+    if (existing.deliveryNoteId !== null) return this.fail('hasDelivery');
 
     return timer(LATENCY_MS).pipe(
       map(() => {
@@ -388,6 +423,7 @@ export class SalesOrderService {
     if (!existing) return this.fail('notFound');
     if (existing.status !== 'confirmed') return this.fail('notConfirmed');
     if (existing.invoiceId !== null) return this.fail('hasInvoice');
+    if (existing.deliveryNoteId !== null) return this.fail('hasDelivery');
 
     const today = todayIso();
     const input: InvoiceDraftInput = {
@@ -398,9 +434,11 @@ export class SalesOrderService {
       dueDate: dueDateFrom(today, existing.paymentTerms),
       paymentTerms: existing.paymentTerms,
       currency: existing.currency,
-      stampDuty: 0,
+      stampDuty: this.invoicingSettings.settings().defaultStampDuty,
       notes: existing.notes,
       originInvoiceId: null,
+      salesOrderId: existing.id,
+      deliveryNoteId: null,
       lines: existing.lines.map((orderLine) => ({
         productId: orderLine.productId,
         description: orderLine.description,

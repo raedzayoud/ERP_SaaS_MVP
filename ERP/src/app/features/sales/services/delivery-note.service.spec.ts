@@ -181,4 +181,16 @@ describe('DeliveryNoteService', () => {
     const linked = await firstValueFrom(invoices.getInvoiceForDelivery(delivery.id));
     expect(linked?.id).toBe(second.id);
   }, 15000);
+
+  it('persists the delivery and invoice links on the sales order', async () => {
+    const delivery = await deliverOrder();
+
+    let order = await firstValueFrom(sales.getOrder(CONFIRMED_ORDER));
+    expect(order?.deliveryNoteId).toBe(delivery.id);
+
+    const invoice = await firstValueFrom(service.createInvoiceDraft(delivery.id));
+
+    order = await firstValueFrom(sales.getOrder(CONFIRMED_ORDER));
+    expect(order?.invoiceId).toBe(invoice.id);
+  }, 15000);
 });
