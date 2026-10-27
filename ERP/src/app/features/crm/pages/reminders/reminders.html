@@ -1,0 +1,87 @@
+<ng-container *transloco="let t">
+  <div class="reminders-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('crm.reminders.title') }}</h1>
+        <p class="page-subtitle">{{ t('crm.reminders.subtitle') }}</p>
+      </div>
+    </div>
+
+    @if (notice()) {
+      <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+    }
+
+    @if (errorKey(); as key) {
+      <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+    }
+
+    <div class="card">
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('crm.reminders.loadError') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (rows().length === 0) {
+        <div class="state-block">
+          <p class="state-title">{{ t('crm.reminders.emptyTitle') }}</p>
+          <p class="state-text">{{ t('crm.reminders.emptyHint') }}</p>
+          <a routerLink="/contacts" class="btn btn-primary">{{ t('crm.reminders.backToContacts') }}</a>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('crm.reminders.columns.contact') }}</th>
+                <th scope="col">{{ t('crm.reminders.columns.interaction') }}</th>
+                <th scope="col">{{ t('crm.reminders.columns.due') }}</th>
+                <th scope="col" class="col-actions">{{ t('crm.reminders.columns.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track row.item.id) {
+                <tr [class.row-overdue]="row.overdue">
+                  <td>
+                    <div class="name-main">{{ row.partnerName }}</div>
+                    <div class="name-sub">{{ t(typeKey(row.item)) }}</div>
+                  </td>
+                  <td>
+                    <div class="name-main">{{ row.item.subject }}</div>
+                    @if (row.item.notes) {
+                      <div class="name-sub">{{ row.item.notes }}</div>
+                    }
+                  </td>
+                  <td>
+                    @if (row.overdue) {
+                      <span class="badge badge-danger">{{ t('crm.reminders.overdue') }}</span>
+                    }
+                    {{ row.item.reminderAt | date: 'mediumDate' }}
+                  </td>
+                  <td class="col-actions">
+                    <a
+                      [routerLink]="['/contacts', row.item.partnerId, 'overview']"
+                      class="btn btn-sm"
+                      [attr.aria-label]="t('crm.reminders.viewContact')"
+                    >
+                      👁
+                    </a>
+                    <button type="button" class="btn btn-primary btn-sm" (click)="markDone(row)">
+                      {{ t('crm.reminders.markDone') }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

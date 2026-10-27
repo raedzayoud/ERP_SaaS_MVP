@@ -1,0 +1,130 @@
+<ng-container *transloco="let t">
+  <div class="opportunities-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('crm.opportunities.title') }}</h1>
+        <p class="page-subtitle">{{ t('crm.opportunities.subtitle') }}</p>
+      </div>
+      <a routerLink="/opportunities/new" class="btn btn-primary">
+        + {{ t('crm.opportunities.newOpportunity') }}
+      </a>
+    </div>
+
+    @if (stats(); as s) {
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <span class="kpi-value">{{ s.openCount }}</span>
+          <span class="kpi-label">{{ t('crm.opportunities.kpi.openCount') }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-value">{{ s.openAmount | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+          <span class="kpi-label">{{ t('crm.opportunities.kpi.openAmount') }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-value">{{ s.wonAmount | currency: 'USD' : 'symbol' : '1.0-0' }}</span>
+          <span class="kpi-label">{{ t('crm.opportunities.kpi.wonAmount') }}</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-value">{{ s.winRate }}%</span>
+          <span class="kpi-label">{{ t('crm.opportunities.kpi.winRate') }}</span>
+        </div>
+      </div>
+    }
+
+    @if (errorKey(); as key) {
+      <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+    }
+
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('crm.opportunities.loadError') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    } @else if (opportunities().length === 0) {
+      <div class="state-block">
+        <p class="state-title">{{ t('crm.opportunities.emptyTitle') }}</p>
+        <a routerLink="/opportunities/new" class="btn btn-primary">
+          {{ t('crm.opportunities.newOpportunity') }}
+        </a>
+      </div>
+    } @else {
+      <div class="kanban">
+        @for (column of columns(); track column.stage) {
+          <section class="kanban-col" [attr.data-stage]="column.stage">
+            <header class="kanban-col-header">
+              <h2 class="kanban-col-title">{{ t(stageKey(column.stage)) }}</h2>
+              <span class="kanban-col-count">{{ column.items.length }}</span>
+            </header>
+
+            @for (item of column.items; track item.id) {
+              <article class="kanban-card" [class.kanban-card-closed]="column.closed">
+                <div class="kanban-card-head">
+                  <h3 class="kanban-card-name">{{ item.name }}</h3>
+                  <span class="kanban-card-amount">
+                    {{ item.amount | currency: item.currency : 'symbol' : '1.0-0' }}
+                  </span>
+                </div>
+                <p class="kanban-card-customer">{{ customerName(item) }}</p>
+                <p class="kanban-card-date">
+                  {{ t('crm.opportunities.expectedClose') }}:
+                  {{ item.expectedCloseDate | date: 'mediumDate' }}
+                </p>
+
+                <label class="kanban-stage-label">
+                  <span class="sr-only">{{ t('crm.opportunities.changeStage') }}</span>
+                  <select
+                    class="form-control kanban-stage-select"
+                    [value]="item.stage"
+                    [disabled]="column.closed"
+                    (change)="onStageChange(item, $event)"
+                    [attr.aria-label]="t('crm.opportunities.changeStage')"
+                  >
+                    @for (stage of stages; track stage) {
+                      <option [value]="stage">{{ t(stageKey(stage)) }}</option>
+                    }
+                  </select>
+                </label>
+
+                <div class="kanban-card-actions">
+                  <a
+                    [routerLink]="['/contacts', item.customerId, 'overview']"
+                    class="btn btn-sm"
+                    [attr.aria-label]="t('crm.opportunities.viewCustomerFor', { name: customerName(item) })"
+                  >
+                    👁
+                  </a>
+                  <a
+                    [routerLink]="['/opportunities', item.id]"
+                    class="btn btn-secondary btn-sm"
+                    [class.btn-disabled]="column.closed"
+                  >
+                    {{ t('common.edit') }}
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    (click)="remove(item)"
+                    [attr.aria-label]="t('crm.opportunities.deleteFor', { name: item.name })"
+                  >
+                    🗑
+                  </button>
+                </div>
+              </article>
+            }
+
+            @if (column.items.length === 0) {
+              <p class="kanban-empty">{{ t('crm.opportunities.columnEmpty') }}</p>
+            }
+          </section>
+        }
+      </div>
+    }
+  </div>
+</ng-container>

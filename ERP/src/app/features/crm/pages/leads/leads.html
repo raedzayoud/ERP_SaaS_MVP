@@ -1,0 +1,159 @@
+<ng-container *transloco="let t">
+  <div class="leads-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('crm.leads.title') }}</h1>
+        <p class="page-subtitle">{{ t('crm.leads.subtitle') }}</p>
+      </div>
+      <a routerLink="/leads/new" class="btn btn-primary">+ {{ t('crm.leads.newLead') }}</a>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <span class="kpi-value">{{ counts().new }}</span>
+        <span class="kpi-label">{{ t('crm.leads.status.new') }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-value">{{ counts().contacted }}</span>
+        <span class="kpi-label">{{ t('crm.leads.status.contacted') }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-value">{{ counts().qualified }}</span>
+        <span class="kpi-label">{{ t('crm.leads.status.qualified') }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-value">{{ counts().converted }}</span>
+        <span class="kpi-label">{{ t('crm.leads.status.converted') }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-value">{{ counts().lost }}</span>
+        <span class="kpi-label">{{ t('crm.leads.status.lost') }}</span>
+      </div>
+    </div>
+
+    @if (notice()) {
+      <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+    }
+
+    @if (errorKey(); as key) {
+      <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+    }
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('crm.leads.searchPlaceholder')"
+          [attr.aria-label]="t('crm.leads.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="statusFilter()"
+          [attr.aria-label]="t('crm.leads.filters.status')"
+          (change)="onStatusFilter($event)"
+        >
+          <option value="">{{ t('crm.leads.filters.allStatuses') }}</option>
+          <option value="new">{{ t('crm.leads.status.new') }}</option>
+          <option value="contacted">{{ t('crm.leads.status.contacted') }}</option>
+          <option value="qualified">{{ t('crm.leads.status.qualified') }}</option>
+          <option value="converted">{{ t('crm.leads.status.converted') }}</option>
+          <option value="lost">{{ t('crm.leads.status.lost') }}</option>
+        </select>
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('crm.leads.loadError') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (leads().length === 0) {
+        <div class="state-block">
+          <p class="state-title">
+            {{ hasFilters() ? t('crm.leads.noMatch') : t('crm.leads.emptyTitle') }}
+          </p>
+          @if (!hasFilters()) {
+            <a routerLink="/leads/new" class="btn btn-primary">{{ t('crm.leads.newLead') }}</a>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('crm.leads.columns.name') }}</th>
+                <th scope="col">{{ t('crm.leads.columns.source') }}</th>
+                <th scope="col">{{ t('crm.leads.columns.email') }}</th>
+                <th scope="col">{{ t('crm.leads.columns.status') }}</th>
+                <th scope="col">{{ t('crm.leads.columns.created') }}</th>
+                <th scope="col" class="col-actions">{{ t('crm.leads.columns.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (lead of leads(); track lead.id) {
+                <tr>
+                  <td>
+                    <div class="name-main">{{ lead.name }}</div>
+                    <div class="name-sub">{{ lead.company || '—' }}</div>
+                  </td>
+                  <td>{{ t(sourceKey(lead)) }}</td>
+                  <td>{{ lead.email || '—' }}</td>
+                  <td>
+                    <span class="badge lead-badge" [class]="'lead-badge-' + lead.status">
+                      {{ t(statusKey(lead)) }}
+                    </span>
+                  </td>
+                  <td>{{ lead.createdAt | date: 'mediumDate' }}</td>
+                  <td class="col-actions">
+                    @if (lead.status === 'new' || lead.status === 'contacted' || lead.status === 'qualified') {
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-sm"
+                        (click)="convert(lead)"
+                      >
+                        {{ t('crm.leads.convert') }}
+                      </button>
+                      <button type="button" class="btn btn-sm" (click)="lose(lead)">
+                        {{ t('crm.leads.markLost') }}
+                      </button>
+                    } @else if (lead.status === 'converted') {
+                      <span class="converted-hint">{{ t('crm.leads.convertedHint') }}</span>
+                    }
+                    <a [routerLink]="['/leads', lead.id]" class="btn btn-secondary btn-sm">
+                      {{ t('common.edit') }}
+                    </a>
+                    @if (lead.status !== 'converted') {
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        (click)="remove(lead)"
+                        [attr.aria-label]="t('crm.leads.deleteFor', { name: lead.name })"
+                      >
+                        🗑
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

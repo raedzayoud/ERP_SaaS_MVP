@@ -51,6 +51,24 @@ export class Sidebar {
           route: '/contacts',
           moduleId: 'contacts',
         },
+        {
+          labelKey: 'sidebar.items.leads',
+          icon: '🧭',
+          route: '/leads',
+          moduleId: 'contacts',
+        },
+        {
+          labelKey: 'sidebar.items.opportunities',
+          icon: '🤝',
+          route: '/opportunities',
+          moduleId: 'contacts',
+        },
+        {
+          labelKey: 'sidebar.items.reminders',
+          icon: '🔔',
+          route: '/reminders',
+          moduleId: 'contacts',
+        },
       ],
     },
     {

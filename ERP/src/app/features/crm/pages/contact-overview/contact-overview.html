@@ -127,5 +127,108 @@
         </div>
       </dl>
     </div>
+
+    <div class="card history-card">
+      <h2 class="details-title">{{ t('crm.interactions.historyTitle') }}</h2>
+
+      @if (interactions().length > 0) {
+        <ol class="interaction-list">
+          @for (item of interactions(); track item.id) {
+            <li class="interaction-item">
+              <div class="interaction-meta">
+                <span class="badge badge-info">{{ t(typeKey(item)) }}</span>
+                <span class="interaction-date">{{ item.date | date: 'mediumDate' }}</span>
+              </div>
+              <p class="interaction-subject">{{ item.subject }}</p>
+              @if (item.notes) {
+                <p class="interaction-notes">{{ item.notes }}</p>
+              }
+              @if (item.reminderAt) {
+                <p class="interaction-reminder">
+                  @if (!item.reminderDone) {
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm"
+                      (click)="markReminderDone(item)"
+                    >
+                      {{ t('crm.reminders.markDone') }}
+                    </button>
+                  }
+                  <span [class.reminder-done]="item.reminderDone">
+                    {{ t('crm.interactions.reminder') }}: {{ item.reminderAt | date: 'mediumDate' }}
+                  </span>
+                  @if (item.reminderDone) {
+                    <span class="badge badge-success">{{ t('crm.interactions.reminderDone') }}</span>
+                  }
+                </p>
+              }
+            </li>
+          }
+        </ol>
+      } @else {
+        <p class="text-muted">{{ t('crm.interactions.empty') }}</p>
+      }
+
+      <form class="interaction-add" (ngSubmit)="addInteraction()" novalidate>
+        <h3 class="interaction-add-title">{{ t('crm.interactions.addTitle') }}</h3>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="interaction-type">{{ t('crm.interactions.typeLabel') }}</label>
+            <select id="interaction-type" class="form-control" [(ngModel)]="newType" name="newType">
+              @for (type of interactionTypes; track type) {
+                <option [value]="type">{{ t('crm.interactions.type.' + type) }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="interaction-subject">
+              {{ t('crm.interactions.subject') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="interaction-subject"
+              type="text"
+              class="form-control"
+              [(ngModel)]="newSubject"
+              name="newSubject"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="interaction-notes">{{ t('crm.interactions.notes') }}</label>
+            <input
+              id="interaction-notes"
+              type="text"
+              class="form-control"
+              [(ngModel)]="newNotes"
+              name="newNotes"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="interaction-reminder">
+              {{ t('crm.interactions.reminder') }}
+            </label>
+            <input
+              id="interaction-reminder"
+              type="date"
+              class="form-control"
+              [(ngModel)]="newReminderAt"
+              name="newReminderAt"
+            />
+          </div>
+        </div>
+
+        @if (interactionError()) {
+          <p class="field-error">{{ t(interactionError()) }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="savingInteraction()">
+            {{ savingInteraction() ? t('common.saving') : t('crm.interactions.add') }}
+          </button>
+        </div>
+      </form>
+    </div>
   }
 </div>

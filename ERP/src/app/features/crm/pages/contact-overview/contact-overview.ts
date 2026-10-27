@@ -1,6 +1,7 @@
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PartnerService } from '../../services/partner.service';
@@ -11,11 +12,13 @@ import { PurchaseService } from '../../../purchases/services/purchase.service';
 import { purchaseTotals } from '../../../purchases/utils/purchase-calc';
 import { ProductService } from '../../../products/services/product.service';
 import { TenantService } from '../../../../core/services/tenant.service';
+import { InteractionService } from '../../services/interaction.service';
+import { INTERACTION_TYPES, CrmInteraction, CrmInteractionInput } from '../../models/crm-interaction';
 import { roundMoney } from '../../../../shared/utils/money';
 
 @Component({
   selector: 'app-contact-overview',
-  imports: [CurrencyPipe, RouterLink, TranslocoDirective],
+  imports: [CurrencyPipe, DatePipe, FormsModule, RouterLink, TranslocoDirective],
   templateUrl: './contact-overview.html',
   styleUrl: './contact-overview.css',
 })
@@ -26,9 +29,11 @@ export class ContactOverview {
   private readonly purchaseService = inject(PurchaseService);
   private readonly productService = inject(ProductService);
   private readonly tenantService = inject(TenantService);
+  private readonly interactionService = inject(InteractionService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly partnerId = this.route.snapshot.paramMap.get('id');
+  readonly interactionTypes = INTERACTION_TYPES;
 
   partner = signal<Partner | null>(null);
   loading = signal(true);
@@ -40,6 +45,16 @@ export class ContactOverview {
   purchaseCount = signal(0);
   purchaseTotal = signal(0);
   productCount = signal(0);
+
+  interactions = signal<CrmInteraction[]>([]);
+  savingInteraction = signal(false);
+  interactionError = signal('');
+
+  // quick-add interaction draft
+  newType = 'call';
+  newSubject = '';
+  newNotes = '';
+  newReminderAt = '';
 
   currency = computed(() => this.tenantService.currentTenant()?.currency ?? 'USD');
 
@@ -75,7 +90,73 @@ export class ContactOverview {
     return this.tenantService.isModuleEnabled(moduleId);
   }
 
+  addInteraction(): void {
+    if (!this.partnerId) return;
+
+    const subject = this.newSubject.trim();
+    if (!subject) {
+      this.interactionError.set('crm.errors.noSubject');
+      return;
+    }
+
+    const input: CrmInteractionInput = {
+      id: null,
+      partnerId: this.partnerId,
+      type: this.newType as CrmInteractionInput['type'],
+      subject,
+      notes: this.newNotes.trim(),
+      date: new Date().toISOString().slice(0, 10),
+      reminderAt: this.newReminderAt || null,
+    };
+
+    this.interactionError.set('');
+    this.savingInteraction.set(true);
+
+    this.interactionService
+      .save(input)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (interaction) => {
+          this.savingInteraction.set(false);
+          this.interactions.update((list) => [interaction, ...list]);
+          this.newSubject = '';
+          this.newNotes = '';
+          this.newReminderAt = '';
+        },
+        error: (error: unknown) => {
+          this.savingInteraction.set(false);
+          this.interactionError.set(
+            error instanceof Error && 'code' in error
+              ? `crm.errors.${(error as { code: string }).code}`
+              : '',
+          );
+        },
+      });
+  }
+
+  markReminderDone(interaction: CrmInteraction): void {
+    this.interactionService
+      .markReminderDone(interaction.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((updated) => {
+        if (updated) {
+          this.interactions.update((list) =>
+            list.map((one) => (one.id === updated.id ? updated : one)),
+          );
+        }
+      });
+  }
+
+  typeKey(item: CrmInteraction): string {
+    return `crm.interactions.type.${item.type}`;
+  }
+
   private loadRelated(partner: Partner): void {
+    this.interactionService
+      .getForPartner(partner.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((list) => this.interactions.set(list));
+
     if (this.hasModule('invoices')) {
       this.invoiceService
         .getInvoices({ page: 0, size: 500, sort: 'issueDate,desc' })

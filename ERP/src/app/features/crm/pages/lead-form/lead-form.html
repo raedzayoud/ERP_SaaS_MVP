@@ -1,0 +1,75 @@
+<ng-container *transloco="let t">
+  <div class="form-page">
+    <h1 class="page-title">{{ isEdit ? t('crm.leads.editTitle') : t('crm.leads.newTitle') }}</h1>
+
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('crm.leads.loadError') }}</p>
+        <a routerLink="/leads" class="btn btn-secondary">{{ t('common.back') }}</a>
+      </div>
+    } @else {
+      <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        @if (errorKey(); as key) {
+          <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+        }
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="name">
+              {{ t('crm.leads.form.name') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input id="name" type="text" class="form-control" formControlName="name" />
+            @if (hasError('name', 'required')) {
+              <p class="field-error">{{ t('crm.errors.noName') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="company">{{ t('crm.leads.form.company') }}</label>
+            <input id="company" type="text" class="form-control" formControlName="company" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">{{ t('crm.leads.form.email') }}</label>
+            <input id="email" type="email" class="form-control" formControlName="email" />
+            @if (hasError('email', 'email')) {
+              <p class="field-error">{{ t('crm.errors.badEmail') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="phone">{{ t('crm.leads.form.phone') }}</label>
+            <input id="phone" type="tel" class="form-control" formControlName="phone" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="source">{{ t('crm.leads.form.source') }}</label>
+            <select id="source" class="form-control" formControlName="source">
+              @for (source of sources; track source) {
+                <option [value]="source">{{ t(sourceKey(source)) }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group form-group-wide">
+            <label class="form-label" for="notes">{{ t('crm.leads.form.notes') }}</label>
+            <textarea id="notes" rows="3" class="form-control" formControlName="notes"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a routerLink="/leads" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? t('common.saving') : t('common.save') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</ng-container>

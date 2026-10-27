@@ -61,7 +61,14 @@
     "signup": "Create your workspace",
     "deliveries": "Delivery notes",
     "newDelivery": "New delivery note",
-    "deliveryDetail": "Delivery note"
+    "deliveryDetail": "Delivery note",
+    "leads": "Leads",
+    "newLead": "New lead",
+    "editLead": "Edit lead",
+    "opportunities": "Opportunities",
+    "newOpportunity": "New opportunity",
+    "editOpportunity": "Edit opportunity",
+    "reminders": "Reminders"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -76,7 +83,10 @@
     "ai-assistant": "Chat assistant and document extraction.",
     "quotes": "Prepare quotes and convert them into invoices",
     "salesOrders": "Customer orders from confirmation to invoice.",
-    "deliveries": "Goods delivered to your customers."
+    "deliveries": "Goods delivered to your customers.",
+    "leads": "Track incoming prospects before qualification.",
+    "opportunities": "Follow deals through the sales pipeline.",
+    "reminders": "Call-backs and follow-ups to close."
   },
   "navbar": {
     "toggleSidebar": "Toggle sidebar",
@@ -110,9 +120,11 @@
       "aiAssistant": "AI assistant",
       "settings": "Settings",
       "quotes": "Quotes",
-      "apps": "Apps",
       "salesOrders": "Sales orders",
-      "deliveries": "Deliveries"
+      "deliveries": "Deliveries",
+      "leads": "Leads",
+      "opportunities": "Opportunities",
+      "reminders": "Reminders"
     }
   },
   "placeholder": {
@@ -480,6 +492,7 @@
       "dateOutOfOrder": "The issue date cannot be before the last validated document of the same year.",
       "originMissing": "The original invoice is missing.",
       "originNotPosted": "Only a validated invoice can be credited.",
+      "creditLimitExceeded": "The credit notes for this invoice cannot go over its total.",
       "insufficientStock": "Not enough stock in the main warehouse to confirm this invoice.",
       "notQuote": "This document is not a quote",
       "quoteAlreadyConverted": "This quote has already been converted into an invoice"
@@ -815,7 +828,7 @@
       "inactiveWarehouse": "This warehouse is archived.",
       "sameWarehouse": "Source and destination must be different.",
       "missingReason": "A reason is required.",
-      "insufficientStock": "Not enough stock in the main warehouse for this invoice."
+      "insufficientStock": "Not enough stock in the selected warehouse."
     }
   },
   "payments": {
@@ -1591,6 +1604,7 @@
       "missingCustomer": "A customer is required.",
       "expectedDateBeforeOrder": "The expected date cannot be before the order date.",
       "hasInvoice": "This order is invoiced and can no longer be changed.",
+      "hasDelivery": "A delivery note was issued for this order. Manage the invoice from the delivery.",
       "notQuote": "This document is not a quote.",
       "quoteAlreadyConverted": "This quote has already been converted."
     },
@@ -1828,5 +1842,148 @@
     "partiallyPaid": "Partially paid",
     "unpaid": "Unpaid"
   },
-  "fr": {}
+  "fr": {},
+  "crm": {
+    "leads": {
+      "title": "Leads",
+      "subtitle": "New prospects from the website, referrals and events.",
+      "newLead": "New lead",
+      "newTitle": "New lead",
+      "editTitle": "Edit lead",
+      "searchPlaceholder": "Search a lead…",
+      "filters": {
+        "status": "Status",
+        "allStatuses": "All statuses"
+      },
+      "loadError": "Unable to load leads.",
+      "emptyTitle": "No leads yet",
+      "noMatch": "No lead matches your filters",
+      "columns": {
+        "name": "Name",
+        "source": "Source",
+        "email": "Email",
+        "status": "Status",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "status": {
+        "new": "New",
+        "contacted": "Contacted",
+        "qualified": "Qualified",
+        "converted": "Converted",
+        "lost": "Lost"
+      },
+      "source": {
+        "website": "Website",
+        "referral": "Referral",
+        "event": "Event",
+        "campaign": "Campaign",
+        "cold_call": "Cold call"
+      },
+      "convert": "Convert to contact",
+      "convertedHint": "Converted ✓",
+      "convertedNotice": "Lead converted into a contact.",
+      "convertError": "Conversion failed.",
+      "markLost": "Mark lost",
+      "lostNotice": "Lead marked as lost.",
+      "loseError": "Action failed.",
+      "deleteFor": "Delete lead {{name}}",
+      "deletedNotice": "Lead deleted.",
+      "saveError": "Could not save the lead.",
+      "form": {
+        "name": "Name",
+        "company": "Company",
+        "email": "Email",
+        "phone": "Phone",
+        "source": "Source",
+        "notes": "Notes"
+      }
+    },
+    "opportunities": {
+      "title": "Opportunities",
+      "subtitle": "Follow your deals through the sales pipeline.",
+      "newOpportunity": "New opportunity",
+      "newTitle": "New opportunity",
+      "editTitle": "Edit opportunity",
+      "loadError": "Unable to load opportunities.",
+      "emptyTitle": "No opportunities yet",
+      "columnEmpty": "No deal in this stage",
+      "changeStage": "Change stage",
+      "expectedClose": "Expected close",
+      "viewCustomerFor": "Open the contact page of {{name}}",
+      "deleteFor": "Delete opportunity {{name}}",
+      "saveError": "Could not save the opportunity.",
+      "stageError": "Stage change failed.",
+      "kpi": {
+        "openCount": "Open deals",
+        "openAmount": "Open pipeline",
+        "wonAmount": "Won revenue",
+        "winRate": "Win rate"
+      },
+      "form": {
+        "name": "Opportunity name",
+        "customer": "Customer",
+        "customerPlaceholder": "Select a customer…",
+        "stage": "Stage",
+        "amount": "Amount",
+        "expectedClose": "Expected close date",
+        "notes": "Notes"
+      }
+    },
+    "pipeline": {
+      "stage": {
+        "qualification": "Qualification",
+        "proposal": "Proposal",
+        "negotiation": "Negotiation",
+        "won": "Won",
+        "lost": "Lost"
+      }
+    },
+    "interactions": {
+      "historyTitle": "History & reminders",
+      "addTitle": "Add interaction",
+      "typeLabel": "Type",
+      "subject": "Subject",
+      "notes": "Notes",
+      "reminder": "Reminder",
+      "reminderDone": "Done",
+      "add": "Add",
+      "empty": "No interaction recorded yet.",
+      "type": {
+        "call": "Call",
+        "email": "Email",
+        "meeting": "Meeting",
+        "note": "Note"
+      }
+    },
+    "reminders": {
+      "title": "Reminders",
+      "subtitle": "Call-backs and follow-ups scheduled on interactions.",
+      "loadError": "Unable to load reminders.",
+      "emptyTitle": "No pending reminder",
+      "emptyHint": "Reminders appear here when an interaction has a future date.",
+      "backToContacts": "Back to contacts",
+      "overdue": "Overdue",
+      "markDone": "Done",
+      "doneNotice": "Reminder marked as done.",
+      "actionError": "Action failed.",
+      "viewContact": "Open the contact page",
+      "columns": {
+        "contact": "Contact",
+        "interaction": "Interaction",
+        "due": "Due date",
+        "actions": "Actions"
+      }
+    },
+    "errors": {
+      "alreadyConverted": "This lead has already been converted.",
+      "lostLead": "A lost lead cannot be converted.",
+      "noName": "Please enter a name.",
+      "badEmail": "The email address is not valid.",
+      "noCustomer": "Please select a customer.",
+      "invalidAmount": "The amount must be greater than 0.",
+      "invalidStage": "This pipeline stage no longer exists.",
+      "noSubject": "Please enter a subject."
+    }
+  }
 }

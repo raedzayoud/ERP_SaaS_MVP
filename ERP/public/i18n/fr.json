@@ -61,7 +61,14 @@
     "signup": "Créez votre espace de travail",
     "deliveries": "Bons de livraison",
     "newDelivery": "Nouveau bon de livraison",
-    "deliveryDetail": "Bon de livraison"
+    "deliveryDetail": "Bon de livraison",
+    "leads": "Pistes",
+    "newLead": "Nouvelle piste",
+    "editLead": "Modifier la piste",
+    "opportunities": "Opportunités",
+    "newOpportunity": "Nouvelle opportunité",
+    "editOpportunity": "Modifier l'opportunité",
+    "reminders": "Rappels"
   },
   "descriptions": {
     "contacts": "Les sociétés et les personnes avec lesquelles vous travaillez.",
@@ -76,7 +83,10 @@
     "ai-assistant": "Assistant conversationnel et extraction de documents.",
     "quotes": "Préparez des devis et convertissez-les en factures",
     "salesOrders": "Bons de commande clients, confirmation et facturation.",
-    "deliveries": "Marchandises livrées à vos clients."
+    "deliveries": "Marchandises livrées à vos clients.",
+    "leads": "Suivez les prospects avant leur qualification.",
+    "opportunities": "Suivez vos affaires dans le pipeline de vente.",
+    "reminders": "Rappels et relances à traiter."
   },
   "navbar": {
     "toggleSidebar": "Afficher ou masquer le menu",
@@ -110,9 +120,11 @@
       "aiAssistant": "Assistant IA",
       "settings": "Paramètres",
       "quotes": "Devis",
-      "apps": "Applications",
       "salesOrders": "Commandes de vente",
-      "deliveries": "Livraisons"
+      "deliveries": "Livraisons",
+      "leads": "Pistes",
+      "opportunities": "Opportunités",
+      "reminders": "Rappels"
     }
   },
   "placeholder": {
@@ -480,6 +492,7 @@
       "dateOutOfOrder": "La date d'émission ne peut pas précéder le dernier document validé de la même année.",
       "originMissing": "La facture d'origine est manquante.",
       "originNotPosted": "Seule une facture validée peut être crédité.",
+      "creditLimitExceeded": "Le total des avoirs de cette facture ne peut pas dépasser son montant.",
       "insufficientStock": "Stock insuffisant dans l’entrepôt principal pour confirmer cette facture.",
       "notQuote": "Ce document n'est pas un devis",
       "quoteAlreadyConverted": "Ce devis a déjà été converti en facture"
@@ -815,7 +828,7 @@
       "inactiveWarehouse": "Cet entrepôt est archivé.",
       "sameWarehouse": "Le départ et la destination doivent être différents.",
       "missingReason": "Un motif est obligatoire.",
-      "insufficientStock": "Stock insuffisant dans l’entrepôt principal pour cette facture."
+      "insufficientStock": "Stock insuffisant dans l’entrepôt sélectionné."
     }
   },
   "payments": {
@@ -1591,6 +1604,7 @@
       "missingCustomer": "Le client est obligatoire.",
       "expectedDateBeforeOrder": "La date prévue ne peut pas être avant la date de commande.",
       "hasInvoice": "Cette commande est facturée et ne peut plus être modifiée.",
+      "hasDelivery": "Un bon de livraison a été émis pour cette commande. Gérez la facture depuis la livraison.",
       "notQuote": "Ce document n'est pas un devis.",
       "quoteAlreadyConverted": "Ce devis a déjà été converti."
     },
@@ -1827,5 +1841,148 @@
     "paid": "Payée",
     "partiallyPaid": "Partiellement payée",
     "unpaid": "Impayée"
+  },
+  "crm": {
+    "leads": {
+      "title": "Pistes",
+      "subtitle": "Nouvelles prospects issus du site web, des recommandations et des événements.",
+      "newLead": "Nouvelle piste",
+      "newTitle": "Nouvelle piste",
+      "editTitle": "Modifier la piste",
+      "searchPlaceholder": "Rechercher une piste…",
+      "filters": {
+        "status": "Statut",
+        "allStatuses": "Tous les statuts"
+      },
+      "loadError": "Impossible de charger les pistes.",
+      "emptyTitle": "Aucune piste pour le moment",
+      "noMatch": "Aucune piste ne correspond aux filtres",
+      "columns": {
+        "name": "Nom",
+        "source": "Source",
+        "email": "Email",
+        "status": "Statut",
+        "created": "Créée le",
+        "actions": "Actions"
+      },
+      "status": {
+        "new": "Nouvelle",
+        "contacted": "Contactée",
+        "qualified": "Qualifiée",
+        "converted": "Convertie",
+        "lost": "Perdue"
+      },
+      "source": {
+        "website": "Site web",
+        "referral": "Recommandation",
+        "event": "Événement",
+        "campaign": "Campagne",
+        "cold_call": "Prospection"
+      },
+      "convert": "Convertir en contact",
+      "convertedHint": "Convertie ✓",
+      "convertedNotice": "Piste convertie en contact.",
+      "convertError": "La conversion a échoué.",
+      "markLost": "Marquer perdue",
+      "lostNotice": "Piste marquée comme perdue.",
+      "loseError": "Échec de l’action.",
+      "deleteFor": "Supprimer la piste {{name}}",
+      "deletedNotice": "Piste supprimée.",
+      "saveError": "Impossible d’enregistrer la piste.",
+      "form": {
+        "name": "Nom",
+        "company": "Société",
+        "email": "Email",
+        "phone": "Téléphone",
+        "source": "Source",
+        "notes": "Notes"
+      }
+    },
+    "opportunities": {
+      "title": "Opportunités",
+      "subtitle": "Suivez vos affaires dans le pipeline de vente.",
+      "newOpportunity": "Nouvelle opportunité",
+      "newTitle": "Nouvelle opportunité",
+      "editTitle": "Modifier l'opportunité",
+      "loadError": "Impossible de charger les opportunités.",
+      "emptyTitle": "Aucune opportunité pour le moment",
+      "columnEmpty": "Aucune affaire à cette étape",
+      "changeStage": "Changer d'étape",
+      "expectedClose": "Clôture prévue",
+      "viewCustomerFor": "Ouvrir la fiche de {{name}}",
+      "deleteFor": "Supprimer l'opportunité {{name}}",
+      "saveError": "Impossible d'enregistrer l'opportunité.",
+      "stageError": "Le changement d’étape a échoué.",
+      "kpi": {
+        "openCount": "Affaires ouvertes",
+        "openAmount": "Pipeline ouvert",
+        "wonAmount": "Gains remportés",
+        "winRate": "Taux de réussite"
+      },
+      "form": {
+        "name": "Nom de l'opportunité",
+        "customer": "Client",
+        "customerPlaceholder": "Sélectionner un client…",
+        "stage": "Étape",
+        "amount": "Montant",
+        "expectedClose": "Date de clôture prévue",
+        "notes": "Notes"
+      }
+    },
+    "pipeline": {
+      "stage": {
+        "qualification": "Qualification",
+        "proposal": "Proposition",
+        "negotiation": "Négociation",
+        "won": "Gagnée",
+        "lost": "Perdue"
+      }
+    },
+    "interactions": {
+      "historyTitle": "Historique et rappels",
+      "addTitle": "Ajouter une interaction",
+      "typeLabel": "Type",
+      "subject": "Objet",
+      "notes": "Notes",
+      "reminder": "Rappel",
+      "reminderDone": "Fait",
+      "add": "Ajouter",
+      "empty": "Aucune interaction enregistrée pour le moment.",
+      "type": {
+        "call": "Appel",
+        "email": "Email",
+        "meeting": "Réunion",
+        "note": "Note"
+      }
+    },
+    "reminders": {
+      "title": "Rappels",
+      "subtitle": "Rappels et relances planifiés sur les interactions.",
+      "loadError": "Impossible de charger les rappels.",
+      "emptyTitle": "Aucun rappel en attente",
+      "emptyHint": "Les rappels apparaissent ici quand une interaction a une date future.",
+      "backToContacts": "Retour aux contacts",
+      "overdue": "En retard",
+      "markDone": "Fait",
+      "doneNotice": "Rappel marqué comme fait.",
+      "actionError": "Échec de l’action.",
+      "viewContact": "Ouvrir la fiche du contact",
+      "columns": {
+        "contact": "Contact",
+        "interaction": "Interaction",
+        "due": "Échéance",
+        "actions": "Actions"
+      }
+    },
+    "errors": {
+      "alreadyConverted": "Cette piste a déjà été convertie.",
+      "lostLead": "Une piste perdue ne peut pas être convertie.",
+      "noName": "Veuillez saisir un nom.",
+      "badEmail": "L'adresse email n'est pas valide.",
+      "noCustomer": "Veuillez sélectionner un client.",
+      "invalidAmount": "Le montant doit être supérieur à 0.",
+      "invalidStage": "Cette étape du pipeline n'existe plus.",
+      "noSubject": "Veuillez saisir un objet."
+    }
   }
 }

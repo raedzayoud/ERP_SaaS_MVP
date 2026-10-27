@@ -1,0 +1,94 @@
+<ng-container *transloco="let t">
+  <div class="form-page">
+    <h1 class="page-title">
+      {{ isEdit ? t('crm.opportunities.editTitle') : t('crm.opportunities.newTitle') }}
+    </h1>
+
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('crm.opportunities.loadError') }}</p>
+        <a routerLink="/opportunities" class="btn btn-secondary">{{ t('common.back') }}</a>
+      </div>
+    } @else {
+      <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        @if (errorKey(); as key) {
+          <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+        }
+
+        <div class="form-grid">
+          <div class="form-group form-group-wide">
+            <label class="form-label" for="name">
+              {{ t('crm.opportunities.form.name') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input id="name" type="text" class="form-control" formControlName="name" />
+            @if (hasError('name', 'required')) {
+              <p class="field-error">{{ t('crm.errors.noName') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="customerId">
+              {{ t('crm.opportunities.form.customer') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="customerId" class="form-control" formControlName="customerId">
+              <option value="">{{ t('crm.opportunities.form.customerPlaceholder') }}</option>
+              @for (customer of customers(); track customer.id) {
+                <option [value]="customer.id">{{ customer.name }}</option>
+              }
+            </select>
+            @if (hasError('customerId', 'required')) {
+              <p class="field-error">{{ t('crm.errors.noCustomer') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="stage">{{ t('crm.opportunities.form.stage') }}</label>
+            <select id="stage" class="form-control" formControlName="stage">
+              @for (stage of stages; track stage) {
+                <option [value]="stage">{{ t(stageKey(stage)) }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="amount">
+              {{ t('crm.opportunities.form.amount') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input id="amount" type="number" min="0.01" step="any" class="form-control" formControlName="amount" />
+            @if (hasError('amount', 'required')) {
+              <p class="field-error">{{ t('crm.errors.invalidAmount') }}</p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="expectedCloseDate">
+              {{ t('crm.opportunities.form.expectedClose') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input id="expectedCloseDate" type="date" class="form-control" formControlName="expectedCloseDate" />
+          </div>
+
+          <div class="form-group form-group-wide">
+            <label class="form-label" for="notes">{{ t('crm.opportunities.form.notes') }}</label>
+            <textarea id="notes" rows="3" class="form-control" formControlName="notes"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a routerLink="/opportunities" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? t('common.saving') : t('common.save') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</ng-container>

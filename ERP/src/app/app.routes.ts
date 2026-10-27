@@ -169,6 +169,73 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'leads/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/crm/pages/lead-form/lead-form').then((m) => m.LeadForm),
+        data: { title: 'titles.newLead', moduleId: 'contacts' },
+      },
+      {
+        path: 'leads/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/crm/pages/lead-form/lead-form').then((m) => m.LeadForm),
+        data: { title: 'titles.editLead', moduleId: 'contacts' },
+      },
+      {
+        path: 'leads',
+        canActivate: [moduleGuard],
+        loadComponent: () => import('./features/crm/pages/leads/leads').then((m) => m.Leads),
+        data: {
+          title: 'titles.leads',
+          description: 'descriptions.leads',
+          icon: '🧭',
+          moduleId: 'contacts',
+        },
+      },
+      {
+        path: 'opportunities/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/crm/pages/opportunity-form/opportunity-form').then(
+            (m) => m.OpportunityForm,
+          ),
+        data: { title: 'titles.newOpportunity', moduleId: 'contacts' },
+      },
+      {
+        path: 'opportunities/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/crm/pages/opportunity-form/opportunity-form').then(
+            (m) => m.OpportunityForm,
+          ),
+        data: { title: 'titles.editOpportunity', moduleId: 'contacts' },
+      },
+      {
+        path: 'opportunities',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/crm/pages/opportunities/opportunities').then((m) => m.Opportunities),
+        data: {
+          title: 'titles.opportunities',
+          description: 'descriptions.opportunities',
+          icon: '🤝',
+          moduleId: 'contacts',
+        },
+      },
+      {
+        path: 'reminders',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/crm/pages/reminders/reminders').then((m) => m.Reminders),
+        data: {
+          title: 'titles.reminders',
+          description: 'descriptions.reminders',
+          icon: '🔔',
+          moduleId: 'contacts',
+        },
+      },
+      {
         path: 'products/new',
         canActivate: [moduleGuard],
         loadComponent: () =>
@@ -554,6 +621,7 @@ export const routes: Routes = [
   },
   {
     path: '**',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/pages/not-found/not-found').then((m) => m.NotFoundComponent),
   },
