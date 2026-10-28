@@ -192,6 +192,18 @@ export class AccountingService {
   private fromPayment(payment: Payment): JournalEntry {
     const accountCode = payment.mode === 'cash' ? '530000' : '512000';
 
+    if (payment.direction === 'out') {
+      return {
+        id: `pay:${payment.id}`,
+        date: payment.date,
+        journal: 'PAYMENTS',
+        ref: payment.invoiceNumber || payment.reference || '—',
+        label: payment.partnerName,
+        lines: [this.line('401000', payment.amount, 0), this.line(accountCode, 0, payment.amount)],
+        currency: payment.currency,
+      };
+    }
+
     return {
       id: `pay:${payment.id}`,
       date: payment.date,

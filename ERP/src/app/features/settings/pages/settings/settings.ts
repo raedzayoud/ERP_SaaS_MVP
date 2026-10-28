@@ -1,10 +1,12 @@
+import { DatePipe } from '@angular/common';
 import { Component, signal, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { AuditService } from '../../../../core/services/audit.service';
 import { getPlanById, getAllPlans } from '../../../../core/data/plans';
-import { Tenant } from '../../../../core/models/tenant';
+import { TenantUser } from '../../../../core/models/tenant';
 import { COUNTRIES, LANGUAGES, COMPANY_SIZES } from '../../../../core/data/countries';
 import { ASSIGNEE_ROLES, ROLE_INFO, Role, roleLabelKey } from '../../../../core/models/role';
 
@@ -23,7 +25,7 @@ const ROLE_BADGE_CLASS: Record<Role, string> = {
 
 @Component({
   selector: 'app-settings',
-  imports: [RouterLink, TranslocoDirective],
+  imports: [RouterLink, TranslocoDirective, DatePipe],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
@@ -31,6 +33,7 @@ export class SettingsComponent {
   private tenantService = inject(TenantService);
   private authService = inject(AuthService);
   private transloco = inject(TranslocoService);
+  private audit = inject(AuditService);
 
   tenant = this.tenantService.currentTenant;
   plan = this.tenantService.currentPlan;
@@ -58,12 +61,17 @@ export class SettingsComponent {
   newUserName = signal('');
   newUserEmail = signal('');
   newUserRole = signal<Role>('commercial');
+  newUserPassword = signal('');
+  newUserMustRenew = signal(true);
   userError = signal('');
   userSuccess = signal('');
 
   // ── Roles definitions ───────────────────────
   readonly assigneeRoles = ASSIGNEE_ROLES;
   readonly roleInfo = ROLE_INFO.filter((r) => ASSIGNEE_ROLES.includes(r.role));
+
+  // ── Recent activity (audit trail) ───────────
+  auditEntries = computed(() => this.audit.recent(8));
 
   roleLabel(role: Role): string {
     return roleLabelKey(role);
@@ -136,6 +144,8 @@ export class SettingsComponent {
     this.newUserName.set('');
     this.newUserEmail.set('');
     this.newUserRole.set('commercial');
+    this.newUserPassword.set('');
+    this.newUserMustRenew.set(true);
   }
 
   addUser(): void {
@@ -151,6 +161,8 @@ export class SettingsComponent {
       name: this.newUserName(),
       email: this.newUserEmail(),
       role: this.newUserRole(),
+      password: this.newUserPassword() || undefined,
+      mustRenewPassword: this.newUserMustRenew(),
     });
 
     if (success) {
@@ -162,6 +174,25 @@ export class SettingsComponent {
     } else {
       this.userError.set(this.transloco.translate('settings.messages.userLimit'));
     }
+  }
+
+  /** Reactivate / deactivate a member (deactivated = no workspace access). */
+  setUserActive(userId: number, active: boolean): void {
+    this.tenantService.setUserActive(userId, active);
+  }
+
+  /** Ask the member to choose a new password at their next login. */
+  requestRenewal(userId: number): void {
+    this.tenantService.setUserMustRenew(userId, true);
+  }
+
+  /** Badge label for one member: builtin role label. */
+  userRoleLabel(user: TenantUser): string {
+    return this.transloco.translate(roleLabelKey(user.role));
+  }
+
+  userBadgeClass(user: TenantUser): string {
+    return `badge ${ROLE_BADGE_CLASS[user.role] ?? 'badge-info'}`;
   }
 
   removeUser(userId: number): void {
@@ -209,6 +240,7 @@ export class SettingsComponent {
   }
 
   onRoleChange(event: Event): void {
-    this.newUserRole.set((event.target as HTMLSelectElement).value as Role);
+    const value = (event.target as HTMLSelectElement).value;
+    this.newUserRole.set(value as Role);
   }
 }

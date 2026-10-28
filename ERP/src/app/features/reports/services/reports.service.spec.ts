@@ -55,4 +55,31 @@ describe('ReportsService', () => {
     const credit = data.trialBalance.reduce((sum, row) => sum + row.credit, 0);
     expect(debit).toBeCloseTo(credit, 1);
   });
+
+  it('buckets the open supplier bills by age', async () => {
+    const data = await firstValueFrom(service.getReportData(YEAR.from, YEAR.to));
+
+    const agingTotal = data.aging.reduce((sum, row) => sum + row.total, 0);
+    // 295.95 (FA-2026-0002) + 128.4 (FA-2026-0003) + 285.6 (FA-2026-0004)
+    expect(agingTotal).toBeCloseTo(709.95, 2);
+    expect(data.aging.some((row) => row.count > 0)).toBe(true);
+  });
+
+  it('lists the top customers by invoiced revenue', async () => {
+    const data = await firstValueFrom(service.getReportData(YEAR.from, YEAR.to));
+
+    expect(data.customers.length).toBeGreaterThan(0);
+    for (let i = 1; i < data.customers.length; i++) {
+      expect(data.customers[i - 1].revenue).toBeGreaterThanOrEqual(data.customers[i].revenue);
+    }
+    expect(data.customers.every((row) => row.name.length > 0)).toBe(true);
+  });
+
+  it('flags stock rows below the product threshold', async () => {
+    const data = await firstValueFrom(service.getReportData(YEAR.from, YEAR.to));
+
+    expect(data.stockRows.some((row) => row.minStock > 0)).toBe(true);
+    expect(data.stockRows.some((row) => row.low)).toBe(true);
+    expect(data.stockRows[0].low).toBe(true);
+  });
 });

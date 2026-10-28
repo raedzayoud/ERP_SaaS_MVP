@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { safeStorage } from '../utils/safe-storage';
 import { Tenant, TenantUser } from '../models/tenant';
 import { getPlanById, getPlanForModules } from '../data/plans';
 
@@ -171,6 +172,30 @@ export class TenantService {
     this.currentTenant.set(updated);
   }
 
+  /** Deactivated members lose their workspace access until reactivated. */
+  setUserActive(userId: number, active: boolean): void {
+    this.patchUser(userId, { active });
+  }
+
+  /** Flags a member so login redirects them to the password renewal page. */
+  setUserMustRenew(userId: number, mustRenew: boolean): void {
+    this.patchUser(userId, { mustRenewPassword: mustRenew });
+  }
+
+  private patchUser(userId: number, patch: Partial<TenantUser>): void {
+    const tenant = this.currentTenant();
+    if (!tenant) return;
+
+    const updated: Tenant = {
+      ...tenant,
+      users: tenant.users.map((user) =>
+        user.id === userId ? { ...user, ...patch } : user,
+      ),
+    };
+    this.saveTenant(updated);
+    this.currentTenant.set(updated);
+  }
+
   upgradePlan(planId: string): void {
     const tenant = this.currentTenant();
     if (!tenant) return;
@@ -186,16 +211,16 @@ export class TenantService {
   }
 
   clearTenant(): void {
-    localStorage.removeItem(this.storageKey);
+    safeStorage()?.removeItem(this.storageKey);
     this.currentTenant.set(null);
   }
 
   private saveTenant(tenant: Tenant): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(tenant));
+    safeStorage()?.setItem(this.storageKey, JSON.stringify(tenant));
   }
 
   private loadTenant(): Tenant | null {
-    const data = localStorage.getItem(this.storageKey);
+    const data = safeStorage()?.getItem(this.storageKey);
     if (data) {
       try {
         return JSON.parse(data) as Tenant;
@@ -210,12 +235,12 @@ export class TenantService {
     const taken = this.loadSubdomains();
     if (!taken.includes(subdomain)) {
       taken.push(subdomain);
-      localStorage.setItem(this.subdomainsKey, JSON.stringify(taken));
+      safeStorage()?.setItem(this.subdomainsKey, JSON.stringify(taken));
     }
   }
 
   private loadSubdomains(): string[] {
-    const data = localStorage.getItem(this.subdomainsKey);
+    const data = safeStorage()?.getItem(this.subdomainsKey);
     if (data) {
       try {
         return JSON.parse(data) as string[];

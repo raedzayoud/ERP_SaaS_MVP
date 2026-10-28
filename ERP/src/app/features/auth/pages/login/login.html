@@ -22,7 +22,10 @@
         {{ t('login.noAccount') }}
         <a routerLink="/signup">{{ t('login.createWorkspace') }}</a>
       </p>
-      <p class="login-footer-text">{{ t('login.footer') }}</p>
+      <p class="login-footer-text">
+        {{ t('login.footer') }} ·
+        <a routerLink="/login/email">{{ t('rbac.login.genericTitle') }}</a>
+      </p>
     </div>
   </div>
 </div>

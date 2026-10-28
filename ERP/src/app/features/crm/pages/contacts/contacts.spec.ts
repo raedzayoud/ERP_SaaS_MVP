@@ -6,6 +6,7 @@ import { Contacts } from './contacts';
 import { PartnerService } from '../../services/partner.service';
 import { Partner, PartnerQuery } from '../../models/partner';
 import { Page } from '../../../../shared/models/page';
+import { AuthService } from '../../../../core/services/auth.service';
 
 const EN = {
   contacts: {
@@ -108,6 +109,14 @@ describe('Contacts', () => {
           },
         },
       ],
+    });
+
+    // The tests run as the company administrator (full action set).
+    TestBed.inject(AuthService).refreshUser({
+      id: 1,
+      name: 'Admin Demo',
+      email: 'admin@tenant.com',
+      role: 'admin-entreprise',
     });
 
     return TestBed.createComponent(Contacts);

@@ -1,0 +1,168 @@
+<ng-container *transloco="let t">
+  <div class="supplier-bills-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('titles.supplierBills') }}</h1>
+        <p class="page-subtitle">{{ t('descriptions.supplierBills') }}</p>
+      </div>
+      @if (permissions.can('purchases', 'create')) {
+        <a routerLink="/supplier-bills/new" class="btn btn-primary">
+          + {{ t('purchases.bills.list.newBill') }}
+        </a>
+      }
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input
+          type="search"
+          class="form-control search-input"
+          [placeholder]="t('purchases.bills.list.searchPlaceholder')"
+          [attr.aria-label]="t('purchases.bills.list.searchPlaceholder')"
+          [formControl]="searchControl"
+        />
+
+        <select
+          class="form-control filter-select"
+          [value]="stateFilter()"
+          [attr.aria-label]="t('purchases.bills.columns.state')"
+          (change)="onStateFilter($event)"
+        >
+          <option value="">{{ t('purchases.bills.filters.allStates') }}</option>
+          @for (state of states; track state) {
+            <option [value]="state">{{ t('purchases.payment.' + state) }}</option>
+          }
+        </select>
+
+        @if (hasFilters()) {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilters()">
+            {{ t('common.clearFilters') }}
+          </button>
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (loadFailed()) {
+        <div class="state-block">
+          <p class="state-title">{{ t('purchases.bills.list.loadError') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (bills().length === 0) {
+        <div class="state-block">
+          <p class="state-title">
+            {{ hasFilters() ? t('purchases.bills.list.noMatch') : t('purchases.bills.list.emptyTitle') }}
+          </p>
+          <p class="state-text">
+            {{ hasFilters() ? t('purchases.bills.list.noMatchHint') : t('purchases.bills.list.emptyHint') }}
+          </p>
+          @if (hasFilters()) {
+            <button type="button" class="btn btn-secondary" (click)="clearFilters()">
+              {{ t('common.clearFilters') }}
+            </button>
+          } @else {
+            @if (permissions.can('purchases', 'create')) {
+              <a routerLink="/supplier-bills/new" class="btn btn-primary">
+                {{ t('purchases.bills.list.newBill') }}
+              </a>
+            }
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('purchases.bills.columns.number') }}</th>
+                <th scope="col">{{ t('purchases.bills.columns.supplier') }}</th>
+                <th scope="col">{{ t('purchases.bills.columns.source') }}</th>
+                <th scope="col">{{ t('purchases.bills.columns.billingDate') }}</th>
+                <th scope="col">{{ t('purchases.bills.columns.dueDate') }}</th>
+                <th scope="col" class="num">{{ t('purchases.bills.columns.total') }}</th>
+                <th scope="col" class="num">{{ t('purchases.bills.columns.balance') }}</th>
+                <th scope="col">{{ t('purchases.bills.columns.state') }}</th>
+                <th scope="col" class="col-actions">{{ t('purchases.columns.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (bill of bills(); track bill.id) {
+                <tr>
+                  <td class="col-number">
+                    <a class="number-main" [routerLink]="['/supplier-bills', bill.id]">
+                      {{ numberOf(bill) }}
+                    </a>
+                  </td>
+                  <td>{{ bill.supplierSnapshot?.name }}</td>
+                  <td>
+                    @if (sourceOf(bill); as source) {
+                      <a [routerLink]="['/purchases', bill.orderId]">{{ source }}</a>
+                    } @else {
+                      <span class="badge badge-info">{{ t('purchases.bills.source.standalone') }}</span>
+                    }
+                  </td>
+                  <td class="col-date">{{ bill.billingDate | date: 'mediumDate' }}</td>
+                  <td class="col-date">{{ bill.dueDate | date: 'mediumDate' }}</td>
+                  <td class="num">{{ service.totalOf(bill).totalTtc | currency: bill.currency }}</td>
+                  <td class="num">{{ service.outstandingOf(bill) | currency: bill.currency }}</td>
+                  <td>
+                    <span class="badge" [class]="'badge ' + stateClass(bill)">
+                      {{ t('purchases.payment.' + service.stateOf(bill)) }}
+                    </span>
+                    @if (service.overdue(bill)) {
+                      <span class="badge badge-danger">{{ t('purchases.tags.overdue') }}</span>
+                    }
+                  </td>
+                  <td class="col-actions">
+                    <a [routerLink]="['/supplier-bills', bill.id]" class="btn btn-secondary btn-sm">
+                      {{ t('purchases.bills.list.view') }}
+                    </a>
+                    @if (service.stateOf(bill) === 'unpaid' && permissions.can('purchases', 'delete')) {
+                      <button
+                        type="button"
+                        class="btn btn-danger btn-sm"
+                        [attr.aria-label]="t('purchases.bills.list.remove', { number: numberOf(bill) })"
+                        (click)="remove(bill)"
+                      >
+                        {{ t('common.delete') }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <span class="page-info">
+            {{ t('purchases.list.showing', { from: pageStart(), to: pageEnd(), total: total() }) }}
+          </span>
+          <div class="pager">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() === 0"
+              (click)="setPage(page() - 1)"
+            >
+              ← {{ t('common.previous') }}
+            </button>
+            <span class="page-count">{{ page() + 1 }} / {{ totalPages() }}</span>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page() + 1 >= totalPages()"
+              (click)="setPage(page() + 1)"
+            >
+              {{ t('common.next') }} →
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

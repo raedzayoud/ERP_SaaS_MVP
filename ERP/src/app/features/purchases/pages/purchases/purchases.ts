@@ -14,6 +14,7 @@ import {
   ReceptionState,
 } from '../../models/purchase-order';
 import { PurchaseService } from '../../services/purchase.service';
+import { PermissionService } from '../../../../core/services/permission.service';
 import { isLate, purchaseTotals, receptionState } from '../../utils/purchase-calc';
 import { ReceptionBadge } from '../../components/reception-badge/reception-badge';
 
@@ -37,6 +38,7 @@ export class Purchases {
   private readonly service = inject(PurchaseService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  readonly permissions = inject(PermissionService);
 
   readonly pageSize = 10;
   readonly statuses: PurchaseStatus[] = ['draft', 'confirmed', 'cancelled'];

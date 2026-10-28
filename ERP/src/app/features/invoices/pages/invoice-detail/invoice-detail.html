@@ -38,34 +38,42 @@
           <a [routerLink]="listRoute()" class="btn btn-secondary">← {{ t('common.back') }}</a>
 
           @if (inv.status === 'draft') {
-            <a
-              [routerLink]="isQuote() ? ['/quotes', inv.id, 'edit'] : ['/invoices', inv.id, 'edit']"
-              class="btn btn-secondary"
-            >
-              {{ t('invoices.detail.edit') }}
-            </a>
-            <button
-              type="button"
-              class="btn btn-primary"
-              [disabled]="saving()"
-              (click)="validate()"
-            >
-              {{ saving() ? t('invoices.detail.validating') : t('invoices.detail.validate') }}
-            </button>
-            <button type="button" class="btn btn-danger" [disabled]="saving()" (click)="remove()">
-              {{ t('invoices.detail.delete') }}
-            </button>
+            @if (permissions.can(moduleId(), 'update')) {
+              <a
+                [routerLink]="isQuote() ? ['/quotes', inv.id, 'edit'] : ['/invoices', inv.id, 'edit']"
+                class="btn btn-secondary"
+              >
+                {{ t('invoices.detail.edit') }}
+              </a>
+            }
+            @if (permissions.can(moduleId(), 'validate')) {
+              <button
+                type="button"
+                class="btn btn-primary"
+                [disabled]="saving()"
+                (click)="validate()"
+              >
+                {{ saving() ? t('invoices.detail.validating') : t('invoices.detail.validate') }}
+              </button>
+            }
+            @if (permissions.can(moduleId(), 'delete')) {
+              <button type="button" class="btn btn-danger" [disabled]="saving()" (click)="remove()">
+                {{ t('invoices.detail.delete') }}
+              </button>
+            }
           }
 
           @if (inv.status === 'posted') {
-            <button
-              type="button"
-              class="btn btn-primary"
-              [disabled]="pdfBusy()"
-              (click)="downloadPdf()"
-            >
-              {{ pdfBusy() ? t('invoices.detail.pdfBusy') : t('invoices.detail.pdf') }}
-            </button>
+            @if (permissions.can(moduleId(), 'export')) {
+              <button
+                type="button"
+                class="btn btn-primary"
+                [disabled]="pdfBusy()"
+                (click)="downloadPdf()"
+              >
+                {{ pdfBusy() ? t('invoices.detail.pdfBusy') : t('invoices.detail.pdf') }}
+              </button>
+            }
             @if (isQuote()) {
               @if (convertedOrder(); as converted) {
                 <span class="btn btn-secondary" aria-disabled="true">
@@ -76,27 +84,33 @@
                   }}
                 </span>
               } @else {
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  [disabled]="saving()"
-                  (click)="convert()"
-                >
-                  {{ saving() ? t('quotes.detail.converting') : t('quotes.detail.convert') }}
-                </button>
+                @if (permissions.can('sales', 'update')) {
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    [disabled]="saving()"
+                    (click)="convert()"
+                  >
+                    {{ saving() ? t('quotes.detail.converting') : t('quotes.detail.convert') }}
+                  </button>
+                }
               }
             } @else {
-              <button type="button" class="btn btn-secondary" (click)="createCreditNote()">
-                {{ t('invoices.detail.createCreditNote') }}
-              </button>
-              <a
-                [routerLink]="['/payments/new']"
-                [queryParams]="{ invoiceId: inv.id }"
-                class="btn btn-secondary"
-              >
-                {{ t('invoices.detail.payment') }}
-              </a>
-              @if (inv.kind === 'invoice') {
+              @if (permissions.can('invoices', 'create')) {
+                <button type="button" class="btn btn-secondary" (click)="createCreditNote()">
+                  {{ t('invoices.detail.createCreditNote') }}
+                </button>
+              }
+              @if (permissions.can('payments', 'create')) {
+                <a
+                  [routerLink]="['/payments/new']"
+                  [queryParams]="{ invoiceId: inv.id }"
+                  class="btn btn-secondary"
+                >
+                  {{ t('invoices.detail.payment') }}
+                </a>
+              }
+              @if (permissions.can('invoicing', 'export') && inv.kind === 'invoice') {
                 <button type="button" class="btn btn-secondary" (click)="downloadFacturX()">
                   {{ t('invoicing.detail.facturX') }}
                 </button>

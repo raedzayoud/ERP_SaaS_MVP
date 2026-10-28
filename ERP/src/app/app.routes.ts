@@ -19,6 +19,18 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'login/email',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/pages/login-generic/login-generic').then((m) => m.LoginGeneric),
+  },
+  {
+    path: 'renew-password',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/auth/pages/renew-password/renew-password').then((m) => m.RenewPassword),
+  },
+  {
     path: 'signup',
     canActivate: [guestGuard],
     loadComponent: () =>
@@ -441,6 +453,37 @@ export const routes: Routes = [
             (m) => m.PurchaseForm,
           ),
         data: { title: 'titles.newPurchaseOrder', moduleId: 'purchases' },
+      },
+      {
+        path: 'supplier-bills/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/purchases/pages/supplier-bill-form/supplier-bill-form').then(
+            (m) => m.SupplierBillForm,
+          ),
+        data: { title: 'titles.newSupplierBill', moduleId: 'purchases' },
+      },
+      {
+        path: 'supplier-bills/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/purchases/pages/supplier-bill-detail/supplier-bill-detail').then(
+            (m) => m.SupplierBillDetail,
+          ),
+        data: { title: 'titles.supplierBillDetail', moduleId: 'purchases' },
+      },
+      {
+        path: 'supplier-bills',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/purchases/pages/supplier-bills/supplier-bills').then(
+            (m) => m.SupplierBills,
+          ),
+        data: {
+          title: 'titles.supplierBills',
+          description: 'descriptions.supplierBills',
+          moduleId: 'purchases',
+        },
       },
       {
         path: 'purchases/:id/receive',

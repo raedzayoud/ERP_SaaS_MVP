@@ -10,11 +10,15 @@
         </p>
       </div>
       @if (fixedKind === 'quote') {
-        <a routerLink="/quotes/new" class="btn btn-primary">+ {{ t('quotes.list.newQuote') }}</a>
+        @if (permissions.can('sales', 'create')) {
+          <a routerLink="/quotes/new" class="btn btn-primary">+ {{ t('quotes.list.newQuote') }}</a>
+        }
       } @else {
-        <a routerLink="/invoices/new" class="btn btn-primary"
-          >+ {{ t('invoices.list.newInvoice') }}</a
-        >
+        @if (permissions.can('invoices', 'create')) {
+          <a routerLink="/invoices/new" class="btn btn-primary"
+            >+ {{ t('invoices.list.newInvoice') }}</a
+          >
+        }
       }
     </div>
 
@@ -217,7 +221,10 @@
                     >
                       {{ t('invoices.list.view') }}
                     </a>
-                    @if (invoice.status === 'draft') {
+                    @if (
+                      invoice.status === 'draft'
+                      && permissions.can(fixedKind === 'quote' ? 'sales' : 'invoices', 'update')
+                    ) {
                       <a
                         [routerLink]="
                           fixedKind === 'quote'

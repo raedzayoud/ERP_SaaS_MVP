@@ -5,9 +5,11 @@
         <h1 class="page-title">{{ t('payments.list.title') }}</h1>
         <p class="page-subtitle">{{ t('payments.list.subtitle') }}</p>
       </div>
-      <a routerLink="/payments/new" class="btn btn-primary"
-        >+ {{ t('payments.list.newPayment') }}</a
-      >
+      @if (permissions.can('payments', 'create')) {
+        <a routerLink="/payments/new" class="btn btn-primary"
+          >+ {{ t('payments.list.newPayment') }}</a
+        >
+      }
     </div>
 
     <div class="card">
@@ -70,9 +72,11 @@
       } @else if (rows().length === 0) {
         <div class="state-block">
           <p class="state-title">{{ t('payments.list.empty') }}</p>
-          <a routerLink="/payments/new" class="btn btn-primary">
-            {{ t('payments.list.newPayment') }}
-          </a>
+          @if (permissions.can('payments', 'create')) {
+            <a routerLink="/payments/new" class="btn btn-primary">
+              {{ t('payments.list.newPayment') }}
+            </a>
+          }
         </div>
       } @else {
         <div class="table-wrap">
@@ -80,6 +84,7 @@
             <thead>
               <tr>
                 <th scope="col">{{ t('payments.columns.date') }}</th>
+                <th scope="col">{{ t('payments.columns.type') }}</th>
                 <th scope="col">{{ t('payments.columns.invoice') }}</th>
                 <th scope="col">{{ t('payments.columns.partner') }}</th>
                 <th scope="col">{{ t('payments.columns.mode') }}</th>
@@ -94,7 +99,20 @@
                     <a [routerLink]="['/payments', row.id]">{{ row.date | date: 'mediumDate' }}</a>
                   </td>
                   <td>
-                    <a [routerLink]="['/invoices', row.invoiceId]">{{ row.invoiceNumber }}</a>
+                    <span
+                      class="badge"
+                      [class]="row.direction === 'in' ? 'badge badge-success' : 'badge badge-warning'"
+                      [attr.aria-label]="t('payments.direction.' + row.direction)"
+                    >
+                      {{ t('payments.direction.' + row.direction) }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (row.direction === 'out') {
+                      <a [routerLink]="['/supplier-bills', row.invoiceId]">{{ row.invoiceNumber }}</a>
+                    } @else {
+                      <a [routerLink]="['/invoices', row.invoiceId]">{{ row.invoiceNumber }}</a>
+                    }
                   </td>
                   <td>{{ row.partnerName }}</td>
                   <td>

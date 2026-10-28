@@ -5,7 +5,9 @@
         <h1 class="page-title">{{ t('products.title') }}</h1>
         <p class="page-subtitle">{{ t('products.subtitle') }}</p>
       </div>
-      <a routerLink="/products/new" class="btn btn-primary">+ {{ t('products.newProduct') }}</a>
+      @if (permissions.can('products', 'create')) {
+        <a routerLink="/products/new" class="btn btn-primary">+ {{ t('products.newProduct') }}</a>
+      }
     </div>
 
     @if (notice()) {
@@ -156,27 +158,31 @@
                   <td class="col-vat">{{ product.vatRate }} %</td>
                   <td class="col-date">{{ product.createdAt | date: 'mediumDate' }}</td>
                   <td class="col-actions">
-                    <a [routerLink]="['/products', product.id]" class="btn btn-secondary btn-sm">
-                      {{ t('common.edit') }}
-                    </a>
-                    @if (product.active) {
-                      <button
-                        type="button"
-                        class="btn btn-sm"
-                        (click)="archive(product)"
-                        [attr.aria-label]="t('products.archiveFor', { name: product.name })"
-                      >
-                        {{ t('products.archive') }}
-                      </button>
-                    } @else {
-                      <button
-                        type="button"
-                        class="btn btn-sm"
-                        (click)="restore(product)"
-                        [attr.aria-label]="t('products.restoreFor', { name: product.name })"
-                      >
-                        {{ t('products.restore') }}
-                      </button>
+                    @if (permissions.can('products', 'update')) {
+                      <a [routerLink]="['/products', product.id]" class="btn btn-secondary btn-sm">
+                        {{ t('common.edit') }}
+                      </a>
+                    }
+                    @if (permissions.can('products', 'delete')) {
+                      @if (product.active) {
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          (click)="archive(product)"
+                          [attr.aria-label]="t('products.archiveFor', { name: product.name })"
+                        >
+                          {{ t('products.archive') }}
+                        </button>
+                      } @else {
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          (click)="restore(product)"
+                          [attr.aria-label]="t('products.restoreFor', { name: product.name })"
+                        >
+                          {{ t('products.restore') }}
+                        </button>
+                      }
                     }
                   </td>
                 </tr>

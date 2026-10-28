@@ -1,0 +1,260 @@
+<ng-container *transloco="let t">
+  <div class="supplier-bill-detail-page">
+    <div class="page-header">
+      <div>
+        <nav class="breadcrumbs">
+          <a routerLink="/supplier-bills">{{ t('titles.supplierBills') }}</a>
+          <span aria-hidden="true">/</span>
+          <span>{{ bill()?.number }}</span>
+        </nav>
+        <h1 class="page-title">{{ bill()?.number }}</h1>
+        <p class="page-subtitle">{{ bill()?.supplierSnapshot?.name }}</p>
+      </div>
+      <div class="header-actions">
+        @if (permissions.can('purchases', 'export')) {
+          <button
+            type="button"
+            class="btn btn-secondary"
+            [disabled]="pdfBusy()"
+            (click)="downloadPdf()"
+          >
+            {{ pdfBusy() ? t('purchases.bills.detail.pdfBusy') : t('purchases.bills.detail.pdf') }}
+          </button>
+        }
+        @if (permissions.can('purchases', 'delete')) {
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="saving() || !canRemove()"
+            (click)="remove()"
+          >
+            {{ t('common.delete') }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('purchases.bills.detail.notFound') }}</p>
+          <a routerLink="/supplier-bills" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else {
+      @if (notice()) {
+        <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+      }
+      @if (errorKey(); as key) {
+        <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+      }
+      @if (overdue()) {
+        <div class="alert alert-warning" role="status">
+          {{ t('purchases.bills.detail.overdueNotice', { date: bill()?.dueDate }) }}
+        </div>
+      }
+
+      <div class="card document">
+        <div class="document-head">
+          <div class="doc-party">
+            <p class="doc-company">{{ buyerName() }}</p>
+          </div>
+          <div class="doc-meta">
+            <p class="doc-title">{{ t('purchases.bills.detail.title') }}</p>
+            <p class="doc-number">{{ bill()?.number }}</p>
+            <p class="doc-line">
+              {{ t('purchases.bills.form.billingDate') }}: {{ bill()?.billingDate | date: 'mediumDate' }}
+            </p>
+            <p class="doc-line">
+              {{ t('purchases.bills.form.dueDate') }}: {{ bill()?.dueDate | date: 'mediumDate' }}
+            </p>
+            @if (bill()?.orderNumber) {
+              <p class="doc-line">
+                <a [routerLink]="['/purchases', bill()?.orderId]">
+                  {{ t('purchases.bills.detail.fromOrder') }}: {{ bill()?.orderNumber }}
+                </a>
+              </p>
+            }
+          </div>
+        </div>
+
+        <div class="document-parties">
+          <div class="doc-box">
+            <p class="doc-label">{{ t('purchases.bills.detail.supplier') }}</p>
+            <p class="doc-strong">{{ bill()?.supplierSnapshot?.name }}</p>
+            @if (bill()?.supplierSnapshot?.address) {
+              <p class="doc-line">{{ bill()?.supplierSnapshot?.address }}</p>
+            }
+            @if (bill()?.supplierSnapshot?.taxId) {
+              <p class="doc-line">
+                {{ t('invoices.pdf.taxId') }}: {{ bill()?.supplierSnapshot?.taxId }}
+              </p>
+            }
+          </div>
+          <div class="doc-box">
+            <p class="doc-label">{{ t('purchases.bills.columns.state') }}</p>
+            <p class="doc-badges">
+              <span
+                class="badge"
+                [class]="state() === 'paid' ? 'badge badge-success' : state() === 'partial' ? 'badge badge-info' : 'badge badge-warning'"
+              >
+                {{ t('purchases.payment.' + state()) }}
+              </span>
+            </p>
+            @if (state() === 'unpaid' && bill()?.sourceType === 'order') {
+              <p class="doc-line text-muted">{{ t('purchases.bills.detail.unpaidHint') }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table lines-table document-lines">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('purchases.form.reference') }}</th>
+                <th scope="col">{{ t('invoices.form.description') }}</th>
+                <th scope="col">{{ t('purchases.form.unit') }}</th>
+                <th scope="col" class="num">{{ t('invoices.form.quantity') }}</th>
+                <th scope="col" class="num">{{ t('purchases.bills.form.unitCost') }}</th>
+                <th scope="col" class="num">{{ t('invoices.form.vatRate') }}</th>
+                <th scope="col" class="num">{{ t('invoices.form.lineTotal') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of bill()?.lines ?? []; track line.lineId) {
+                <tr>
+                  <td>{{ line.reference }}</td>
+                  <td>{{ line.description }}</td>
+                  <td>{{ line.unit }}</td>
+                  <td class="num">{{ line.quantity }}</td>
+                  <td class="num">{{ line.unitCost | currency: currency() }}</td>
+                  <td class="num">{{ line.vatRate }} %</td>
+                  <td class="num line-net">
+                    {{ line.quantity * line.unitCost | currency: currency() }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (bill()?.notes?.trim()) {
+          <div class="document-notes">
+            <p class="doc-label">{{ t('invoices.detail.notes') }}</p>
+            <p class="doc-line">{{ bill()?.notes }}</p>
+          </div>
+        }
+
+        <div class="document-foot">
+          <div class="document-history">
+            <p class="doc-label">{{ t('purchases.bills.detail.payments') }}</p>
+            @for (payment of payments(); track payment.id) {
+              <p class="doc-line">
+                {{ payment.date | date: 'mediumDate' }} ·
+                <span class="badge badge-info">{{ t('payments.modes.' + payment.mode) }}</span>
+                {{ payment.amount | currency: payment.currency }}
+                @if (payment.reference) {
+                  · {{ payment.reference }}
+                }
+              </p>
+            }
+            @if (payments().length === 0) {
+              <p class="doc-line text-muted">{{ t('purchases.bills.detail.noPayments') }}</p>
+            }
+          </div>
+
+          <div class="totals-block">
+            <div class="totals-row">
+              <span>{{ t('purchases.form.totals.net') }}</span>
+              <span>{{ totals().totalNet | currency: currency() }}</span>
+            </div>
+            <div class="totals-row">
+              <span>{{ t('purchases.form.totals.vat') }}</span>
+              <span>{{ totals().totalVat | currency: currency() }}</span>
+            </div>
+            <div class="totals-row totals-grand">
+              <span>{{ t('purchases.form.totals.totalTtc') }}</span>
+              <strong>{{ totals().totalTtc | currency: currency() }}</strong>
+            </div>
+            <div class="totals-row">
+              <span>{{ t('purchases.bills.detail.paid') }}</span>
+              <span>{{ paid() | currency: currency() }}</span>
+            </div>
+            <div class="totals-row totals-due">
+              <span>{{ t('invoices.form.totals.due') }}</span>
+              <strong>{{ balance() | currency: currency() }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (canPay() && permissions.can('purchases', 'validate')) {
+        <div class="card pay-card">
+          <h2 class="section-title">{{ t('purchases.bills.pay.title') }}</h2>
+          <form
+            class="pay-grid"
+            [formGroup]="payForm"
+            (ngSubmit)="pay()"
+            novalidate
+          >
+            <div class="form-group">
+              <label class="form-label" for="payDate">
+                {{ t('payments.form.date') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="payDate"
+                type="date"
+                class="form-control"
+                formControlName="date"
+                [attr.aria-label]="t('payments.form.date')"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="payAmount">
+                {{ t('payments.form.amount') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="payAmount"
+                type="number"
+                min="0"
+                step="any"
+                class="form-control"
+                formControlName="amount"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="payMode">{{ t('payments.form.mode') }}</label>
+              <select id="payMode" class="form-control" formControlName="mode">
+                @for (mode of modes; track mode) {
+                  <option [value]="mode">{{ t('payments.modes.' + mode) }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="payReference">{{ t('payments.form.reference') }}</label>
+              <input id="payReference" type="text" class="form-control" formControlName="reference" />
+            </div>
+            <div class="form-group pay-notes">
+              <label class="form-label" for="payNotes">{{ t('payments.form.notes') }}</label>
+              <input id="payNotes" type="text" class="form-control" formControlName="notes" />
+            </div>
+            <div class="pay-submit">
+              <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                {{ saving() ? t('purchases.bills.pay.saving') : t('purchases.bills.pay.save') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+    }
+  </div>
+</ng-container>

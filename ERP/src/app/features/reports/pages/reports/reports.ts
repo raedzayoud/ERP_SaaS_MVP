@@ -11,6 +11,8 @@ import { ReportPdfService } from '../../services/report-pdf.service';
 import { downloadCsv } from '../../utils/export-csv';
 import { ChartCanvas } from '../../components/chart-canvas/chart-canvas';
 
+type ReportTab = 'overview' | 'aging' | 'customers' | 'stock';
+
 const PRIMARY = '#714b67';
 const ACCENT = '#017e84';
 const DONUT_COLORS = [PRIMARY, ACCENT, '#b45309', '#3b82f6', '#6b7280'];
@@ -30,6 +32,9 @@ export class Reports {
 
   readonly from = signal(addDaysIso(todayIso(), -30));
   readonly to = signal(todayIso());
+
+  readonly tabs: ReportTab[] = ['overview', 'aging', 'customers', 'stock'];
+  readonly tab = signal<ReportTab>('overview');
 
   data = signal<ReportData | null>(null);
   loading = signal(true);
@@ -143,6 +148,10 @@ export class Reports {
     this.load();
   }
 
+  setTab(nextTab: ReportTab): void {
+    this.tab.set(nextTab);
+  }
+
   async exportPdf(): Promise<void> {
     const data = this.data();
     if (!data) return;
@@ -170,27 +179,57 @@ export class Reports {
     const t = (key: string) => this.transloco.translate(key);
     const rows: (string | number)[][] = [
       [t('reports.pdf.title'), `${this.from()} — ${this.to()}`],
-      [],
-      [t('reports.kpi.title')],
-      [t('reports.kpi.sales'), data.totalSales],
-      [t('reports.kpi.expenses'), data.totalExpenses],
-      [t('reports.kpi.stockValue'), data.stockValue],
-      [t('reports.kpi.outstanding'), data.outstanding],
-      [t('reports.kpi.overdue'), data.overdue],
-      [],
-      [t('reports.sections.salesByMonth')],
-      [t('reports.columns.month'), t('reports.columns.total')],
-      ...data.salesByMonth.map((row) => [row.label, row.total]),
-      [],
-      [t('reports.sections.topProducts')],
-      [t('reports.columns.product'), t('reports.columns.quantity'), t('reports.columns.revenue')],
-      ...data.topProducts.map((row) => [row.name, row.quantity, row.revenue]),
-      [],
-      [t('reports.sections.margins')],
-      [t('reports.columns.product'), t('reports.columns.quantity'), t('reports.columns.margin')],
-      ...data.margins.map((row) => [row.name, row.quantity, row.margin]),
+      [t('reports.tabs.' + this.tab())],
     ];
 
-    downloadCsv(`reports-${this.from()}-${this.to()}.csv`, rows);
+    if (this.tab() === 'overview') {
+      rows.push(
+        [t('reports.kpi.title')],
+        [t('reports.kpi.sales'), data.totalSales],
+        [t('reports.kpi.expenses'), data.totalExpenses],
+        [t('reports.kpi.stockValue'), data.stockValue],
+        [t('reports.kpi.outstanding'), data.outstanding],
+        [t('reports.kpi.overdue'), data.overdue],
+        [],
+        [t('reports.sections.salesByMonth')],
+        [t('reports.columns.month'), t('reports.columns.total')],
+        ...data.salesByMonth.map((row) => [row.label, row.total]),
+        [],
+        [t('reports.sections.topProducts')],
+        [t('reports.columns.product'), t('reports.columns.quantity'), t('reports.columns.revenue')],
+        ...data.topProducts.map((row) => [row.name, row.quantity, row.revenue]),
+        [],
+        [t('reports.sections.margins')],
+        [t('reports.columns.product'), t('reports.columns.quantity'), t('reports.columns.margin')],
+        ...data.margins.map((row) => [row.name, row.quantity, row.margin]),
+      );
+    } else if (this.tab() === 'aging') {
+      rows.push(
+        [t('reports.aging.columns.bucket'), t('reports.columns.count'), t('reports.columns.total')],
+        ...data.aging.map((row) => [t('reports.aging.buckets.' + row.bucket), row.count, row.total]),
+      );
+    } else if (this.tab() === 'customers') {
+      rows.push(
+        [t('reports.columns.customer'), t('reports.columns.count'), t('reports.columns.revenue')],
+        ...data.customers.map((row) => [row.name, row.invoices, row.revenue]),
+      );
+    } else {
+      rows.push(
+        [
+          t('reports.columns.product'),
+          t('reports.stock.columns.quantity'),
+          t('reports.stock.columns.minStock'),
+          t('reports.stock.columns.state'),
+        ],
+        ...data.stockRows.map((row) => [
+          row.name,
+          row.quantity,
+          row.minStock,
+          t(row.low ? 'reports.stock.low' : 'reports.stock.ok'),
+        ]),
+      );
+    }
+
+    downloadCsv(`reports-${this.tab()}-${this.from()}-${this.to()}.csv`, rows);
   }
 }

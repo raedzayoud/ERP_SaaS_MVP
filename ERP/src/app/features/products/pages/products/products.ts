@@ -7,6 +7,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { ProductService } from '../../services/product.service';
+import { PermissionService } from '../../../../core/services/permission.service';
 import { Product, ProductQuery, ProductType } from '../../models/product';
 
 type ActiveFilter = 'active' | 'archived' | 'all';
@@ -19,11 +20,12 @@ type SortField = 'name' | 'salePrice' | 'createdAt';
   styleUrl: './products.css',
 })
 export class Products {
+
   private readonly service = inject(ProductService);
   private readonly tenantService = inject(TenantService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
-
+  readonly permissions = inject(PermissionService);
   readonly pageSize = 10;
 
   contactFilterId = signal(this.route.snapshot.queryParamMap.get('supplier'));

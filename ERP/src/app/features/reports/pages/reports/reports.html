@@ -38,6 +38,21 @@
       </div>
     </div>
 
+    <div class="tab-row" role="tablist">
+      @for (tabKey of tabs; track tabKey) {
+        <button
+          type="button"
+          class="tab-button"
+          role="tab"
+          [class.tab-active]="tab() === tabKey"
+          [attr.aria-selected]="tab() === tabKey"
+          (click)="setTab(tabKey)"
+        >
+          {{ t('reports.tabs.' + tabKey) }}
+        </button>
+      }
+    </div>
+
     @if (loading()) {
       <div class="card">
         <div class="state-block">
@@ -56,151 +71,252 @@
         </div>
       </div>
     } @else if (data(); as report) {
-      <div class="kpi-row">
-        <div class="kpi-card">
-          <p class="kpi-label">{{ t('reports.kpi.sales') }}</p>
-          <p class="kpi-value">{{ report.totalSales | currency: currency() }}</p>
-        </div>
-        <div class="kpi-card">
-          <p class="kpi-label">{{ t('reports.kpi.expenses') }}</p>
-          <p class="kpi-value">{{ report.totalExpenses | currency: currency() }}</p>
-        </div>
-        <div class="kpi-card">
-          <p class="kpi-label">{{ t('reports.kpi.stockValue') }}</p>
-          <p class="kpi-value">{{ report.stockValue | currency: currency() }}</p>
-        </div>
-        <div class="kpi-card">
-          <p class="kpi-label">{{ t('reports.kpi.outstanding') }}</p>
-          <p class="kpi-value">{{ report.outstanding | currency: currency() }}</p>
-        </div>
-        <div class="kpi-card kpi-danger">
-          <p class="kpi-label">{{ t('reports.kpi.overdue') }}</p>
-          <p class="kpi-value">{{ report.overdue | currency: currency() }}</p>
-        </div>
-      </div>
+      @switch (tab()) {
+        @case ('overview') {
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <p class="kpi-label">{{ t('reports.kpi.sales') }}</p>
+              <p class="kpi-value">{{ report.totalSales | currency: currency() }}</p>
+            </div>
+            <div class="kpi-card">
+              <p class="kpi-label">{{ t('reports.kpi.expenses') }}</p>
+              <p class="kpi-value">{{ report.totalExpenses | currency: currency() }}</p>
+            </div>
+            <div class="kpi-card">
+              <p class="kpi-label">{{ t('reports.kpi.stockValue') }}</p>
+              <p class="kpi-value">{{ report.stockValue | currency: currency() }}</p>
+            </div>
+            <div class="kpi-card">
+              <p class="kpi-label">{{ t('reports.kpi.outstanding') }}</p>
+              <p class="kpi-value">{{ report.outstanding | currency: currency() }}</p>
+            </div>
+            <div class="kpi-card kpi-danger">
+              <p class="kpi-label">{{ t('reports.kpi.overdue') }}</p>
+              <p class="kpi-value">{{ report.overdue | currency: currency() }}</p>
+            </div>
+          </div>
 
-      <div class="card">
-        <h2 class="section-title">{{ t('reports.sections.salesByMonth') }}</h2>
-        <div class="chart-box">
-          <app-chart-canvas type="line" [data]="salesChartData()" [options]="lineOptions" />
-        </div>
-      </div>
+          <div class="card">
+            <h2 class="section-title">{{ t('reports.sections.salesByMonth') }}</h2>
+            <div class="chart-box">
+              <app-chart-canvas type="line" [data]="salesChartData()" [options]="lineOptions" />
+            </div>
+          </div>
 
-      <div class="card">
-        <h2 class="section-title">{{ t('reports.sections.topProducts') }}</h2>
-        <div class="chart-box chart-box-tall">
-          <app-chart-canvas type="bar" [data]="barChartData()" [options]="barOptions" />
-        </div>
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">{{ t('reports.columns.product') }}</th>
-                <th scope="col" class="num">{{ t('reports.columns.quantity') }}</th>
-                <th scope="col" class="num">{{ t('reports.columns.revenue') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of report.topProducts; track row.productId) {
-                <tr>
-                  <td>{{ row.name }}</td>
-                  <td class="num">{{ row.quantity }}</td>
-                  <td class="num">{{ row.revenue | currency: currency() }}</td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="3" class="text-muted">{{ t('reports.empty') }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
+          <div class="card">
+            <h2 class="section-title">{{ t('reports.sections.topProducts') }}</h2>
+            <div class="chart-box chart-box-tall">
+              <app-chart-canvas type="bar" [data]="barChartData()" [options]="barOptions" />
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('reports.columns.product') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.quantity') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.revenue') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of report.topProducts; track row.productId) {
+                    <tr>
+                      <td>{{ row.name }}</td>
+                      <td class="num">{{ row.quantity }}</td>
+                      <td class="num">{{ row.revenue | currency: currency() }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="3" class="text-muted">{{ t('reports.empty') }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      <div class="card">
-        <h2 class="section-title">{{ t('reports.sections.paymentsByMode') }}</h2>
-        <div class="chart-box">
-          <app-chart-canvas type="doughnut" [data]="donutChartData()" [options]="donutOptions" />
-        </div>
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">{{ t('reports.columns.mode') }}</th>
-                <th scope="col" class="num">{{ t('reports.columns.count') }}</th>
-                <th scope="col" class="num">{{ t('reports.columns.total') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of report.paymentsByMode; track row.mode) {
-                <tr>
-                  <td>{{ t('payments.modes.' + row.mode) }}</td>
-                  <td class="num">{{ row.count }}</td>
-                  <td class="num">{{ row.total | currency: currency() }}</td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="3" class="text-muted">{{ t('reports.empty') }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
+          <div class="card">
+            <h2 class="section-title">{{ t('reports.sections.paymentsByMode') }}</h2>
+            <div class="chart-box">
+              <app-chart-canvas type="doughnut" [data]="donutChartData()" [options]="donutOptions" />
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('reports.columns.mode') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.count') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.total') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of report.paymentsByMode; track row.mode) {
+                    <tr>
+                      <td>{{ t('payments.modes.' + row.mode) }}</td>
+                      <td class="num">{{ row.count }}</td>
+                      <td class="num">{{ row.total | currency: currency() }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="3" class="text-muted">{{ t('reports.empty') }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      <div class="card">
-        <h2 class="section-title">{{ t('reports.sections.margins') }}</h2>
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">{{ t('reports.columns.product') }}</th>
-                <th scope="col" class="num">{{ t('reports.columns.quantity') }}</th>
-                <th scope="col" class="num">{{ t('reports.columns.margin') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of report.margins; track row.productId) {
-                <tr>
-                  <td>{{ row.name }}</td>
-                  <td class="num">{{ row.quantity }}</td>
-                  <td class="num">{{ row.margin | currency: currency() }}</td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="3" class="text-muted">{{ t('reports.empty') }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
+          <div class="card">
+            <h2 class="section-title">{{ t('reports.sections.margins') }}</h2>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('reports.columns.product') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.quantity') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.margin') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of report.margins; track row.productId) {
+                    <tr>
+                      <td>{{ row.name }}</td>
+                      <td class="num">{{ row.quantity }}</td>
+                      <td class="num">{{ row.margin | currency: currency() }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="3" class="text-muted">{{ t('reports.empty') }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      <div class="card">
-        <h2 class="section-title">{{ t('reports.sections.trialBalance') }}</h2>
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">{{ t('reports.columns.account') }}</th>
-                <th scope="col" class="num">{{ t('reports.columns.debit') }}</th>
-                <th scope="col" class="num">{{ t('reports.columns.credit') }}</th>
-                <th scope="col" class="num">{{ t('reports.columns.balance') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (row of report.trialBalance; track row.code) {
-                <tr>
-                  <td>{{ row.code }}</td>
-                  <td class="num">{{ row.debit | currency: currency() }}</td>
-                  <td class="num">{{ row.credit | currency: currency() }}</td>
-                  <td class="num">{{ row.balance | currency: currency() }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
+          <div class="card">
+            <h2 class="section-title">{{ t('reports.sections.trialBalance') }}</h2>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('reports.columns.account') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.debit') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.credit') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.balance') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of report.trialBalance; track row.code) {
+                    <tr>
+                      <td>{{ row.code }}</td>
+                      <td class="num">{{ row.debit | currency: currency() }}</td>
+                      <td class="num">{{ row.credit | currency: currency() }}</td>
+                      <td class="num">{{ row.balance | currency: currency() }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @case ('aging') {
+          <div class="card">
+            <h2 class="section-title">{{ t('reports.aging.title') }}</h2>
+            <p class="state-text">{{ t('reports.aging.hint') }}</p>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('reports.aging.columns.bucket') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.count') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.total') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of report.aging; track row.bucket) {
+                    <tr>
+                      <td>{{ t('reports.aging.buckets.' + row.bucket) }}</td>
+                      <td class="num">{{ row.count }}</td>
+                      <td class="num">{{ row.total | currency: currency() }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @case ('customers') {
+          <div class="card">
+            <h2 class="section-title">{{ t('reports.customers.title') }}</h2>
+            <p class="state-text">{{ t('reports.customers.hint') }}</p>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('reports.columns.customer') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.count') }}</th>
+                    <th scope="col" class="num">{{ t('reports.columns.revenue') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of report.customers; track row.partnerId) {
+                    <tr>
+                      <td>{{ row.name }}</td>
+                      <td class="num">{{ row.invoices }}</td>
+                      <td class="num">{{ row.revenue | currency: currency() }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="3" class="text-muted">{{ t('reports.empty') }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        @case ('stock') {
+          <div class="card">
+            <h2 class="section-title">{{ t('reports.stock.title') }}</h2>
+            <p class="state-text">{{ t('reports.stock.hint') }}</p>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('reports.columns.product') }}</th>
+                    <th scope="col" class="num">{{ t('reports.stock.columns.quantity') }}</th>
+                    <th scope="col" class="num">{{ t('reports.stock.columns.minStock') }}</th>
+                    <th scope="col">{{ t('reports.stock.columns.state') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of report.stockRows; track row.productId) {
+                    <tr>
+                      <td>{{ row.name }}</td>
+                      <td class="num">{{ row.quantity }}</td>
+                      <td class="num">{{ row.minStock }}</td>
+                      <td>
+                        @if (row.low) {
+                          <span class="badge badge-warning">{{ t('reports.stock.low') }}</span>
+                        } @else {
+                          <span class="badge badge-success">{{ t('reports.stock.ok') }}</span>
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="4" class="text-muted">{{ t('reports.empty') }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      }
     }
   </div>
 </ng-container>

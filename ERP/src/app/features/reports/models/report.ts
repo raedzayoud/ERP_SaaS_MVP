@@ -31,12 +31,39 @@ export interface TrialBalanceRow {
   balance: number;
 }
 
+/** Aging bucket of an unpaid supplier bill (days late). */
+export type AgingBucket = 'b0' | 'b31' | 'b61' | 'b90';
+
+export interface AgingRow {
+  bucket: AgingBucket;
+  count: number;
+  total: number;
+}
+
+export interface CustomerRow {
+  partnerId: string;
+  name: string;
+  invoices: number;
+  revenue: number;
+}
+
+export interface StockRow {
+  productId: string;
+  name: string;
+  quantity: number;
+  minStock: number;
+  low: boolean;
+}
+
 export interface ReportData {
   salesByMonth: SalesByMonth[];
   topProducts: TopProduct[];
   paymentsByMode: PaymentsByMode[];
   margins: MarginRow[];
   trialBalance: TrialBalanceRow[];
+  aging: AgingRow[];
+  customers: CustomerRow[];
+  stockRows: StockRow[];
   totalSales: number;
   totalExpenses: number;
   stockValue: number;

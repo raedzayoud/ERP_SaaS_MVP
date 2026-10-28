@@ -16,6 +16,7 @@ import {
   PaymentState,
 } from '../../models/invoice';
 import { InvoiceService } from '../../services/invoice.service';
+import { PermissionService } from '../../../../core/services/permission.service';
 import { dueFor, invoiceTotals, isOverdue, paymentState } from '../../utils/invoice-calc';
 
 type SortField = 'issueDate' | 'dueDate' | 'total';
@@ -39,6 +40,7 @@ export class Invoices {
   private readonly tenantService = inject(TenantService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  readonly permissions = inject(PermissionService);
 
   readonly pageSize = 10;
   readonly fixedKind = this.route.snapshot.data['kind'] as InvoiceKind | undefined;

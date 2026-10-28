@@ -3,19 +3,26 @@ import { Observable, forkJoin, map } from 'rxjs';
 import { InvoiceService } from '../../invoices/services/invoice.service';
 import { PaymentService } from '../../payments/services/payment.service';
 import { PurchaseService } from '../../purchases/services/purchase.service';
+import { SupplierBillService } from '../../purchases/services/supplier-bill.service';
 import { ProductService } from '../../products/services/product.service';
 import { StockService } from '../../stock/services/stock.service';
 import { AccountingService } from '../../accounting/services/accounting.service';
 import { Invoice } from '../../invoices/models/invoice';
 import { PurchaseOrder } from '../../purchases/models/purchase-order';
+import { SupplierBill } from '../../purchases/models/supplier-bill';
 import { signedTotal } from '../../invoices/utils/invoice-calc';
 import { purchaseTotals } from '../../purchases/utils/purchase-calc';
+import { todayIso } from '../../../shared/utils/money';
 import { roundMoney } from '../../../shared/utils/money';
 import {
+  AgingBucket,
+  AgingRow,
+  CustomerRow,
   MarginRow,
   PaymentsByMode,
   ReportData,
   SalesByMonth,
+  StockRow,
   TopProduct,
   TrialBalanceRow,
 } from '../models/report';
@@ -25,6 +32,7 @@ export class ReportsService {
   private readonly invoices = inject(InvoiceService);
   private readonly payments = inject(PaymentService);
   private readonly purchases = inject(PurchaseService);
+  private readonly bills = inject(SupplierBillService);
   private readonly products = inject(ProductService);
   private readonly stock = inject(StockService);
   private readonly accounting = inject(AccountingService);
@@ -47,7 +55,7 @@ export class ReportsService {
       payments: { items: { mode: string; amount: number }[] };
       orders: { items: PurchaseOrder[] };
       products: { items: { id: string; name: string; purchasePrice: number }[] };
-      levels: { value: number }[];
+      levels: { value: number; productId: string; name: string; quantity: number }[];
       trialBalance: TrialBalanceRow[];
       summary: { outstanding: number; overdue: number };
     },
@@ -75,12 +83,83 @@ export class ReportsService {
       paymentsByMode,
       margins,
       trialBalance: data.trialBalance,
+      aging: this.buildSupplierAging(from, to),
+      customers: this.buildCustomers(docs),
+      stockRows: this.buildStockRows(data.levels, data.products.items),
       totalSales: roundMoney(totalSales, 'USD'),
       totalExpenses: roundMoney(totalExpenses, 'USD'),
       stockValue: roundMoney(stockValue, 'USD'),
       outstanding: data.summary.outstanding,
       overdue: data.summary.overdue,
     };
+  }
+
+  /** Supplier bills grouped by days late: 0-30, 31-60, 61-90, 90+. */
+  private buildSupplierAging(from: string, to: string): AgingRow[] {
+    const today = todayIso();
+    const buckets = new Map<AgingBucket, { count: number; total: number }>();
+
+    for (const bill of this.bills.allBills()) {
+      if (this.bills.stateOf(bill) === 'paid') continue;
+      if (bill.billingDate < from || bill.billingDate > to) continue;
+
+      const outstanding = Math.max(0, this.bills.outstandingOf(bill));
+      const daysLate = Math.max(0, daysBetween(bill.dueDate, today));
+      const bucket: AgingBucket = daysLate > 90 ? 'b90' : daysLate > 60 ? 'b61' : daysLate > 30 ? 'b31' : 'b0';
+
+      const existing = buckets.get(bucket) ?? { count: 0, total: 0 };
+      existing.count += 1;
+      existing.total += outstanding;
+      buckets.set(bucket, existing);
+    }
+
+    return (['b0', 'b31', 'b61', 'b90'] as const).map((bucket) => {
+      const row = buckets.get(bucket) ?? { count: 0, total: 0 };
+      return { bucket, count: row.count, total: roundMoney(row.total, 'USD') };
+    });
+  }
+
+  /** Top 5 customers of the period, by invoiced revenue. */
+  private buildCustomers(docs: Invoice[]): CustomerRow[] {
+    const byCustomer = new Map<string, CustomerRow>();
+
+    for (const invoice of docs) {
+      if (invoice.kind !== 'invoice') continue;
+      const existing = byCustomer.get(invoice.customerId) ?? {
+        partnerId: invoice.customerId,
+        name: invoice.customerSnapshot?.name ?? '',
+        invoices: 0,
+        revenue: 0,
+      };
+      existing.invoices += 1;
+      existing.revenue += signedTotal(invoice);
+      byCustomer.set(invoice.customerId, existing);
+    }
+
+    return [...byCustomer.values()]
+      .map((row) => ({ ...row, revenue: roundMoney(row.revenue, 'USD') }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+  }
+
+  /** Stock lines with the low-stock flag from the product threshold. */
+  private buildStockRows(
+    levels: { productId: string; name: string; quantity: number }[],
+    products: { id: string; name: string; minStock?: number }[],
+  ): StockRow[] {
+    return levels
+      .map((level) => {
+        const product = products.find((item) => item.id === level.productId);
+        const minStock = product?.minStock ?? 0;
+        return {
+          productId: level.productId,
+          name: level.name,
+          quantity: level.quantity,
+          minStock,
+          low: minStock > 0 && level.quantity <= minStock,
+        };
+      })
+      .sort((a, b) => Number(b.low) - Number(a.low) || a.name.localeCompare(b.name));
   }
 
   private buildSalesByMonth(docs: Invoice[], from: string, to: string): SalesByMonth[] {
@@ -177,4 +256,11 @@ export class ReportsService {
       .map((row) => ({ ...row, total: roundMoney(row.total, 'USD') }))
       .sort((a, b) => b.total - a.total);
   }
+}
+
+/** Days between two ISO dates (b - a). */
+function daysBetween(a: string, b: string): number {
+  const start = new Date(a);
+  const end = new Date(b);
+  return Math.floor((end.getTime() - start.getTime()) / 86_400_000);
 }

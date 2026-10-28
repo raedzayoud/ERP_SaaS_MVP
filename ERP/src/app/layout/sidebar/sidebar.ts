@@ -121,6 +121,12 @@ export class Sidebar {
           route: '/purchases',
           moduleId: 'purchases',
         },
+        {
+          labelKey: 'sidebar.items.supplierBills',
+          icon: '🧾',
+          route: '/supplier-bills',
+          moduleId: 'purchases',
+        },
       ],
     },
     {

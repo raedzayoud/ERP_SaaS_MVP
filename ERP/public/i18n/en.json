@@ -11,7 +11,9 @@
     "actions": "Actions",
     "save": "Save",
     "saving": "Saving…",
-    "contactFilter": "Contact: {{name}}"
+    "contactFilter": "Contact: {{name}}",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this draft?"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -68,7 +70,11 @@
     "opportunities": "Opportunities",
     "newOpportunity": "New opportunity",
     "editOpportunity": "Edit opportunity",
-    "reminders": "Reminders"
+    "reminders": "Reminders",
+    "supplierBills": "Purchases by supplier",
+    "newSupplierBill": "New supplier bill",
+    "newBillFromOrder": "New supplier bill from an order",
+    "supplierBillDetail": "Purchase order detail"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -86,7 +92,8 @@
     "deliveries": "Goods delivered to your customers.",
     "leads": "Track incoming prospects before qualification.",
     "opportunities": "Follow deals through the sales pipeline.",
-    "reminders": "Call-backs and follow-ups to close."
+    "reminders": "Call-backs and follow-ups to close.",
+    "supplierBills": "Receive and pay the bills your suppliers send"
   },
   "navbar": {
     "toggleSidebar": "Toggle sidebar",
@@ -124,7 +131,8 @@
       "deliveries": "Deliveries",
       "leads": "Leads",
       "opportunities": "Opportunities",
-      "reminders": "Reminders"
+      "reminders": "Reminders",
+      "supplierBills": "Purchases by supplier"
     }
   },
   "placeholder": {
@@ -521,7 +529,8 @@
     "confirmed": "Order confirmed.",
     "cancelled": "Order cancelled.",
     "tags": {
-      "late": "Late"
+      "late": "Late",
+      "overdue": "Overdue"
     },
     "status": {
       "draft": "Draft",
@@ -594,7 +603,10 @@
       "confirmDelete": "Delete this draft purchase order?",
       "actionError": "The action could not be completed.",
       "draftNotice": "This is a draft",
-      "draftHint": "Confirm the order to lock it and receive goods."
+      "draftHint": "Confirm the order to lock it and receive goods.",
+      "duplicate": "Duplicate",
+      "duplicated": "Order copied into a new draft.",
+      "duplicating": "Copying…"
     },
     "form": {
       "subtitle": "Fill in the supplier, dates and lines of the order.",
@@ -692,6 +704,104 @@
       "colVatRate": "VAT %",
       "notes": "Notes",
       "page": "Page"
+    },
+    "payment": {
+      "unpaid": "Unpaid",
+      "partial": "Partial",
+      "paid": "Paid"
+    },
+    "bills": {
+      "list": {
+        "newBill": "New bill",
+        "searchPlaceholder": "Search number, order, supplier…",
+        "loadError": "Failed to load the bills.",
+        "noMatch": "No bill matches your filters",
+        "noMatchHint": "Try other search words or clear the filters.",
+        "emptyTitle": "No supplier bill yet",
+        "emptyHint": "Create one from a received order, or record a standalone bill.",
+        "view": "View",
+        "remove": "Delete {number}"
+      },
+      "filters": {
+        "allStates": "All states"
+      },
+      "columns": {
+        "number": "Bill",
+        "supplier": "Supplier",
+        "source": "From",
+        "billingDate": "Billing date",
+        "dueDate": "Due date",
+        "total": "Total",
+        "balance": "Balance",
+        "state": "State"
+      },
+      "source": {
+        "standalone": "Standalone"
+      },
+      "form": {
+        "subtitle": "A bill is issued once goods are received, or directly for services.",
+        "notFound": "Bill not found",
+        "sectionHeader": "Header",
+        "sectionLines": "Bill lines",
+        "sectionReceived": "What was received",
+        "receivedHint": "Only received quantities are billed; the rest can be billed after the next reception.",
+        "receivedQty": "Received",
+        "supplier": "Supplier",
+        "billingDate": "Billing date",
+        "dueDate": "Due date",
+        "unitCost": "Unit cost",
+        "quantityPositive": "The quantity must be greater than 0.",
+        "costInvalid": "The unit cost must be 0 or more.",
+        "dueBeforeBilling": "The due date cannot be before the billing date.",
+        "addLine": "Add line",
+        "saving": "Saving…",
+        "save": "Save bill",
+        "saveError": "Could not save the bill.",
+        "fromOrderNotice": "Bill from a purchase order — adjust dates and confirm.",
+        "fromOrderHint": "Supplier and order come from the purchase order."
+      },
+      "errors": {
+        "notFound": "The bill does not exist.",
+        "notConfirmed": "Only a confirmed order can be billed.",
+        "nothingReceived": "Nothing has been received yet on this order.",
+        "orderAlreadyBilled": "A bill already exists for this order.",
+        "noLines": "Add at least one line.",
+        "missingSupplier": "Choose a supplier.",
+        "dueDateBeforeBilling": "The due date cannot be before the billing date.",
+        "hasPayments": "A bill with payments cannot be deleted.",
+        "overpaid": "The payment exceeds the remaining balance."
+      },
+      "detail": {
+        "title": "Purchase bill",
+        "supplier": "Supplier",
+        "state": "State",
+        "paid": "Paid",
+        "payments": "Payments",
+        "noPayments": "No payment recorded yet.",
+        "unpaidHint": "Waiting for payment — settle it below when the money is sent.",
+        "overdueNotice": "Payment overdue since {date}.",
+        "fromOrder": "From order",
+        "pdf": "Download PDF",
+        "pdfBusy": "Preparing…",
+        "notFound": "Bill not found",
+        "confirmDelete": "Delete this bill?",
+        "actionError": "Action failed. Try again.",
+        "pdfError": "Could not build the PDF."
+      },
+      "pay": {
+        "title": "Register a supplier payment",
+        "save": "Record payment",
+        "saving": "Recording…"
+      },
+      "pdf": {
+        "title": "Purchase bill",
+        "billingDate": "Billing date",
+        "dueDate": "Due date",
+        "colUnit": "Unit",
+        "colUnitCost": "Unit cost",
+        "colNo": "#",
+        "paid": "Paid"
+      }
     }
   },
   "stock": {
@@ -849,7 +959,8 @@
       "partner": "Customer",
       "mode": "Method",
       "reference": "Reference",
-      "amount": "Amount"
+      "amount": "Amount",
+      "type": "Type"
     },
     "modes": {
       "cash": "Cash",
@@ -889,6 +1000,10 @@
       "invoiceNotFound": "The invoice does not exist.",
       "invoiceNotPosted": "Only posted customer invoices can receive payments.",
       "overpaid": "The amount exceeds the remaining due."
+    },
+    "direction": {
+      "in": "Customer payment",
+      "out": "Supplier payment"
     }
   },
   "dashboard": {
@@ -1153,10 +1268,45 @@
       "account": "Account",
       "debit": "Debit",
       "credit": "Credit",
-      "balance": "Balance"
+      "balance": "Balance",
+      "customer": "Customer"
     },
     "pdf": {
       "title": "Business report"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "aging": "Bills by age",
+      "customers": "Top customers",
+      "stock": "Stock"
+    },
+    "aging": {
+      "title": "Supplier bills by age",
+      "hint": "Unpaid and partial bills of the period, counted from the due date.",
+      "columns": {
+        "bucket": "Days late"
+      },
+      "buckets": {
+        "b0": "0 to 30 days",
+        "b31": "31 to 60 days",
+        "b61": "61 to 90 days",
+        "b90": "More than 90 days"
+      }
+    },
+    "customers": {
+      "title": "Top customers",
+      "hint": "Posted invoices of the period, best revenue first."
+    },
+    "stock": {
+      "title": "Low stock",
+      "hint": "Products with a minimum threshold set; low rows first.",
+      "columns": {
+        "quantity": "In stock",
+        "minStock": "Threshold",
+        "state": "State"
+      },
+      "low": "Low",
+      "ok": "OK"
     }
   },
   "invoicing": {
@@ -1984,6 +2134,60 @@
       "invalidAmount": "The amount must be greater than 0.",
       "invalidStage": "This pipeline stage no longer exists.",
       "noSubject": "Please enter a subject."
+    }
+  },
+  "modules": {
+    "dashboard": "Dashboard",
+    "apps": "Apps",
+    "contacts": "Contacts",
+    "products": "Products",
+    "sales": "Sales",
+    "invoices": "Invoices",
+    "payments": "Payments",
+    "purchases": "Purchases",
+    "stock": "Stock",
+    "accounting": "Accounting",
+    "invoicing": "Invoicing",
+    "reports": "Reports",
+    "ai-assistant": "AI assistant",
+    "settings": "Settings"
+  },
+  "rbac": {
+    "actions": {
+      "view": "View",
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "validate": "Validate",
+      "export": "Export"
+    },
+    "audit": {
+      "actions": {
+        "login": "Connection",
+        "create": "Creation",
+        "update": "Update",
+        "delete": "Deletion",
+        "validate": "Validation",
+        "payment": "Payment",
+        "export": "Export"
+      }
+    },
+    "login": {
+      "genericTitle": "Sign in to your workspace",
+      "genericHint": "Use the email created by your company administrator. Demo accounts also work here.",
+      "email": "Email",
+      "invalid": "This email does not belong to any active member.",
+      "activate": "Your account was deactivated; contact your administrator.",
+      "mustRenew": "You must choose a new password before continuing."
+    },
+    "renewal": {
+      "title": "Choose a new password",
+      "description": "Your administrator requires a new password for safety reasons.",
+      "newPassword": "New password",
+      "confirm": "Confirm password",
+      "mismatch": "The two passwords do not match.",
+      "minLength": "The password must contain at least 6 characters.",
+      "submit": "Save and continue"
     }
   }
 }

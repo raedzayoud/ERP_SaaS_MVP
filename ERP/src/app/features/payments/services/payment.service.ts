@@ -4,7 +4,12 @@ import { Page } from '../../../shared/models/page';
 import { Invoice } from '../../invoices/models/invoice';
 import { invoiceTotals } from '../../invoices/utils/invoice-calc';
 import { InvoiceService } from '../../invoices/services/invoice.service';
-import { Payment, PaymentInput, PaymentMode, PaymentQuery } from '../models/payment';
+import {
+  Payment,
+  PaymentInput,
+  PaymentQuery,
+  SupplierBillPayer,
+} from '../models/payment';
 
 const LATENCY_MS = 300;
 
@@ -21,6 +26,12 @@ const FAC_0003 = 'c3000000-0000-4000-8000-000000000004';
 const FAC_0004 = 'c3000000-0000-4000-8000-000000000005';
 const ACME = 'f4a1c2e0-8a01-4a10-9d21-000000000001';
 const HORIZON = 'f4a1c2e0-8a01-4a10-9d21-000000000006';
+const NORD = 'f4a1c2e0-8a01-4a10-9d21-000000000003';
+const ATLAS = 'f4a1c2e0-8a01-4a10-9d21-000000000004';
+
+/** Seed ids of the supplier bills paid below (defined in supplier-bill.service.ts). */
+const FA_ATLAS = 'f7000000-0000-4000-8000-000000000001';
+const FA_NORD = 'f7000000-0000-4000-8000-000000000002';
 
 const SEED_PAYMENTS: Payment[] = [
   {
@@ -35,6 +46,7 @@ const SEED_PAYMENTS: Payment[] = [
     reference: 'VIR-88421',
     currency: 'USD',
     notes: 'First installment.',
+    direction: 'in',
     createdAt: '2026-09-15T10:00:00.000Z',
     updatedAt: '2026-09-15T10:00:00.000Z',
   },
@@ -50,6 +62,7 @@ const SEED_PAYMENTS: Payment[] = [
     reference: 'CB-771009',
     currency: 'USD',
     notes: 'Balance settled by card.',
+    direction: 'in',
     createdAt: '2026-09-24T16:35:00.000Z',
     updatedAt: '2026-09-24T16:35:00.000Z',
   },
@@ -65,8 +78,41 @@ const SEED_PAYMENTS: Payment[] = [
     reference: 'CHQ-20458',
     currency: 'USD',
     notes: 'Partial payment by check.',
+    direction: 'in',
     createdAt: '2026-10-02T10:05:00.000Z',
     updatedAt: '2026-10-02T10:05:00.000Z',
+  },
+  {
+    id: 'e5000000-0000-4000-8000-000000000004',
+    invoiceId: FA_ATLAS,
+    invoiceNumber: 'FA-2026-0001',
+    partnerId: ATLAS,
+    partnerName: 'Atlas Digital',
+    date: '2026-10-05',
+    amount: 2407.5,
+    mode: 'transfer',
+    reference: 'VIR-20114',
+    currency: 'USD',
+    notes: 'Consulting days settled.',
+    direction: 'out',
+    createdAt: '2026-10-05T15:20:00.000Z',
+    updatedAt: '2026-10-05T15:20:00.000Z',
+  },
+  {
+    id: 'e5000000-0000-4000-8000-000000000005',
+    invoiceId: FA_NORD,
+    invoiceNumber: 'FA-2026-0002',
+    partnerId: NORD,
+    partnerName: 'Nord Industries',
+    date: '2026-10-22',
+    amount: 500,
+    mode: 'check',
+    reference: 'CHQ-20611',
+    currency: 'USD',
+    notes: 'First payment on the mouse + paper bill.',
+    direction: 'out',
+    createdAt: '2026-10-22T09:45:00.000Z',
+    updatedAt: '2026-10-22T09:45:00.000Z',
   },
 ];
 
@@ -107,6 +153,55 @@ export class PaymentService {
     );
   }
 
+  /**
+   * Records a payment we owe to a supplier (direction 'out'). The caller
+   * (SupplierBillService) validates the bill state before calling — the
+   * overpayment guard lives there, like the invoice guard does here.
+   */
+  createOutPayment(bill: SupplierBillPayer, input: PaymentInput): Observable<Payment> {
+    if (!(input.amount > 0)) return this.fail('invalidAmount');
+
+    return timer(LATENCY_MS).pipe(
+      map(() => {
+        const now = new Date().toISOString();
+        const created: Payment = {
+          id: this.newId(),
+          invoiceId: bill.id,
+          invoiceNumber: bill.number,
+          partnerId: bill.supplierId,
+          partnerName: bill.supplierName,
+          date: input.date,
+          amount: input.amount,
+          mode: input.mode,
+          reference: input.reference.trim(),
+          currency: bill.currency,
+          notes: input.notes.trim(),
+          direction: 'out',
+          createdAt: now,
+          updatedAt: now,
+        };
+        this.items.update((list) => [...list, created]);
+        return created;
+      }),
+    );
+  }
+
+  /** Mock technique: a derived computation (bill state) reads the list directly. */
+  allPayments(): Payment[] {
+    return this.items();
+  }
+
+  /** All payments of one document (invoice or supplier bill), newest first. */
+  getPaymentsByDoc(docId: string): Observable<Payment[]> {
+    return timer(LATENCY_MS).pipe(
+      map(() =>
+        this.items()
+          .filter((payment) => payment.invoiceId === docId)
+          .sort((a, b) => b.date.localeCompare(a.date)),
+      ),
+    );
+  }
+
   private toPayment(input: PaymentInput, invoice: Invoice): Payment {
     const now = new Date().toISOString();
     return {
@@ -121,6 +216,7 @@ export class PaymentService {
       reference: input.reference.trim(),
       currency: invoice.currency,
       notes: input.notes.trim(),
+      direction: 'in',
       createdAt: now,
       updatedAt: now,
     };
@@ -132,6 +228,7 @@ export class PaymentService {
 
     const filtered = this.items().filter((payment) => {
       if (query.mode && payment.mode !== query.mode) return false;
+      if (query.direction && payment.direction !== query.direction) return false;
       if (query.from && payment.date < query.from) return false;
       if (query.to && payment.date > query.to) return false;
       if (search && !this.matchesSearch(payment, search)) return false;

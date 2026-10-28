@@ -11,7 +11,9 @@
     "actions": "Actions",
     "save": "Enregistrer",
     "saving": "Enregistrement…",
-    "contactFilter": "Contact : {{name}}"
+    "contactFilter": "Contact : {{name}}",
+    "delete": "Supprimer",
+    "deleteConfirm": "Supprimer le brouillon?"
   },
   "titles": {
     "dashboard": "Tableau de bord",
@@ -68,7 +70,11 @@
     "opportunities": "Opportunités",
     "newOpportunity": "Nouvelle opportunité",
     "editOpportunity": "Modifier l'opportunité",
-    "reminders": "Rappels"
+    "reminders": "Rappels",
+    "supplierBills": "Achats fournisseurs",
+    "newSupplierBill": "Nouvelle facture d’achat",
+    "newBillFromOrder": "Nouvelle facture depuis un BC",
+    "supplierBillDetail": "Détail facture fournisseur"
   },
   "descriptions": {
     "contacts": "Les sociétés et les personnes avec lesquelles vous travaillez.",
@@ -86,7 +92,8 @@
     "deliveries": "Marchandises livrées à vos clients.",
     "leads": "Suivez les prospects avant leur qualification.",
     "opportunities": "Suivez vos affaires dans le pipeline de vente.",
-    "reminders": "Rappels et relances à traiter."
+    "reminders": "Rappels et relances à traiter.",
+    "supplierBills": "Enregistrez et payez les factures de vos fournisseurs"
   },
   "navbar": {
     "toggleSidebar": "Afficher ou masquer le menu",
@@ -124,7 +131,8 @@
       "deliveries": "Livraisons",
       "leads": "Pistes",
       "opportunities": "Opportunités",
-      "reminders": "Rappels"
+      "reminders": "Rappels",
+      "supplierBills": "Achats fournisseurs"
     }
   },
   "placeholder": {
@@ -521,7 +529,8 @@
     "confirmed": "Commande confirmée.",
     "cancelled": "Commande annulée.",
     "tags": {
-      "late": "En retard"
+      "late": "En retard",
+      "overdue": "En retard"
     },
     "status": {
       "draft": "Brouillon",
@@ -594,7 +603,10 @@
       "confirmDelete": "Supprimer ce brouillon de bon de commande ?",
       "actionError": "L’action n’a pas pu être effectuée.",
       "draftNotice": "Ceci est un brouillon",
-      "draftHint": "Confirmez la commande pour la verrouiller et réceptionner."
+      "draftHint": "Confirmez la commande pour la verrouiller et réceptionner.",
+      "duplicate": "Dupliquer",
+      "duplicated": "Bon copié dans un nouveau brouillon.",
+      "duplicating": "Copie en cours…"
     },
     "form": {
       "subtitle": "Renseignez le fournisseur, les dates et les lignes de la commande.",
@@ -692,6 +704,104 @@
       "colVatRate": "TVA %",
       "notes": "Notes",
       "page": "Page"
+    },
+    "payment": {
+      "unpaid": "Non payée",
+      "partial": "Partielle",
+      "paid": "Payée"
+    },
+    "bills": {
+      "list": {
+        "newBill": "Nouvelle facture",
+        "searchPlaceholder": "Rechercher numéro, BC, fournisseur…",
+        "loadError": "Impossible de charger les factures.",
+        "noMatch": "Aucune facture ne correspond à vos filtres",
+        "noMatchHint": "Essayez d’autres mots ou réinitialisez les filtres.",
+        "emptyTitle": "Aucune facture d’achat",
+        "emptyHint": "Créez une facture depuis un BC réceptionné, ou enregistrez une facture libre.",
+        "view": "Voir",
+        "remove": "Supprimer {number}"
+      },
+      "filters": {
+        "allStates": "Tous les états"
+      },
+      "columns": {
+        "number": "Facture",
+        "supplier": "Fournisseur",
+        "source": "Origine",
+        "billingDate": "Date facturation",
+        "dueDate": "Date d’échéance",
+        "total": "Total",
+        "balance": "Reste à payer",
+        "state": "État"
+      },
+      "source": {
+        "standalone": "Libre"
+      },
+      "form": {
+        "subtitle": "La facture part une fois la marchandise réceptionnée, ou directement pour des services.",
+        "notFound": "Facture introuvable",
+        "sectionHeader": "En-tête",
+        "sectionLines": "Lignes de facture",
+        "sectionReceived": "Ce qui a été reçu",
+        "receivedHint": "Seules les quantités reçues sont facturées ; le reste suivra à la prochaine réception.",
+        "receivedQty": "Reçu",
+        "supplier": "Fournisseur",
+        "billingDate": "Date facturation",
+        "dueDate": "Date d’échéance",
+        "unitCost": "Coût unitaire",
+        "quantityPositive": "La quantité doit être supérieure à 0.",
+        "costInvalid": "Le coût unitaire doit être 0 ou plus.",
+        "dueBeforeBilling": "La date d’échéance ne peut pas précéder la facturation.",
+        "addLine": "Ajouter une ligne",
+        "saving": "Enregistrement…",
+        "save": "Enregistrer la facture",
+        "saveError": "Impossible d’enregistrer la facture.",
+        "fromOrderNotice": "Facture issue d’un bon de commande — ajustez les dates puis validez.",
+        "fromOrderHint": "Fournisseur et origine viennent du bon de commande."
+      },
+      "errors": {
+        "notFound": "La facture n’existe pas.",
+        "notConfirmed": "Seul un BC confirmé peut être facturé.",
+        "nothingReceived": "Aucune quantité reçue sur ce BC.",
+        "orderAlreadyBilled": "Une facture existe déjà pour ce BC.",
+        "noLines": "Ajoutez au moins une ligne.",
+        "missingSupplier": "Choisissez un fournisseur.",
+        "dueDateBeforeBilling": "La date d’échéance ne peut pas précéder la facturation.",
+        "hasPayments": "Une facture payée ne peut pas être supprimée.",
+        "overpaid": "Le paiement dépasse le reste à payer."
+      },
+      "detail": {
+        "title": "Facture d’achat",
+        "supplier": "Fournisseur",
+        "state": "État",
+        "paid": "Payé",
+        "payments": "Paiements",
+        "noPayments": "Aucun paiement enregistré.",
+        "unpaidHint": "En attente de paiement — réglez-la ci-dessous quand le virement est envoyé.",
+        "overdueNotice": "Paiement en retard depuis le {date}.",
+        "fromOrder": "Depuis le BC",
+        "pdf": "Télécharger PDF",
+        "pdfBusy": "Préparation…",
+        "notFound": "Facture introuvable",
+        "confirmDelete": "Supprimer cette facture ?",
+        "actionError": "Action impossible. Réessayez.",
+        "pdfError": "Impossible de générer le PDF."
+      },
+      "pay": {
+        "title": "Régler la facture fournisseur",
+        "save": "Enregistrer le paiement",
+        "saving": "Enregistrement…"
+      },
+      "pdf": {
+        "title": "Facture d’achat",
+        "billingDate": "Date facturation",
+        "dueDate": "Date d’échéance",
+        "colUnit": "Unité",
+        "colUnitCost": "Coût unitaire",
+        "colNo": "N°",
+        "paid": "Payé"
+      }
     }
   },
   "stock": {
@@ -849,7 +959,8 @@
       "partner": "Client",
       "mode": "Mode",
       "reference": "Référence",
-      "amount": "Montant"
+      "amount": "Montant",
+      "type": "Type"
     },
     "modes": {
       "cash": "Espèces",
@@ -889,6 +1000,10 @@
       "invoiceNotFound": "La facture n’existe pas.",
       "invoiceNotPosted": "Seules les factures clients validées peuvent recevoir des paiements.",
       "overpaid": "Le montant dépasse le reste dû."
+    },
+    "direction": {
+      "in": "Vente client",
+      "out": "Achat fournisseur"
     }
   },
   "dashboard": {
@@ -1153,10 +1268,45 @@
       "account": "Compte",
       "debit": "Débit",
       "credit": "Crédit",
-      "balance": "Solde"
+      "balance": "Solde",
+      "customer": "Client"
     },
     "pdf": {
       "title": "Rapport d’activité"
+    },
+    "tabs": {
+      "overview": "Vue générale",
+      "aging": "Factures par ancienneté",
+      "customers": "Meilleurs clients",
+      "stock": "Stock"
+    },
+    "aging": {
+      "title": "Factures fournisseurs par ancienneté",
+      "hint": "Factures impayées ou partielles de la période, comptées depuis la date d’échéance.",
+      "columns": {
+        "bucket": "Jours de retard"
+      },
+      "buckets": {
+        "b0": "0 à 30 jours",
+        "b31": "31 à 60 jours",
+        "b61": "61 à 90 jours",
+        "b90": "Plus de 90 jours"
+      }
+    },
+    "customers": {
+      "title": "Meilleurs clients",
+      "hint": "Factures validées de la période, meilleur chiffre en premier."
+    },
+    "stock": {
+      "title": "Stock faible",
+      "hint": "Produits avec un seuil minimum ; les lignes en alerte d’abord.",
+      "columns": {
+        "quantity": "En stock",
+        "minStock": "Seuil",
+        "state": "État"
+      },
+      "low": "Faible",
+      "ok": "OK"
     }
   },
   "invoicing": {
@@ -1983,6 +2133,60 @@
       "invalidAmount": "Le montant doit être supérieur à 0.",
       "invalidStage": "Cette étape du pipeline n'existe plus.",
       "noSubject": "Veuillez saisir un objet."
+    }
+  },
+  "modules": {
+    "dashboard": "Tableau de bord",
+    "apps": "Applications",
+    "contacts": "Contacts",
+    "products": "Produits",
+    "sales": "Ventes",
+    "invoices": "Factures clients",
+    "payments": "Paiements",
+    "purchases": "Achats",
+    "stock": "Stock",
+    "accounting": "Comptabilité",
+    "invoicing": "Facturation",
+    "reports": "Rapports",
+    "ai-assistant": "Assistant IA",
+    "settings": "Réglages"
+  },
+  "rbac": {
+    "actions": {
+      "view": "Consulter",
+      "create": "Créer",
+      "update": "Modifier",
+      "delete": "Supprimer",
+      "validate": "Valider",
+      "export": "Exporter"
+    },
+    "audit": {
+      "actions": {
+        "login": "Connexion",
+        "create": "Création",
+        "update": "Modification",
+        "delete": "Suppression",
+        "validate": "Validation",
+        "payment": "Paiement",
+        "export": "Export"
+      }
+    },
+    "login": {
+      "genericTitle": "Connexion à votre espace",
+      "genericHint": "Utilisez l'email créé par votre administrateur. Les comptes démo fonctionnent aussi ici.",
+      "email": "Email",
+      "invalid": "Cet email n'appartient à aucun membre actif.",
+      "activate": "Votre compte a été désactivé ; contactez votre administrateur.",
+      "mustRenew": "Vous devez choisir un nouveau mot de passe avant de continuer."
+    },
+    "renewal": {
+      "title": "Choisir un nouveau mot de passe",
+      "description": "Votre administrateur demande un nouveau mot de passe pour des raisons de sécurité.",
+      "newPassword": "Nouveau mot de passe",
+      "confirm": "Confirmer le mot de passe",
+      "mismatch": "Les deux mots de passe ne correspondent pas.",
+      "minLength": "Le mot de passe doit contenir au moins 6 caractères.",
+      "submit": "Enregistrer et continuer"
     }
   }
 }

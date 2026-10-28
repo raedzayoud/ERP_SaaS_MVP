@@ -41,7 +41,8 @@ export const ASSIGNEE_ROLES: Role[] = [
   'client-externe',
 ];
 
-const ALL_MODULES = [
+/** Every ERP module of the platform (the settings page maps them to permissions). */
+export const ALL_MODULES = [
   'dashboard',
   'apps',
   'contacts',

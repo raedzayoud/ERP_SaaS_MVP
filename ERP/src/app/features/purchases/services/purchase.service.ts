@@ -3,6 +3,7 @@ import { Observable, map, switchMap, throwError, timer } from 'rxjs';
 import { Partner } from '../../crm/models/partner';
 import { PartnerService } from '../../crm/services/partner.service';
 import { Page } from '../../../shared/models/page';
+import { addDaysIso, todayIso } from '../../../shared/utils/money';
 import { StockService } from '../../stock/services/stock.service';
 import {
   PurchaseDraftInput,
@@ -27,7 +28,8 @@ export type PurchaseErrorCode =
   | 'expectedDateBeforeOrder'
   | 'hasReceptions'
   | 'invalidReceiveQty'
-  | 'alreadyComplete';
+  | 'alreadyComplete'
+  | 'cancelledOrder';
 
 export class PurchaseError extends Error {
   constructor(readonly code: PurchaseErrorCode) {
@@ -243,6 +245,44 @@ export class PurchaseService {
 
   getOrder(id: string): Observable<PurchaseOrder | undefined> {
     return timer(LATENCY_MS).pipe(map(() => this.items().find((order) => order.id === id)));
+  }
+
+  /** Mock technique: le formulaire de facture lit la liste des BC en direct. */
+  allOrders(): PurchaseOrder[] {
+    return this.items();
+  }
+
+  /** Copies a confirmed or draft order into a new editable draft. */
+  duplicateOrder(id: string): Observable<PurchaseOrder> {
+    const existing = this.items().find((order) => order.id === id);
+    if (!existing) return this.fail('notFound');
+    if (existing.status === 'cancelled') return this.fail('cancelledOrder');
+
+    return timer(LATENCY_MS).pipe(
+      map(() => {
+        const today = todayIso();
+        const created: PurchaseOrder = {
+          id: this.newId(),
+          number: null,
+          status: 'draft',
+          supplierId: existing.supplierId,
+          supplierSnapshot: null,
+          orderDate: today,
+          expectedDate: addDaysIso(today, 14),
+          paymentTerms: existing.paymentTerms,
+          currency: existing.currency,
+          notes: existing.notes,
+          lines: existing.lines.map((item) => ({ ...item, id: this.newId(), receivedQty: 0 })),
+          receptions: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          confirmedAt: null,
+          cancelledAt: null,
+        };
+        this.items.update((list) => [...list, created]);
+        return created;
+      }),
+    );
   }
 
   getSummary(): Observable<PurchaseSummary> {

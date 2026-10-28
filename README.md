@@ -95,7 +95,7 @@ Conventions:
   simulating HTTP latency and typed error codes) and `models/` (TypeScript interfaces).
 - Pages never call HTTP directly — always through a module service, so the future Spring Boot
   integration only has to swap the mock body for `HttpClient` calls.
-- Unit tests live next to the code (`*.spec.ts`), run with **Vitest** (~190 tests green).
+- Unit tests live next to the code (`*.spec.ts`), run with **Vitest** (~206 tests green).
 
 ## 🗺️ Roadmap
 
@@ -103,8 +103,9 @@ Conventions:
 | --- | --- | --- |
 | **W0** | Hardening pass: order/delivery/invoice chain guards, credit limits, module guard, portal IDOR fixes, app filtering | ✅ Done |
 | **W1** | Full CRM: leads, opportunities kanban, interactions, reminders | ✅ Done |
-| **W2** | Extra sales waves (purchases advanced flows) | 🔜 Next |
-| **W3–W10** | Advanced stock, accounting, invoicing compliance, payments, BI dashboards, cross-cutting UX, Arabic RTL | ⏳ Planned |
+| **W2** | Purchases wave 2: supplier bills (FA) from received orders or standalone, vendor payments (`out`), order duplication (except cancelled), reports tabs (aging/customers/stock), product min-stock thresholds | ✅ Done |
+| **W3** | Access control (RBAC): fixed role templates (admin/commercial/acheteur/magasinier/comptable/directeur) with per-module actions, module route guard, permission-filtered action buttons, shared `/login/email` workspace login, forced password renewal page, audit trail in Settings (EN/FR) | ✅ Done |
+| **W4–W10** | Advanced stock, accounting, invoicing compliance, payments, BI dashboards, cross-cutting UX, Arabic RTL | ⏳ Planned |
 
 ## 🛠️ Tech stack
 

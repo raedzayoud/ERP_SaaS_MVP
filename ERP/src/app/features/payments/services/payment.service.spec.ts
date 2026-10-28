@@ -18,7 +18,24 @@ describe('PaymentService', () => {
   it('lists the seed payments', async () => {
     const page = await firstValueFrom(service.getPayments({ page: 0, size: 10 }));
 
-    expect(page.total).toBe(3);
+    expect(page.total).toBe(5);
+  });
+
+  it('filters by direction (in vs out)', async () => {
+    const ins = await firstValueFrom(service.getPayments({ page: 0, size: 10, direction: 'in' }));
+    const outs = await firstValueFrom(service.getPayments({ page: 0, size: 10, direction: 'out' }));
+
+    expect(ins.total).toBe(3);
+    expect(outs.total).toBe(2);
+    expect(outs.items.every((payment) => payment.direction === 'out')).toBe(true);
+    expect(outs.items[0].invoiceNumber.startsWith('FA-')).toBe(true);
+  });
+
+  it('filters by mode check', async () => {
+    const page = await firstValueFrom(service.getPayments({ page: 0, size: 10, mode: 'check' }));
+
+    expect(page.total).toBe(2);
+    expect(page.items.every((payment) => payment.mode === 'check')).toBe(true);
   });
 
   it('creates a payment and increases the invoice amountPaid', async () => {
@@ -125,13 +142,6 @@ describe('PaymentService', () => {
 
     expect(page.total).toBe(1);
     expect(page.items[0].partnerName).toBe('Horizon Media');
-  });
-
-  it('filters payments by mode', async () => {
-    const page = await firstValueFrom(service.getPayments({ page: 0, size: 10, mode: 'check' }));
-
-    expect(page.total).toBe(1);
-    expect(page.items[0].mode).toBe('check');
   });
 
   it('throws PaymentError on failures', async () => {

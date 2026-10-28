@@ -5,7 +5,9 @@
         <h1 class="page-title">{{ t('contacts.title') }}</h1>
         <p class="page-subtitle">{{ t('contacts.subtitle') }}</p>
       </div>
-      <a routerLink="/contacts/new" class="btn btn-primary">+ {{ t('contacts.newContact') }}</a>
+      @if (permissions.can('contacts', 'create')) {
+        <a routerLink="/contacts/new" class="btn btn-primary">+ {{ t('contacts.newContact') }}</a>
+      }
     </div>
 
     @if (notice()) {
@@ -165,27 +167,31 @@
                     >
                       👁
                     </a>
-                    <a [routerLink]="['/contacts', partner.id]" class="btn btn-secondary btn-sm">
-                      {{ t('common.edit') }}
-                    </a>
-                    @if (partner.active) {
-                      <button
-                        type="button"
-                        class="btn btn-sm"
-                        (click)="archive(partner)"
-                        [attr.aria-label]="t('contacts.archiveFor', { name: partner.name })"
-                      >
-                        {{ t('contacts.archive') }}
-                      </button>
-                    } @else {
-                      <button
-                        type="button"
-                        class="btn btn-sm"
-                        (click)="restore(partner)"
-                        [attr.aria-label]="t('contacts.restoreFor', { name: partner.name })"
-                      >
-                        {{ t('contacts.restore') }}
-                      </button>
+                    @if (permissions.can('contacts', 'update')) {
+                      <a [routerLink]="['/contacts', partner.id]" class="btn btn-secondary btn-sm">
+                        {{ t('common.edit') }}
+                      </a>
+                    }
+                    @if (permissions.can('contacts', 'delete')) {
+                      @if (partner.active) {
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          (click)="archive(partner)"
+                          [attr.aria-label]="t('contacts.archiveFor', { name: partner.name })"
+                        >
+                          {{ t('contacts.archive') }}
+                        </button>
+                      } @else {
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          (click)="restore(partner)"
+                          [attr.aria-label]="t('contacts.restoreFor', { name: partner.name })"
+                        >
+                          {{ t('contacts.restore') }}
+                        </button>
+                      }
                     }
                   </td>
                 </tr>

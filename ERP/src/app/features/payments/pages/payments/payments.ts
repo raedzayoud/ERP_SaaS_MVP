@@ -8,6 +8,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { CurrencyPipe } from '@angular/common';
 import { PAYMENT_MODES, Payment, PaymentMode } from '../../models/payment';
 import { PaymentService } from '../../services/payment.service';
+import { PermissionService } from '../../../../core/services/permission.service';
 
 @Component({
   selector: 'app-payments',
@@ -18,6 +19,7 @@ import { PaymentService } from '../../services/payment.service';
 export class Payments {
   private readonly service = inject(PaymentService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly permissions = inject(PermissionService);
 
   readonly pageSize = 10;
   readonly modes = PAYMENT_MODES;

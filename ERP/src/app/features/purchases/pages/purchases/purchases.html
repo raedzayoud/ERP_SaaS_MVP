@@ -5,9 +5,11 @@
         <h1 class="page-title">{{ t('purchases.title') }}</h1>
         <p class="page-subtitle">{{ t('purchases.subtitle') }}</p>
       </div>
-      <a routerLink="/purchases/new" class="btn btn-primary"
-        >+ {{ t('purchases.list.newOrder') }}</a
-      >
+      @if (permissions.can('purchases', 'create')) {
+        <a routerLink="/purchases/new" class="btn btn-primary"
+          >+ {{ t('purchases.list.newOrder') }}</a
+        >
+      }
     </div>
 
     <div class="summary-row">

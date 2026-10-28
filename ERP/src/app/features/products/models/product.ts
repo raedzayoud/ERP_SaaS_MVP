@@ -22,6 +22,8 @@ export interface Product {
   salePrice: number;
   purchasePrice: number;
   vatRate: number;
+  /** Stock threshold for the low-stock report; only goods need it. */
+  minStock?: number;
   suppliers: ProductSupplierEntry[];
   active: boolean;
   createdAt: string;

@@ -177,6 +177,42 @@
   font-weight: 600;
 }
 
+.user-actions-cell {
+  white-space: nowrap;
+}
+
+.user-actions-cell .btn {
+  margin-inline-end: 6px;
+}
+
+.form-check-group {
+  display: flex;
+  align-items: end;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--gray-700);
+  cursor: pointer;
+}
+
+.activity-title {
+  margin-top: 28px;
+}
+
+.audit-table td {
+  font-size: 13px;
+}
+
+.role-actions-row {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
 /* Roles */
 .roles-grid {
   display: grid;

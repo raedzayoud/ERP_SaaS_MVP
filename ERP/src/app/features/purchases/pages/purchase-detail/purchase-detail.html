@@ -40,24 +40,28 @@
         <div class="page-actions">
           <a routerLink="/purchases" class="btn btn-secondary">← {{ t('common.back') }}</a>
 
-          @if (canDelete()) {
+          @if (canDelete() && permissions.can('purchases', 'update')) {
             <a [routerLink]="['/purchases', ord.id, 'edit']" class="btn btn-secondary">
               {{ t('purchases.detail.edit') }}
             </a>
+          }
+          @if (canConfirm() && permissions.can('purchases', 'validate')) {
             <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="confirm()">
               {{ saving() ? t('purchases.detail.confirming') : t('purchases.detail.confirm') }}
             </button>
+          }
+          @if (canDelete() && permissions.can('purchases', 'delete')) {
             <button type="button" class="btn btn-danger" [disabled]="saving()" (click)="remove()">
               {{ t('purchases.detail.delete') }}
             </button>
           }
 
-          @if (canReceive()) {
+          @if (canReceive() && permissions.can('purchases', 'update')) {
             <a [routerLink]="['/purchases', ord.id, 'receive']" class="btn btn-primary">
               {{ t('purchases.detail.receive') }}
             </a>
           }
-          @if (canDownloadPdf()) {
+          @if (canDownloadPdf() && permissions.can('purchases', 'export')) {
             <button
               type="button"
               class="btn btn-secondary"
@@ -66,6 +70,16 @@
             >
               {{ pdfBusy() ? t('purchases.detail.pdfBusy') : t('purchases.detail.pdf') }}
             </button>
+          }
+          @if (canBill() && permissions.can('purchases', 'create')) {
+            <a
+              [routerLink]="['/supplier-bills/new']"
+              [queryParams]="{ orderId: ord.id }"
+              class="btn btn-primary"
+            >
+              {{ t('purchases.detail.supplierInvoice') }}
+            </a>
+          } @else if (canDownloadPdf() && canBill()) {
             <button
               type="button"
               class="btn btn-secondary"
@@ -75,7 +89,17 @@
               {{ t('purchases.detail.supplierInvoice') }}
             </button>
           }
-          @if (canCancel()) {
+          @if (canDuplicate() && permissions.can('purchases', 'create')) {
+            <button
+              type="button"
+              class="btn btn-secondary"
+              [disabled]="saving()"
+              (click)="duplicate()"
+            >
+              {{ saving() ? t('purchases.detail.duplicating') : t('purchases.detail.duplicate') }}
+            </button>
+          }
+          @if (canCancel() && permissions.can('purchases', 'validate')) {
             <button type="button" class="btn btn-danger" [disabled]="saving()" (click)="cancel()">
               {{ t('purchases.detail.cancelOrder') }}
             </button>

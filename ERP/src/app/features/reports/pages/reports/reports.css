@@ -87,3 +87,30 @@
     margin-inline-start: 0;
   }
 }
+
+.tab-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #374151;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.tab-button:hover {
+  border-color: #714b67;
+}
+
+.tab-active {
+  background: #714b67;
+  border-color: #714b67;
+  color: #ffffff;
+  font-weight: 600;
+}

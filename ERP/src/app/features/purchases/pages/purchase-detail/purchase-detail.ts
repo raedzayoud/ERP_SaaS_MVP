@@ -7,7 +7,9 @@ import { StatusBadge } from '../../../../shared/components/status-badge/status-b
 import { TenantService } from '../../../../core/services/tenant.service';
 import { PurchaseOrder, ReceptionState } from '../../models/purchase-order';
 import { PurchasePdfService, PdfContext } from '../../services/purchase-pdf.service';
+import { SupplierBillService } from '../../services/supplier-bill.service';
 import { PurchaseError, PurchaseService } from '../../services/purchase.service';
+import { PermissionService } from '../../../../core/services/permission.service';
 import {
   PurchaseTotals,
   isCancellable,
@@ -28,12 +30,14 @@ import { ReceptionBadge } from '../../components/reception-badge/reception-badge
 })
 export class PurchaseDetail {
   private readonly service = inject(PurchaseService);
+  private readonly bills = inject(SupplierBillService);
   private readonly pdfService = inject(PurchasePdfService);
   private readonly tenantService = inject(TenantService);
   private readonly transloco = inject(TranslocoService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  readonly permissions = inject(PermissionService);
 
   readonly orderId = this.route.snapshot.paramMap.get('id') ?? '';
 
@@ -191,6 +195,35 @@ export class PurchaseDetail {
   canDownloadPdf(): boolean {
     const order = this.order();
     return !!order && order.status === 'confirmed';
+  }
+
+  /** The bill exists as soon as the order confirmation has received items. */
+  canBill(): boolean {
+    const order = this.order();
+    return !!order && order.status === 'confirmed' && !this.bills.hasBillFor(order.id);
+  }
+
+  /** Any order except a cancelled one can be copied into a new draft. */
+  canDuplicate(): boolean {
+    const order = this.order();
+    return !!order && order.status !== 'cancelled';
+  }
+
+  duplicate(): void {
+    this.saving.set(true);
+    this.errorKey.set(null);
+
+    this.service
+      .duplicateOrder(this.orderId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (created) => {
+          this.saving.set(false);
+          this.showNotice('purchases.detail.duplicated');
+          this.router.navigate(['/purchases', created.id, 'edit']);
+        },
+        error: (error: unknown) => this.showActionError(error),
+      });
   }
 
   lineNetOf(order: PurchaseOrder, line: PurchaseOrder['lines'][number]): number {

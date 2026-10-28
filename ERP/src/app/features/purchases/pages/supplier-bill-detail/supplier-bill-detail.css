@@ -1,0 +1,50 @@
+.supplier-bill-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.breadcrumbs {
+  display: flex;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted, #6b7280);
+  margin-block-end: 6px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pay-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pay-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.pay-grid .pay-notes {
+  grid-column: span 2;
+}
+
+.pay-submit {
+  justify-self: start;
+}
+
+@media (max-width: 1000px) {
+  .pay-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pay-grid .pay-notes {
+    grid-column: span 2;
+  }
+}

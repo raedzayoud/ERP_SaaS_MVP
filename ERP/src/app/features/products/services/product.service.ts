@@ -20,6 +20,7 @@ const SEED_PRODUCTS: Product[] = [
     salePrice: 1299,
     purchasePrice: 900,
     vatRate: 19,
+    minStock: 6,
     suppliers: [
       {
         id: 'ps-1001',
@@ -45,6 +46,7 @@ const SEED_PRODUCTS: Product[] = [
     salePrice: 24.9,
     purchasePrice: 15,
     vatRate: 19,
+    minStock: 70,
     suppliers: [
       {
         id: 'ps-1002',
@@ -167,6 +169,7 @@ const SEED_PRODUCTS: Product[] = [
     salePrice: 12.5,
     purchasePrice: 8,
     vatRate: 7,
+    minStock: 25,
     suppliers: [
       {
         id: 'ps-1005',
@@ -192,6 +195,7 @@ const SEED_PRODUCTS: Product[] = [
     salePrice: 78,
     purchasePrice: 60,
     vatRate: 19,
+    minStock: 15,
     suppliers: [
       {
         id: 'ps-1006',

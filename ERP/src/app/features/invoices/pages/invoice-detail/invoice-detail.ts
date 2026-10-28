@@ -14,6 +14,7 @@ import { FacturXService } from '../../../invoicing/services/factur-x.service';
 import { SalesOrder } from '../../../sales/models/sales-order';
 import { SalesError, SalesOrderService } from '../../../sales/services/sales-order.service';
 import { InvoiceTotals, invoiceTotals, isOverdue, paymentState } from '../../utils/invoice-calc';
+import { PermissionService } from '../../../../core/services/permission.service';
 
 @Component({
   selector: 'app-invoice-detail',
@@ -31,6 +32,7 @@ export class InvoiceDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  readonly permissions = inject(PermissionService);
 
   readonly invoiceId = this.route.snapshot.paramMap.get('id') ?? '';
 
@@ -53,6 +55,8 @@ export class InvoiceDetail {
   readonly sellerTaxId = computed(() => this.tenantService.currentTenant()?.taxId ?? '');
   readonly isQuote = computed(() => this.invoice()?.kind === 'quote');
   readonly listRoute = computed(() => (this.isQuote() ? '/quotes' : '/invoices'));
+  /** RBAC module of the document (quotes live on the sales module side). */
+  readonly moduleId = computed(() => (this.isQuote() ? 'sales' : 'invoices'));
 
   constructor() {
     this.load();

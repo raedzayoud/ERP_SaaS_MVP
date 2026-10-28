@@ -1,0 +1,277 @@
+<ng-container *transloco="let t">
+  <div class="supplier-bill-form-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t(titleKey()) }}</h1>
+        <p class="page-subtitle">{{ t('purchases.bills.form.subtitle') }}</p>
+      </div>
+      <a routerLink="/supplier-bills" class="btn btn-secondary">← {{ t('common.back') }}</a>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('purchases.bills.form.notFound') }}</p>
+          <a routerLink="/supplier-bills" class="btn btn-primary">{{ t('common.back') }}</a>
+        </div>
+      </div>
+    } @else {
+      <form
+        class="card form-card"
+        [formGroup]="form"
+        (ngSubmit)="save()"
+        (keydown.control.enter)="onLineShortcut($event)"
+        (keydown.meta.enter)="onLineShortcut($event)"
+        novalidate
+      >
+        @if (errorKey(); as key) {
+          <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
+        }
+
+        @if (orderMode) {
+          <div class="alert alert-warning" role="status">
+            {{ t('purchases.bills.form.fromOrderNotice', { order: order()?.number || '—' }) }}
+          </div>
+        }
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('purchases.bills.form.sectionHeader') }}</legend>
+
+          <div class="form-grid">
+            @if (orderMode) {
+              <div class="form-group form-grid-full">
+                <span class="form-label">{{ t('purchases.bills.form.supplier') }}</span>
+                <p class="currency-value">{{ order()?.supplierSnapshot?.name }}</p>
+                <p class="form-hint">{{ t('purchases.bills.form.fromOrderHint') }}</p>
+              </div>
+            } @else {
+              <div class="form-group form-grid-full">
+                <app-combo-picker
+                  [items]="suppliers()"
+                  [label]="t('purchases.bills.form.supplier')"
+                  [required]="true"
+                  [placeholder]="t('purchases.form.supplierPlaceholder')"
+                  [value]="form.controls.supplierId.value"
+                  (valueChange)="setSupplier($event)"
+                />
+                @if (submitted() && !form.controls.supplierId.value) {
+                  <p class="field-error">{{ t('purchases.form.supplierRequired') }}</p>
+                }
+              </div>
+            }
+
+            <div class="form-group">
+              <label class="form-label" for="billingDate">
+                {{ t('purchases.bills.form.billingDate') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input
+                id="billingDate"
+                type="date"
+                class="form-control"
+                formControlName="billingDate"
+              />
+              @if (isInvalid('billingDate')) {
+                <p class="field-error">{{ t('purchases.form.dateRequired') }}</p>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="dueDate">
+                {{ t('purchases.bills.form.dueDate') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
+              <input id="dueDate" type="date" class="form-control" formControlName="dueDate" />
+              @if (isInvalid('dueDate')) {
+                <p class="field-error">{{ t('purchases.form.dateRequired') }}</p>
+              }
+              @if (dueDateProblem()) {
+                <p class="field-error">{{ t('purchases.bills.form.dueBeforeBilling') }}</p>
+              }
+            </div>
+          </div>
+        </fieldset>
+
+        @if (orderMode) {
+          <fieldset class="form-section">
+            <legend class="section-legend">{{ t('purchases.bills.form.sectionReceived') }}</legend>
+
+            <div class="table-wrap">
+              <table class="table lines-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('purchases.form.reference') }}</th>
+                    <th scope="col">{{ t('purchases.form.description') }}</th>
+                    <th scope="col" class="num">{{ t('purchases.bills.form.receivedQty') }}</th>
+                    <th scope="col" class="num">{{ t('purchases.form.unitCost') }}</th>
+                    <th scope="col" class="num">{{ t('purchases.form.vatRate') }}</th>
+                    <th scope="col" class="num">{{ t('purchases.form.lineTotal') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (line of order()?.lines ?? []; track line.id) {
+                    @if (line.receivedQty > 0) {
+                      <tr>
+                        <td>{{ line.reference }}</td>
+                        <td>{{ line.description }}</td>
+                        <td class="num">{{ line.receivedQty }}</td>
+                        <td class="num">{{ line.unitCost | currency: 'USD' }}</td>
+                        <td class="num">{{ line.vatRate }} %</td>
+                        <td class="num line-net">
+                          {{ line.receivedQty * line.unitCost | currency: 'USD' }}
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+            <p class="form-hint">{{ t('purchases.bills.form.receivedHint') }}</p>
+          </fieldset>
+        } @else {
+          <fieldset class="form-section" formArrayName="lines">
+            <legend class="section-legend">{{ t('purchases.bills.form.sectionLines') }}</legend>
+
+            <div class="lines-wrap">
+              <table class="table lines-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('purchases.form.product') }}</th>
+                    <th scope="col">{{ t('purchases.form.reference') }}</th>
+                    <th scope="col">{{ t('purchases.form.description') }}</th>
+                    <th scope="col">{{ t('purchases.form.unit') }}</th>
+                    <th scope="col" class="num">{{ t('purchases.form.quantity') }}</th>
+                    <th scope="col" class="num">{{ t('purchases.bills.form.unitCost') }}</th>
+                    <th scope="col" class="num">{{ t('purchases.form.vatRate') }}</th>
+                    <th scope="col" class="num">{{ t('purchases.form.lineTotal') }}</th>
+                    <th scope="col" class="col-actions">
+                      <span class="visually-hidden">{{ t('purchases.columns.actions') }}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (line of form.controls.lines.controls; track line; let i = $index) {
+                    <tr [formGroupName]="i">
+                      <td class="cell-product">
+                        <app-combo-picker
+                          [items]="productOptions()"
+                          [label]="t('purchases.form.product')"
+                          [hideLabel]="true"
+                          [placeholder]="t('purchases.form.productPlaceholder')"
+                          [value]="line.controls.productId.value"
+                          (valueChange)="setProduct(i, $event)"
+                        />
+                      </td>
+                      <td>
+                        <input type="text" class="form-control" formControlName="reference" />
+                      </td>
+                      <td>
+                        <input type="text" class="form-control" formControlName="description" />
+                        @if (lineError(i, 'description'); as key) {
+                          <p class="field-error">{{ t(key) }}</p>
+                        }
+                      </td>
+                      <td>
+                        <input type="text" class="form-control unit-input" formControlName="unit" />
+                      </td>
+                      <td class="num">
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          class="form-control"
+                          formControlName="quantity"
+                        />
+                        @if (lineError(i, 'quantity'); as key) {
+                          <p class="field-error">{{ t(key) }}</p>
+                        }
+                      </td>
+                      <td class="num">
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          class="form-control"
+                          formControlName="unitCost"
+                        />
+                        @if (lineError(i, 'unitCost'); as key) {
+                          <p class="field-error">{{ t(key) }}</p>
+                        }
+                      </td>
+                      <td class="num">
+                        <select class="form-control" formControlName="vatRate">
+                          @for (rate of vatRates; track rate) {
+                            <option [ngValue]="rate">{{ rate }} %</option>
+                          }
+                        </select>
+                      </td>
+                      <td class="num line-net">{{ lineNet(line) | currency: 'USD' }}</td>
+                      <td class="col-actions">
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          [disabled]="form.controls.lines.length === 1"
+                          [attr.aria-label]="t('purchases.form.removeLineFor', { line: i + 1 })"
+                          (click)="removeLine(i)"
+                        >
+                          ×
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="lines-footer">
+              <button type="button" class="btn btn-secondary" (click)="addLine()">
+                + {{ t('purchases.bills.form.addLine') }}
+              </button>
+              <span class="form-hint">{{ t('purchases.form.shortcutHint') }}</span>
+            </div>
+          </fieldset>
+        }
+
+        <fieldset class="form-section">
+          <legend class="section-legend">{{ t('purchases.form.sectionNotes') }}</legend>
+
+          <div class="totals-layout">
+            <div class="form-group">
+              <label class="form-label" for="notes">{{ t('purchases.form.notes') }}</label>
+              <textarea id="notes" class="form-control" rows="4" formControlName="notes"></textarea>
+            </div>
+
+            <div class="totals-block">
+              <div class="totals-row">
+                <span>{{ t('purchases.form.totals.net') }}</span>
+                <span>{{ totals().totalNet | currency: 'USD' }}</span>
+              </div>
+              <div class="totals-row">
+                <span>{{ t('purchases.form.totals.vat') }}</span>
+                <span>{{ totals().totalVat | currency: 'USD' }}</span>
+              </div>
+              <div class="totals-row totals-grand">
+                <span>{{ t('purchases.form.totals.totalTtc') }}</span>
+                <strong>{{ totals().totalTtc | currency: 'USD' }}</strong>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a routerLink="/supplier-bills" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            {{ saving() ? t('purchases.bills.form.saving') : t('purchases.bills.form.save') }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</ng-container>

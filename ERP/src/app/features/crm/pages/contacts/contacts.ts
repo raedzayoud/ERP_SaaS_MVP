@@ -7,6 +7,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PartnerService } from '../../services/partner.service';
 import { Partner, PartnerKind, PartnerQuery } from '../../models/partner';
+import { PermissionService } from '../../../../core/services/permission.service';
 
 type ActiveFilter = 'active' | 'archived' | 'all';
 type SortField = 'name' | 'createdAt';
@@ -20,6 +21,7 @@ type SortField = 'name' | 'createdAt';
 export class Contacts {
   private readonly service = inject(PartnerService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly permissions = inject(PermissionService);
 
   readonly pageSize = 10;
 

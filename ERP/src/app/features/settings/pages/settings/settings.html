@@ -200,11 +200,39 @@
             </div>
             <div class="form-group">
               <label class="form-label">Role</label>
-              <select class="form-control" [value]="newUserRole()" (change)="onRoleChange($event)">
-                @for (role of assigneeRoles; track role) {
-                  <option [value]="role">{{ t(roleLabel(role)) }}</option>
-                }
+              <select
+                class="form-control"
+                [value]="newUserRole()"
+                (change)="onRoleChange($event)"
+              >
+                <optgroup label="Built-in roles">
+                  @for (role of assigneeRoles; track role) {
+                    <option [value]="role">{{ t(roleLabel(role)) }}</option>
+                  }
+                </optgroup>
               </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Initial password</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="optional"
+                [value]="newUserPassword()"
+                (input)="onUserInput('password', $event)"
+              />
+            </div>
+            <div class="form-group form-check-group">
+              <label class="form-check">
+                <input
+                  type="checkbox"
+                  [checked]="newUserMustRenew()"
+                  (change)="newUserMustRenew.set($any($event.target).checked)"
+                />
+                <span>Must choose a new password at first login</span>
+              </label>
             </div>
           </div>
           <div class="form-actions">
@@ -221,7 +249,8 @@
             <th>Name</th>
             <th>Email</th>
             <th>Role</th>
-            <th style="width: 60px"></th>
+            <th>Status</th>
+            <th style="width: 110px"></th>
           </tr>
         </thead>
         <tbody>
@@ -235,17 +264,72 @@
               </td>
               <td class="text-muted">{{ user.email }}</td>
               <td>
-                <span [class]="roleBadgeClass(user.role)">
-                  {{ t(roleLabel(user.role)) }}
-                </span>
+                <span [class]="userBadgeClass(user)">{{ userRoleLabel(user) }}</span>
               </td>
               <td>
+                @if (user.active === false) {
+                  <span class="badge badge-warning">Deactivated</span>
+                } @else if (user.mustRenewPassword) {
+                  <span class="badge badge-info">Renewal pending</span>
+                } @else {
+                  <span class="badge badge-success">Active</span>
+                }
+              </td>
+              <td class="user-actions-cell">
                 @if (user.role !== 'admin-entreprise') {
+                  @if (user.active === false) {
+                    <button
+                      class="btn btn-sm btn-secondary"
+                      (click)="setUserActive(user.id, true)"
+                    >
+                      Activate
+                    </button>
+                  } @else {
+                    <button
+                      class="btn btn-sm btn-secondary"
+                      title="Prevent workspace access"
+                      (click)="setUserActive(user.id, false)"
+                    >
+                      Deactivate
+                    </button>
+                  }
+                  <button
+                    class="btn btn-sm btn-secondary"
+                    title="Must choose a new password at next login"
+                    (click)="requestRenewal(user.id)"
+                  >
+                    Renewal
+                  </button>
                   <button class="btn btn-sm btn-danger" (click)="removeUser(user.id)" title="Remove user">
                     ✕
                   </button>
                 }
               </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Recent activity -->
+      <h2 class="section-title activity-title">Recent activity</h2>
+      <table class="table audit-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Who</th>
+            <th>Module</th>
+            <th>Action</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of auditEntries(); track entry.id) {
+            <tr>
+              <td class="text-muted">{{ entry.at | date: 'MM-dd HH:mm' }}</td>
+              <td>{{ entry.userName }}</td>
+              <td>{{ t('modules.' + entry.module) }}</td>
+              <td>{{ t('rbac.audit.actions.' + entry.action) }}</td>
+              <td class="text-muted">{{ entry.detail }}</td>
             </tr>
           }
         </tbody>
@@ -256,6 +340,9 @@
   <!-- ═══ ROLES TAB ═══ -->
   @if (activeTab() === 'roles') {
     <div class="tab-content">
+      <div class="section-header">
+        <h2 class="section-title">Built-in roles</h2>
+      </div>
       <div class="roles-grid">
         @for (role of roleInfo; track role.role) {
           <div class="card role-card">
@@ -267,7 +354,7 @@
             <p class="role-description">{{ t(role.descriptionKey) }}</p>
             <div class="role-permissions">
               @for (module of role.modules; track module) {
-                <span class="permission-chip">✓ {{ module }}</span>
+                <span class="permission-chip">✓ {{ t('modules.' + module) }}</span>
               }
             </div>
           </div>
