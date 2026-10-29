@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
 import { TenantService } from '../../../core/services/tenant.service';
+import { PlatformService } from '../../admin/services/platform.service';
+import type { SignupRequestDocuments } from '../../admin/models/platform';
 import {
   ErpApp,
   ERP_APPS,
@@ -23,6 +25,14 @@ interface AppGroup {
   apps: ErpApp[];
 }
 
+/** A KYC file chosen by the company during the wizard. */
+interface UploadedKycDoc {
+  fileName: string;
+  sizeKb: number;
+  /** Kept only for small images so the super-admin console can show it. */
+  dataUrl?: string;
+}
+
 /**
  * Holds the whole signup wizard state so it survives navigation between
  * /signup (hub) and /signup/apps/:suite (suite pages): the router recreates
@@ -32,6 +42,7 @@ interface AppGroup {
 export class SignupStateService {
   private authService = inject(AuthService);
   private tenantService = inject(TenantService);
+  private platformService = inject(PlatformService);
   private router = inject(Router);
   private transloco = inject(TranslocoService);
 
@@ -52,7 +63,22 @@ export class SignupStateService {
   companySize = signal('1-5');
   subdomainChecked = signal<boolean | null>(null);
 
-  // ── Step 3: email verification ────────────────
+  // ── Step 3: KYC documents ─────────────────────
+  readonly docSlots = ['idCard', 'tradeRegister', 'taxRegistration'] as const;
+  readonly maxDocSizeKb = 2048;
+  private readonly docIcons: Record<string, string> = {
+    idCard: '🪪',
+    tradeRegister: '🏛️',
+    taxRegistration: '🧮',
+  };
+  uploadedDocs = signal<Partial<Record<string, UploadedKycDoc>>>({});
+  docError = signal('');
+
+  docsComplete = computed(() =>
+    this.docSlots.every((slot) => this.uploadedDocs()[slot] !== undefined),
+  );
+
+  // ── Step 4: email verification ────────────────
   verificationCode = signal('');
   codeInput = signal('');
   codeSentAt = signal(0);
@@ -62,7 +88,7 @@ export class SignupStateService {
   private codeTimer: ReturnType<typeof setInterval> | null = null;
   private resendTimer: ReturnType<typeof setInterval> | null = null;
 
-  // ── Step 4: payment (Stripe-style demo form) ──
+  // ── Step 5: payment (Stripe-style demo form) ──
   cardNumber = signal('');
   cardExpiry = signal('');
   cardCvc = signal('');
@@ -70,7 +96,7 @@ export class SignupStateService {
   paymentError = signal('');
   paying = signal(false);
 
-  // ── Step 5: provisioning ──────────────────────
+  // ── Step 6: provisioning ──────────────────────
   provisioningStep = signal(0);
   private provisionTimers: ReturnType<typeof setTimeout>[] = [];
 
@@ -385,7 +411,82 @@ export class SignupStateService {
   }
 
   // ══════════════════════════════════════════════
-  // Step 3 — Email verification
+  // Step 3 — KYC documents
+  // ══════════════════════════════════════════════
+  docIcon(slot: string): string {
+    return this.docIcons[slot] ?? '📄';
+  }
+
+  /** Stores the chosen file: small images keep a preview for the console. */
+  onDocPick(slot: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    const allowed = file.type.startsWith('image/') || file.type === 'application/pdf';
+    const sizeKb = Math.max(1, Math.round(file.size / 1024));
+
+    if (sizeKb > this.maxDocSizeKb) {
+      this.docError.set(
+        this.transloco.translate('signup.docStep.errors.tooLarge', { size: this.maxDocSizeKb }),
+      );
+      input.value = '';
+      return;
+    }
+    if (!allowed) {
+      this.docError.set(this.transloco.translate('signup.docStep.errors.type'));
+      input.value = '';
+      return;
+    }
+
+    const entry: UploadedKycDoc = { fileName: file.name, sizeKb };
+    const keepImage = file.type.startsWith('image/') && sizeKb <= 200;
+
+    const done = (result: UploadedKycDoc) => {
+      this.uploadedDocs.update((docs) => ({ ...docs, [slot]: result }));
+      this.docError.set('');
+    };
+
+    if (!keepImage) {
+      done(entry);
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => done({ ...entry, dataUrl: String(reader.result) });
+    reader.onerror = () => {
+      this.docError.set(this.transloco.translate('signup.docStep.errors.read'));
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
+  removeDoc(slot: string): void {
+    this.uploadedDocs.update((docs) => {
+      const next = { ...docs };
+      delete next[slot];
+      return next;
+    });
+  }
+
+  /** Builds the request history kept by the super-admin console. */
+  private documentsForRequest(): SignupRequestDocuments {
+    return {
+      idCard: this.docEntry('idCard'),
+      tradeRegister: this.docEntry('tradeRegister'),
+      taxRegistration: this.docEntry('taxRegistration'),
+    };
+  }
+
+  private docEntry(slot: string): SignupRequestDocuments['idCard'] {
+    const uploaded = this.uploadedDocs()[slot];
+    return uploaded ? { kind: 'uploaded', ...uploaded } : { kind: 'submitted' };
+  }
+
+  // ══════════════════════════════════════════════
+  // Step 4 — Email verification
   // ══════════════════════════════════════════════
   private startVerification(): void {
     this.generateCode();
@@ -440,7 +541,7 @@ export class SignupStateService {
     if (this.codeInput() === this.verificationCode()) {
       this.error.set('');
       this.paymentError.set('');
-      this.step.set(4);
+      this.step.set(5);
     } else {
       this.verifyAttempts.update((n) => n + 1);
       this.verifyError.set(this.transloco.translate('signup.verifyStep.errors.wrong'));
@@ -452,7 +553,7 @@ export class SignupStateService {
   }
 
   // ══════════════════════════════════════════════
-  // Step 4 — Payment (Stripe-style demo)
+  // Step 5 — Payment (Stripe-style demo)
   // ══════════════════════════════════════════════
   get cardDigits(): string {
     return this.cardNumber().replace(/\D/g, '');
@@ -521,8 +622,7 @@ export class SignupStateService {
     this.provisionTimers.push(t);
   }
 
-  private luhnValid(digits: string): boolean {
-    let sum = 0;
+  private luhnValid(digits: string): boolean {    let sum = 0;
     let double = false;
 
     for (let i = digits.length - 1; i >= 0; i--) {
@@ -553,12 +653,12 @@ export class SignupStateService {
   }
 
   // ══════════════════════════════════════════════
-  // Step 5 — Provisioning
+  // Step 6 — Provisioning
   // ══════════════════════════════════════════════
   private goToProvisioning(): void {
     if (this.codeTimer) clearInterval(this.codeTimer);
     if (this.resendTimer) clearInterval(this.resendTimer);
-    this.step.set(5);
+    this.step.set(6);
     this.provisioningStep.set(0);
     this.runProvisioning();
   }
@@ -581,7 +681,7 @@ export class SignupStateService {
     this.provisionTimers.push(start);
   }
 
-  /** Localized provisioning checklist rendered in step 5. */
+  /** Localized provisioning checklist rendered in step 6. */
   provisionItems(): { key: string; params: Record<string, unknown> }[] {
     return [
       { key: 'signup.setupStep.item1', params: {} },
@@ -589,6 +689,7 @@ export class SignupStateService {
       { key: 'signup.setupStep.item3', params: {} },
       { key: 'signup.setupStep.item4', params: { count: this.selectedApps().length } },
       { key: 'signup.setupStep.item5', params: {} },
+      { key: 'signup.setupStep.item6', params: {} },
     ];
   }
 
@@ -605,6 +706,19 @@ export class SignupStateService {
     });
 
     if (success) {
+      // The console keeps a trace of the registration with its KYC files.
+      this.platformService
+        .createSignupRequest({
+          companyName: this.companyName(),
+          subdomain: this.subdomain(),
+          email: this.email(),
+          country: this.country(),
+          planId: this.selectedPlan().id,
+          documents: this.documentsForRequest(),
+          decisionNote: this.transloco.translate('signup.request.autoApprovedNote'),
+        })
+        .subscribe();
+
       this.router.navigate(['/dashboard']);
     } else {
       this.error.set(this.transloco.translate('signup.error.generic'));
@@ -646,15 +760,24 @@ export class SignupStateService {
         this.error.set(this.transloco.translate('signup.detailsStep.invalid'));
         return;
       }
-      this.startVerification();
       this.step.set(3);
+      return;
+    }
+
+    if (this.step() === 3) {
+      if (!this.docsComplete()) {
+        this.error.set(this.transloco.translate('signup.docStep.errors.missing'));
+        return;
+      }
+      this.startVerification();
+      this.step.set(4);
       return;
     }
   }
 
   back(): void {
     this.error.set('');
-    if (this.step() > 1 && this.step() < 5) {
+    if (this.step() > 1 && this.step() < 6) {
       this.step.update((s) => s - 1);
     }
   }

@@ -1,0 +1,214 @@
+<ng-container *transloco="let t">
+  <div class="admin-page">
+    <h2 class="admin-page-heading">{{ t('admin.nav.signups') }}</h2>
+    <p class="admin-page-sub">{{ t('admin.signups.subtitle') }}</p>
+
+    <div class="admin-stats-grid">
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">{{ t('admin.signups.kpis.pending') }}</div>
+        <div class="admin-stat-value admin-stat-warn">{{ pendingCount() }}</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">{{ t('admin.signups.kpis.approved') }}</div>
+        <div class="admin-stat-value admin-stat-good">{{ approvedCount() }}</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">{{ t('admin.signups.kpis.rejected') }}</div>
+        <div class="admin-stat-value admin-stat-bad">{{ rejectedCount() }}</div>
+      </div>
+    </div>
+
+    @if (message()) {
+      <div class="admin-alert">{{ message() }}</div>
+    }
+
+    @if (rejectFor() !== null) {
+      <div class="admin-card admin-reject-card">
+        <h3 class="admin-card-title">🚫 {{ t('admin.signups.rejectNote') }}</h3>
+        <p class="admin-reject-sub">{{ t('admin.signups.rejectHint') }}</p>
+        <textarea
+          class="admin-note"
+          [value]="note()"
+          (input)="onNoteInput($event)"
+          [placeholder]="t('admin.signups.notePlaceholder')"
+        ></textarea>
+        <div class="admin-reject-actions">
+          <button class="admin-action-btn" (click)="cancelReject()">
+            {{ t('common.cancel') }}
+          </button>
+          <button
+            class="admin-action-btn action-suspend"
+            [disabled]="decidingId() !== null"
+            (click)="reject()"
+          >
+            {{ t('admin.signups.rejectConfirm') }}
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="admin-empty">{{ t('common.loading') }}</div>
+    } @else {
+      <div class="admin-card">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>{{ t('admin.signups.company') }}</th>
+              <th>{{ t('admin.signups.subdomain') }}</th>
+              <th>{{ t('admin.signups.email') }}</th>
+              <th>{{ t('admin.signups.country') }}</th>
+              <th>{{ t('admin.signups.plan') }}</th>
+              <th>{{ t('admin.signups.documents') }}</th>
+              <th>{{ t('admin.signups.status') }}</th>
+              <th>{{ t('admin.signups.created') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (signup of signups(); track signup.id) {
+              <tr>
+                <td class="admin-cell-strong">{{ signup.companyName }}</td>
+                <td>
+                  <span class="admin-subdomain">{{ signup.subdomain }}.erpcloud.com</span>
+                </td>
+                <td class="admin-muted">{{ signup.email }}</td>
+                <td>
+                  <span class="admin-country">
+                    <span aria-hidden="true">{{ flagOf(signup.country) }}</span>
+                    {{ signup.country }}
+                  </span>
+                </td>
+                <td>{{ planName(signup) }}</td>
+                <td>
+                  <div class="admin-docs">
+                    @for (doc of documentKeys; track doc) {
+                      <button
+                        type="button"
+                        class="admin-doc-badge"
+                        (click)="openDocViewer(signup, doc)"
+                        [title]="t('admin.signups.docViewer.open')"
+                      >
+                        ✓ {{ t('admin.signups.doc.' + doc) }}
+                        <span class="admin-doc-zoom" aria-hidden="true">🔍</span>
+                      </button>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="admin-status" [class]="statusClass(signup.status)">
+                    {{ t('admin.signups.statuses.' + signup.status) }}
+                  </span>
+                  @if (signup.status !== 'pending') {
+                    <div class="admin-decided-date">
+                      {{ signup.decidedAt | date: 'shortDate' }}
+                    </div>
+                  }
+                </td>
+                <td>{{ signup.createdAt | date: 'mediumDate' }}</td>
+                <td class="col-right">
+                  @if (decidingId() === signup.id) {
+                    <span class="admin-muted">...</span>
+                  } @else if (signup.status === 'pending') {
+                    <div class="admin-btn-row">
+                      <button class="admin-action-btn action-activate" (click)="approve(signup)">
+                        {{ t('admin.signups.approve') }}
+                      </button>
+                      <button class="admin-action-btn action-suspend" (click)="askReject(signup)">
+                        {{ t('admin.signups.reject') }}
+                      </button>
+                    </div>
+                  } @else if (signup.status === 'rejected') {
+                    <div class="admin-decision-note">— {{ signup.decisionNote }}</div>
+                  } @else {
+                    <span class="admin-muted">{{ t('admin.signups.approvedTenant') }}</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="9" class="admin-empty admin-empty-icon">
+                  📭 {{ t('admin.signups.empty') }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (viewer(); as view) {
+      <div class="doc-viewer-backdrop" (click)="closeDocViewer()">
+        <div class="doc-viewer-panel" (click)="$event.stopPropagation()">
+          <div class="doc-viewer-header">
+            <div>
+              <h3 class="admin-card-title">
+                {{ docIcon(view.doc) }} {{ t('admin.signups.doc.' + view.doc) }}
+              </h3>
+              <p class="doc-viewer-company">{{ view.signup.companyName }}</p>
+            </div>
+            <button class="admin-action-btn" (click)="closeDocViewer()">
+              ✕ {{ t('admin.signups.docViewer.close') }}
+            </button>
+          </div>
+
+          <div class="doc-viewer-meta">
+            <span>
+              <strong>{{ t('admin.signups.company') }}:</strong>
+              {{ view.signup.companyName }}
+            </span>
+            <span>
+              <strong>{{ t('admin.signups.email') }}:</strong>
+              {{ view.signup.email }}
+            </span>
+            <span>
+              <strong>{{ t('admin.signups.created') }}:</strong>
+              {{ view.signup.createdAt | date: 'mediumDate' }}
+            </span>
+            @if (docEntry(view); as entry) {
+              @if (entry.kind === 'uploaded') {
+                <span class="doc-viewer-file">
+                  📁 {{ t('admin.signups.docViewer.uploadedFile', { name: entry.fileName, size: entry.sizeKb }) }}
+                </span>
+              }
+            }
+          </div>
+
+          <figure class="doc-scan" [attr.data-doc]="view.doc">
+            @if (docEntry(view); as entry) {
+              @if (entry.kind === 'uploaded' && entry.dataUrl) {
+                <img
+                  class="doc-scan-img"
+                  [src]="entry.dataUrl"
+                  [alt]="t('admin.signups.doc.' + view.doc)"
+                />
+              } @else {
+                <div class="doc-scan-paper">
+                  <span class="doc-scan-icon" aria-hidden="true">{{ docIcon(view.doc) }}</span>
+                  <div class="doc-scan-bar doc-scan-bar-lg"></div>
+                  <div class="doc-scan-bar"></div>
+                  <div class="doc-scan-bar"></div>
+                  <div class="doc-scan-fields">
+                    <div class="doc-scan-field"></div>
+                    <div class="doc-scan-field"></div>
+                  </div>
+                </div>
+              }
+            }
+            <figcaption class="doc-scan-caption">
+              @if (docEntry(view); as entry) {
+                @if (entry.kind === 'uploaded' && entry.dataUrl) {
+                  {{ entry.fileName }}
+                } @else {
+                  {{ t('admin.signups.docViewer.simulated') }}
+                }
+              } @else {
+                {{ t('admin.signups.docViewer.simulated') }}
+              }
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    }
+  </div>
+</ng-container>

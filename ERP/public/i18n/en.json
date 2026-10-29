@@ -1515,7 +1515,9 @@
     "nav": {
       "supervision": "Supervision",
       "tenants": "Tenants",
-      "plans": "Plans"
+      "plans": "Plans",
+      "signups": "Sign-up requests",
+      "payments": "Subscription payments"
     },
     "stats": {
       "totalTenants": "Total tenants",
@@ -1523,12 +1525,15 @@
       "trialTenants": "In trial",
       "suspendedTenants": "Suspended",
       "totalUsers": "Total users",
-      "monthlyRevenue": "MRR"
+      "monthlyRevenue": "MRR",
+      "pendingSignups": "Pending sign-ups",
+      "overdueAmount": "Overdue payments"
     },
     "supervision": {
       "subtitle": "Overview of the SaaS platform.",
       "recentTenants": "Recent tenants",
-      "viewAll": "View all"
+      "viewAll": "View all",
+      "review": "Review"
     },
     "tenants": {
       "subtitle": "All companies subscribed to the platform.",
@@ -1556,6 +1561,74 @@
       "priceSaved": "Plan prices updated.",
       "pricesReset": "Prices restored to the default catalog.",
       "resetPrices": "Restore default prices"
+    },
+    "signups": {
+      "subtitle": "Companies waiting for a registration decision (KYC check).",
+      "company": "Company",
+      "subdomain": "Subdomain",
+      "email": "Email",
+      "country": "Country",
+      "plan": "Wanted plan",
+      "documents": "KYC documents",
+      "docSubmitted": "3 documents",
+      "status": "Decision",
+      "created": "Received",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rejectNote": "Write the rejection note",
+      "notePlaceholder": "Reason of the rejection (visible in the history)",
+      "rejectConfirm": "Confirm rejection",
+      "empty": "No sign-up request.",
+      "approvedMsg": "\"{company}\" approved — the company is now in trial.",
+      "rejectedMsg": "\"{company}\" rejected.",
+      "statuses": {
+        "pending": "Waiting",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "kpis": {
+        "pending": "Waiting decision",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "doc": {
+        "idCard": "ID card",
+        "tradeRegister": "Trade register",
+        "taxRegistration": "Tax registration"
+      },
+      "rejectHint": "This request stays in the history with your note; no tenant is created.",
+      "approvedTenant": "Trial tenant created",
+      "docViewer": {
+        "open": "View the document",
+        "close": "Close",
+        "simulated": "Simulated scan (demo) — the real image comes with the file upload.",
+        "uploadedFile": "Uploaded file: {{name}} ({{size}} KB)"
+      }
+    },
+    "payments": {
+      "subtitle": "Monthly subscription statements of every tenant.",
+      "overdueTitle": "Overdue (sum)",
+      "period": "Period",
+      "tenant": "Tenant",
+      "plan": "Plan",
+      "amount": "Amount",
+      "status": "Status",
+      "due": "Due on",
+      "markPaid": "Mark paid",
+      "paidMsg": "Payment of {period} registered.",
+      "empty": "No statement for this filter.",
+      "filters": {
+        "all": "All",
+        "overdue": "Overdue",
+        "pending": "Pending",
+        "paid": "Paid"
+      },
+      "statuses": {
+        "paid": "Paid",
+        "pending": "Pending",
+        "overdue": "Overdue"
+      },
+      "collectedTitle": "Collected (total)"
     }
   },
   "apps": {
@@ -1771,7 +1844,8 @@
       "details": "Details",
       "verify": "Verify",
       "payment": "Payment",
-      "setup": "Setup"
+      "setup": "Setup",
+      "documents": "Documents"
     },
     "appStep": {
       "intro": "Select the applications you need. Dependencies are added automatically — you can change this later in Settings.",
@@ -1862,7 +1936,8 @@
       "item3": "Creating workspace & database",
       "item4": "Enabling your apps ({{count}})",
       "item5": "Configuring default roles & settings",
-      "planNote": "Plan: {{plan}} — ${{price}}/mo (chosen automatically from your apps)"
+      "planNote": "Plan: {{plan}} — ${{price}}/mo (chosen automatically from your apps)",
+      "item6": "Filing your KYC documents"
     },
     "actions": {
       "back": "← Back",
@@ -1878,6 +1953,37 @@
     },
     "error": {
       "generic": "Something went wrong. Please try again."
+    },
+    "docStep": {
+      "intro": "Attach your usual business documents to finish registration.",
+      "choose": "Choose file",
+      "change": "Replace",
+      "remove": "Remove document",
+      "sizeKb": "{{size}} KB",
+      "hint": "PNG, JPG or PDF · up to {{size}} KB per document. Small images show a real preview in the super-admin console.",
+      "errors": {
+        "missing": "Add all three documents to continue.",
+        "tooLarge": "File too large (max {{size}} KB).",
+        "type": "Accepted formats: PNG, JPG, PDF.",
+        "read": "Could not read the file, please try again."
+      },
+      "docs": {
+        "idCard": {
+          "label": "e",
+          "hint": "n"
+        },
+        "tradeRegister": {
+          "label": "e",
+          "hint": "n"
+        },
+        "taxRegistration": {
+          "label": "e",
+          "hint": "n"
+        }
+      }
+    },
+    "request": {
+      "autoApprovedNote": "Paid subscription · documents provided"
     }
   },
   "settings": {

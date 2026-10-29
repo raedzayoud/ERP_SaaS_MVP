@@ -4,6 +4,7 @@ import { TranslocoService } from '@jsverse/transloco';
 import type { ErpApp } from '../../../../core/data/apps';
 import { AuthService } from '../../../../core/services/auth.service';
 import { TenantService } from '../../../../core/services/tenant.service';
+import { PlatformService } from '../../../admin/services/platform.service';
 import { SignupStateService } from '../../services/signup-state.service';
 
 const app = (
@@ -20,6 +21,7 @@ describe('SignupStateService app selection', () => {
         provideRouter([]),
         { provide: AuthService, useValue: {} },
         { provide: TenantService, useValue: { isSubdomainAvailable: () => true } },
+        { provide: PlatformService, useValue: { createSignupRequest: () => ({ subscribe: () => {} }) } },
         {
           provide: TranslocoService,
           useValue: { translate: (key: string) => key } as unknown as TranslocoService,
@@ -129,5 +131,75 @@ describe('SignupStateService app selection', () => {
     expect(state.resolveSuite('general')).toBeUndefined(); // hub-only
     expect(state.resolveSuite('hackers')).toBeUndefined();
     expect(state.resolveSuite(undefined)).toBeUndefined(); // /signup hub
+  });
+});
+
+describe('SignupStateService KYC documents', () => {
+  let state: SignupStateService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: {} },
+        { provide: TenantService, useValue: { isSubdomainAvailable: () => true } },
+        { provide: PlatformService, useValue: { createSignupRequest: () => ({ subscribe: () => {} }) } },
+        {
+          provide: TranslocoService,
+          useValue: { translate: (key: string) => key } as unknown as TranslocoService,
+        },
+      ],
+    });
+
+    state = TestBed.inject(SignupStateService);
+  });
+
+  it('blocks the flow until the three KYC documents are provided', () => {
+    state.step.set(3);
+    state.next();
+
+    expect(state.step()).toBe(3);
+    expect(state.error()).toContain('signup.docStep.errors.missing');
+    expect(state.docsComplete()).toBe(false);
+
+    state.uploadedDocs.set({
+      idCard: { fileName: 'id.png', sizeKb: 80, dataUrl: 'data:image/png;base64,x' },
+      tradeRegister: { fileName: 'register.pdf', sizeKb: 400 },
+      taxRegistration: { fileName: 'tax.pdf', sizeKb: 300 },
+    });
+
+    expect(state.docsComplete()).toBe(true);
+
+    state.next(); // request the verification code
+    state.cleanupTimers();
+
+    expect(state.step()).toBe(4);
+    expect(state.error()).toBe('');
+  });
+
+  it('rejects oversized KYC files instead of storing them', () => {
+    const big = new File([new Uint8Array(3 * 1024 * 1024)], 'huge.pdf', {
+      type: 'application/pdf',
+    });
+    const input = { files: [big], value: '' };
+    state.onDocPick('idCard', { target: input } as unknown as Event);
+
+    expect(state.docError()).toContain('signup.docStep.errors.tooLarge');
+    expect(state.uploadedDocs()['idCard']).toBeUndefined();
+    expect(state.docsComplete()).toBe(false);
+  });
+
+  it('accepts a PDF below the size limit and keeps only its name', () => {
+    const pdf = new File([new Uint8Array(120 * 1024)], 'register.pdf', {
+      type: 'application/pdf',
+    });
+    const input = { files: [pdf], value: '' };
+    state.onDocPick('tradeRegister', { target: input } as unknown as Event);
+
+    const stored = state.uploadedDocs()['tradeRegister'];
+    expect(state.docError()).toBe('');
+    expect(stored?.fileName).toBe('register.pdf');
+    expect(stored?.sizeKb).toBe(120);
+    expect(stored?.dataUrl).toBeUndefined();
   });
 });

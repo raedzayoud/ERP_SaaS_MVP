@@ -114,6 +114,22 @@ export const routes: Routes = [
         data: { title: 'admin.nav.tenants' },
       },
       {
+        path: 'signups',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-signups/admin-signups').then(
+            (m) => m.AdminSignups,
+          ),
+        data: { title: 'admin.nav.signups' },
+      },
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./features/admin/pages/admin-payments/admin-payments').then(
+            (m) => m.AdminPayments,
+          ),
+        data: { title: 'admin.nav.payments' },
+      },
+      {
         path: 'plans',
         loadComponent: () =>
           import('./features/admin/pages/admin-plans/admin-plans').then((m) => m.AdminPlans),

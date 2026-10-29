@@ -1515,7 +1515,9 @@
     "nav": {
       "supervision": "Supervision",
       "tenants": "Tenants",
-      "plans": "Plans"
+      "plans": "Plans",
+      "signups": "Demandes d'inscription",
+      "payments": "Paiements d'abonnement"
     },
     "stats": {
       "totalTenants": "Tenants au total",
@@ -1523,12 +1525,15 @@
       "trialTenants": "En essai",
       "suspendedTenants": "Suspendus",
       "totalUsers": "Utilisateurs au total",
-      "monthlyRevenue": "Revenu mensuel (MRR)"
+      "monthlyRevenue": "Revenu mensuel (MRR)",
+      "pendingSignups": "Inscriptions en attente",
+      "overdueAmount": "Paiements en retard"
     },
     "supervision": {
       "subtitle": "Vue d’ensemble de la plateforme SaaS.",
       "recentTenants": "Tenants récents",
-      "viewAll": "Tout voir"
+      "viewAll": "Tout voir",
+      "review": "Traiter"
     },
     "tenants": {
       "subtitle": "Toutes les entreprises abonnées à la plateforme.",
@@ -1556,6 +1561,74 @@
       "priceSaved": "Prix du plan mis à jour.",
       "pricesReset": "Prix rétablis sur le catalogue par défaut.",
       "resetPrices": "Rétablir les prix par défaut"
+    },
+    "signups": {
+      "subtitle": "Entreprises en attente d'une décision d'inscription (vérification KYC).",
+      "company": "Société",
+      "subdomain": "Sous-domaine",
+      "email": "E-mail",
+      "country": "Pays",
+      "plan": "Formule demandée",
+      "documents": "Pièces KYC",
+      "docSubmitted": "3 pièces reçues",
+      "status": "Décision",
+      "created": "Reçue le",
+      "approve": "Approuver",
+      "reject": "Rejeter",
+      "rejectNote": "Rédiger la note de rejet",
+      "notePlaceholder": "Motif du rejet (conservé dans l'historique)",
+      "rejectConfirm": "Confirmer le rejet",
+      "empty": "Aucune demande d'inscription.",
+      "approvedMsg": "« {company} » approuvée — l'entreprise passe en essai.",
+      "rejectedMsg": "« {company} » rejetée.",
+      "statuses": {
+        "pending": "En attente",
+        "approved": "Approuvée",
+        "rejected": "Rejetée"
+      },
+      "kpis": {
+        "pending": "Décision en attente",
+        "approved": "Approuvées",
+        "rejected": "Rejetées"
+      },
+      "doc": {
+        "idCard": "CIN",
+        "tradeRegister": "Registre de commerce",
+        "taxRegistration": "Matricule fiscal"
+      },
+      "rejectHint": "Cette demande reste dans l'historique avec votre note ; aucune entreprise n'est créée.",
+      "approvedTenant": "Entreprise en essaai créée",
+      "docViewer": {
+        "open": "Voir la pièce justificative",
+        "close": "Fermer",
+        "simulated": "Scan simulé (démo) — la vraie image arrivera avec le dépôt de fichiers.",
+        "uploadedFile": "Fichier fourni : {{name}} ({{size}} Ko)"
+      }
+    },
+    "payments": {
+      "subtitle": "Relevés mensuels d'abonnement de chaque entreprise.",
+      "overdueTitle": "En retard (somme)",
+      "period": "Période",
+      "tenant": "entreprise",
+      "plan": "Formule",
+      "amount": "Montant",
+      "status": "Statut",
+      "due": "Échéance",
+      "markPaid": "Marquer payé",
+      "paidMsg": "Paiement de {period} enregistré.",
+      "empty": "Aucun relevé pour ce filtre.",
+      "filters": {
+        "all": "Tous",
+        "overdue": "En retard",
+        "pending": "En attente",
+        "paid": "Payés"
+      },
+      "statuses": {
+        "paid": "Payé",
+        "pending": "En attente",
+        "overdue": "En retard"
+      },
+      "collectedTitle": "Encaissé (total)"
     }
   },
   "apps": {
@@ -1771,7 +1844,8 @@
       "details": "Détails",
       "verify": "Vérification",
       "payment": "Paiement",
-      "setup": "Configuration"
+      "setup": "Configuration",
+      "documents": "Documents"
     },
     "appStep": {
       "intro": "Sélectionnez les applications dont vous avez besoin. Les dépendances sont ajoutées automatiquement — modifiable plus tard dans Paramètres.",
@@ -1862,7 +1936,8 @@
       "item3": "Création de l’espace et de la base de données",
       "item4": "Activation de vos applications ({{count}})",
       "item5": "Configuration des rôles et paramètres par défaut",
-      "planNote": "Plan : {{plan}} — {{price}} $/mois (choisi automatiquement selon vos applications)"
+      "planNote": "Plan : {{plan}} — {{price}} $/mois (choisi automatiquement selon vos applications)",
+      "item6": "Archivage de vos documents KYC"
     },
     "actions": {
       "back": "← Retour",
@@ -1878,6 +1953,37 @@
     },
     "error": {
       "generic": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "docStep": {
+      "intro": "Joignez les documents administratifs habituels pour finaliser votre inscription.",
+      "choose": "Choisir un fichier",
+      "change": "Remplacer",
+      "remove": "Retirer le document",
+      "sizeKb": "{{size}} Ko",
+      "hint": "PNG, JPG ou PDF · {{size}} Ko max par document. Les images légères affichent un aperçu réel dans la console super-admin.",
+      "errors": {
+        "missing": "Ajoutez les trois documents pour continuer.",
+        "tooLarge": "Fichier trop volumineux (max {{size}} Ko).",
+        "type": "Formats acceptés : PNG, JPG, PDF.",
+        "read": "La lecture du fichier a échoué, veuillez réessayer."
+      },
+      "docs": {
+        "idCard": {
+          "label": "f",
+          "hint": "r"
+        },
+        "tradeRegister": {
+          "label": "f",
+          "hint": "r"
+        },
+        "taxRegistration": {
+          "label": "f",
+          "hint": "r"
+        }
+      }
+    },
+    "request": {
+      "autoApprovedNote": "Abonnement payé · justificatifs fournis"
     }
   },
   "settings": {

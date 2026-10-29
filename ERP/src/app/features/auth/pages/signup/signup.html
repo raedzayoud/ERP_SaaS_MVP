@@ -22,16 +22,21 @@
         <div class="step-line" [class.done]="state.step() > 2"></div>
         <div class="step" [class.active]="state.step() >= 3" [class.done]="state.step() > 3">
           <div class="step-circle">3</div>
-          <div class="step-label">{{ t('signup.steps.verify') }}</div>
+          <div class="step-label">{{ t('signup.steps.documents') }}</div>
         </div>
         <div class="step-line" [class.done]="state.step() > 3"></div>
         <div class="step" [class.active]="state.step() >= 4" [class.done]="state.step() > 4">
           <div class="step-circle">4</div>
-          <div class="step-label">{{ t('signup.steps.payment') }}</div>
+          <div class="step-label">{{ t('signup.steps.verify') }}</div>
         </div>
         <div class="step-line" [class.done]="state.step() > 4"></div>
-        <div class="step" [class.active]="state.step() >= 5">
+        <div class="step" [class.active]="state.step() >= 5" [class.done]="state.step() > 5">
           <div class="step-circle">5</div>
+          <div class="step-label">{{ t('signup.steps.payment') }}</div>
+        </div>
+        <div class="step-line" [class.done]="state.step() > 5"></div>
+        <div class="step" [class.active]="state.step() >= 6">
+          <div class="step-circle">6</div>
           <div class="step-label">{{ t('signup.steps.setup') }}</div>
         </div>
       </div>
@@ -260,8 +265,65 @@
         </div>
       }
 
-      <!-- ═══ STEP 3: Email Verification ═══ -->
+      <!-- ═══ STEP 3: KYC Documents ═══ -->
       @if (state.step() === 3) {
+        <div class="step-content">
+          <p class="step-intro">{{ t('signup.docStep.intro') }}</p>
+          <div class="doc-uploads">
+            @for (slot of state.docSlots; track slot) {
+              <div class="doc-upload" [class.filled]="state.uploadedDocs()[slot]">
+                <span class="doc-upload-icon" aria-hidden="true">{{ state.docIcon(slot) }}</span>
+                <div class="doc-upload-info">
+                  <div class="doc-upload-name">{{ t('signup.docStep.docs.' + slot + '.label') }}</div>
+                  @if (state.uploadedDocs()[slot]; as uploaded) {
+                    <div class="doc-upload-file">
+                      📄 {{ uploaded.fileName }}
+                      <span class="doc-upload-size">
+                        {{ t('signup.docStep.sizeKb', { size: uploaded.sizeKb }) }}
+                      </span>
+                    </div>
+                  } @else {
+                    <div class="doc-upload-note">{{ t('signup.docStep.docs.' + slot + '.hint') }}</div>
+                  }
+                </div>
+                <div class="doc-upload-actions">
+                  <label class="doc-upload-btn">
+                    {{ state.uploadedDocs()[slot] ? t('signup.docStep.change') : t('signup.docStep.choose') }}
+                    <input
+                      type="file"
+                      class="doc-upload-input"
+                      accept=".png,.jpg,.jpeg,.pdf,image/*,application/pdf"
+                      [attr.aria-label]="t('signup.docStep.docs.' + slot + '.label')"
+                      (change)="state.onDocPick(slot, $event)"
+                    />
+                  </label>
+                  @if (state.uploadedDocs()[slot]; as uploaded) {
+                    <button
+                      type="button"
+                      class="doc-upload-remove"
+                      (click)="state.removeDoc(slot)"
+                      [attr.aria-label]="t('signup.docStep.remove')"
+                    >
+                      ✕
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (state.docError()) {
+            <div class="signup-error">{{ state.docError() }}</div>
+          }
+
+          <p class="continue-hint">
+            🧾 {{ t('signup.docStep.hint', { size: state.maxDocSizeKb }) }}
+          </p>
+        </div>
+      }
+
+      <!-- ═══ STEP 4: Email Verification ═══ -->
+      @if (state.step() === 4) {
         <div class="step-content verify-content">
           <div class="verify-icon" aria-hidden="true">📧</div>
           <h3 class="verify-title">{{ t('signup.verifyStep.title') }}</h3>
@@ -312,8 +374,8 @@
         </div>
       }
 
-      <!-- ═══ STEP 4: Payment ═══ -->
-      @if (state.step() === 4) {
+      <!-- ═══ STEP 5: Payment ═══ -->
+      @if (state.step() === 5) {
         <div class="step-content">
           <div class="plan-summary">
             <div class="plan-summary-info">
@@ -401,8 +463,8 @@
         </div>
       }
 
-      <!-- ═══ STEP 5: Provisioning ═══ -->
-      @if (state.step() === 5) {
+      <!-- ═══ STEP 6: Provisioning ═══ -->
+      @if (state.step() === 6) {
         <div class="step-content provision-content">
           <div class="provision-spinner" aria-hidden="true"></div>
           <h3 class="provision-title">{{ t('signup.setupStep.title') }}</h3>
@@ -433,7 +495,7 @@
       }
 
       <!-- Actions -->
-      @if (state.step() < 5) {
+      @if (state.step() < 6) {
         <div class="step-actions">
           @if (state.step() > 1) {
             <button class="btn btn-secondary" (click)="state.back()">{{ t('signup.actions.back') }}</button>
@@ -446,8 +508,16 @@
               {{ t('signup.actions.continue') }}
             </button>
           } @else if (state.step() === 2) {
-            <button class="btn btn-primary" (click)="state.next()">{{ t('signup.actions.sendCode') }}</button>
+            <button class="btn btn-primary" (click)="state.next()">{{ t('signup.actions.continue') }}</button>
           } @else if (state.step() === 3) {
+            <button
+              class="btn btn-primary"
+              (click)="state.next()"
+              [disabled]="!state.docsComplete()"
+            >
+              {{ t('signup.actions.sendCode') }}
+            </button>
+          } @else if (state.step() === 4) {
             <button
               class="btn btn-primary"
               (click)="state.verifyCode()"
@@ -455,7 +525,7 @@
             >
               {{ t('signup.actions.verify') }}
             </button>
-          } @else if (state.step() === 4) {
+          } @else if (state.step() === 5) {
             <button class="btn stripe-pay-btn" (click)="state.pay()" [disabled]="state.paying()">
               @if (state.paying()) {
                 <span class="mini-spinner" aria-hidden="true"></span> {{ t('signup.actions.processing') }}

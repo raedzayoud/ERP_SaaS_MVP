@@ -1,0 +1,99 @@
+<ng-container *transloco="let t">
+  <div class="admin-page">
+    <h2 class="admin-page-heading">{{ t('admin.nav.payments') }}</h2>
+    <p class="admin-page-sub">{{ t('admin.payments.subtitle') }}</p>
+
+    <div class="admin-stats-grid">
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">{{ t('admin.stats.monthlyRevenue') }}</div>
+        <div class="admin-stat-value admin-stat-good">
+          {{ monthlyRevenue() | number: '1.0-0' }} $
+        </div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">{{ t('admin.payments.collectedTitle') }}</div>
+        <div class="admin-stat-value">{{ collectedAmount() | number: '1.0-0' }} $</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">{{ t('admin.payments.overdueTitle') }}</div>
+        <div class="admin-stat-value admin-stat-bad">
+          {{ overdueAmount() | number: '1.0-0' }} $
+        </div>
+      </div>
+    </div>
+
+    @if (message()) {
+      <div class="admin-alert">{{ message() }}</div>
+    }
+
+    <div class="admin-filters">
+      @for (key of paymentFilters; track key) {
+        <button
+          class="admin-filter-btn"
+          [class.active]="filter() === key"
+          (click)="setFilter(key)"
+        >
+          {{ t('admin.payments.filters.' + key) }}
+        </button>
+      }
+    </div>
+
+    @if (loading()) {
+      <div class="admin-empty">{{ t('common.loading') }}</div>
+    } @else {
+      <div class="admin-card">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>{{ t('admin.payments.period') }}</th>
+              <th>{{ t('admin.payments.tenant') }}</th>
+              <th>{{ t('admin.payments.plan') }}</th>
+              <th class="col-right">{{ t('admin.payments.amount') }}</th>
+              <th>{{ t('admin.payments.status') }}</th>
+              <th>{{ t('admin.payments.due') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (payment of filtered(); track payment.id) {
+              <tr [class.row-overdue]="payment.status === 'overdue'">
+                <td class="admin-cell-strong">{{ payment.period }}</td>
+                <td>
+                  <div class="admin-cell-strong">{{ tenantName(payment.tenantId) }}</div>
+                  <div class="admin-tenant-subdomain">
+                    {{ tenantSubdomain(payment.tenantId) }}.erpcloud.com
+                  </div>
+                </td>
+                <td>{{ planName(payment.tenantId) }}</td>
+                <td class="col-right admin-cell-strong">
+                  {{ payment.amount | number: '1.0-0' }} $
+                </td>
+                <td>
+                  <span class="admin-status" [class]="statusClass(payment.status)">
+                    {{ t('admin.payments.statuses.' + payment.status) }}
+                  </span>
+                </td>
+                <td>{{ payment.dueDate | date: 'mediumDate' }}</td>
+                <td class="col-right">
+                  @if (payingId() === payment.id) {
+                    <span class="admin-muted">...</span>
+                  } @else if (payment.status !== 'paid') {
+                    <button class="admin-action-btn action-activate" (click)="markPaid(payment)">
+                      {{ t('admin.payments.markPaid') }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="admin-empty admin-empty-icon">
+                  🗓️ {{ t('admin.payments.empty') }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

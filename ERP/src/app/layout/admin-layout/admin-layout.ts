@@ -15,6 +15,8 @@ export class AdminLayout {
   readonly navItems = [
     { route: '/admin', labelKey: 'admin.nav.supervision', icon: '📈', exact: true },
     { route: '/admin/tenants', labelKey: 'admin.nav.tenants', icon: '🏢', exact: false },
+    { route: '/admin/signups', labelKey: 'admin.nav.signups', icon: '📝', exact: false },
+    { route: '/admin/payments', labelKey: 'admin.nav.payments', icon: '🧾', exact: false },
     { route: '/admin/plans', labelKey: 'admin.nav.plans', icon: '💳', exact: false },
   ];
 

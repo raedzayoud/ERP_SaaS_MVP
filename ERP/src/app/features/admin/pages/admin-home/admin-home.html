@@ -31,6 +31,24 @@
           <div class="admin-stat-label">{{ t('admin.stats.monthlyRevenue') }}</div>
           <div class="admin-stat-value">{{ st.monthlyRevenue | currency: 'USD' }}</div>
         </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">{{ t('admin.stats.pendingSignups') }}</div>
+          <div class="admin-stat-value">
+            {{ st.pendingSignups }}
+            @if (st.pendingSignups > 0) {
+              <a class="admin-link" routerLink="/admin/signups">{{ t('admin.supervision.review') }}</a>
+            }
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-label">{{ t('admin.stats.overdueAmount') }}</div>
+          <div class="admin-stat-value admin-stat-warn">
+            {{ st.overdueAmount | currency: 'USD' }}
+            @if (st.overdueAmount > 0) {
+              <a class="admin-link" routerLink="/admin/payments">{{ t('admin.supervision.review') }}</a>
+            }
+          </div>
+        </div>
       </div>
 
       <div class="admin-card">
