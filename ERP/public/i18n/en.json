@@ -343,7 +343,10 @@
       "catalogPriceInvalid": "Price must be 0 or more.",
       "minQtyInvalid": "Quantity must be 1 or more.",
       "delayDaysInvalid": "Lead time must be 0 or more.",
-      "removeSupplierFor": "Remove supplier"
+      "removeSupplierFor": "Remove supplier",
+      "minStock": "Stock alert threshold",
+      "minStockHint": "Warn when the stock of this item falls to this level or below. 0 = no tracking.",
+      "minStockInvalid": "The threshold must be 0 or more."
     }
   },
   "invoices": {
@@ -819,7 +822,9 @@
         "sku": "SKU",
         "unit": "Unit",
         "quantity": "Quantity",
-        "value": "Value"
+        "value": "Value",
+        "minStock": "Threshold",
+        "state": "State"
       },
       "empty": "No products to show.",
       "loading": "Loading stock...",
@@ -827,7 +832,10 @@
       "newAdjustment": "New adjustment",
       "newTransfer": "New transfer",
       "manageWarehouses": "Manage warehouses",
-      "negative": "Negative stock"
+      "negative": "Negative stock",
+      "lowBanner": "{{count}} product(s) at or below threshold",
+      "low": "Low",
+      "ok": "OK"
     },
     "movements": {
       "title": "Stock movements",
@@ -923,7 +931,9 @@
       "archiveError": "The warehouse could not be updated.",
       "codeRequired": "Code is required.",
       "nameRequired": "Name is required.",
-      "activeCount": "Active warehouses"
+      "activeCount": "Active warehouses",
+      "refs": "References",
+      "value": "Stored value"
     },
     "errors": {
       "notFound": "Not found.",
@@ -1036,7 +1046,11 @@
       "pendingOrders": "Pending purchase orders",
       "lateOrders": "Late purchase orders"
     },
-    "errorTitle": "Something went wrong while loading the dashboard"
+    "errorTitle": "Something went wrong while loading the dashboard",
+    "alerts": {
+      "lowStock": "Low stock",
+      "viewStock": "View stock"
+    }
   },
   "accounting": {
     "journal": {

@@ -31,6 +31,7 @@ const EN = {
       stockItems: 'references',
     },
     recent: { title: 'Recent invoices', empty: 'No posted invoices yet.' },
+    alerts: { lowStock: 'Low stock', viewStock: 'View stock' },
     quick: {
       title: 'Quick actions',
       newInvoice: 'New invoice',
@@ -108,6 +109,8 @@ const LEVEL: StockLevelRow = {
   purchasePrice: 50,
   quantity: 6,
   value: 300,
+  minStock: 10,
+  low: true,
 };
 
 const CUSTOMER: Partner = {
@@ -235,5 +238,18 @@ describe('DashboardHome', () => {
     expect(text).toContain('7');
     expect(text).toContain('2');
     expect(text).toContain('1');
+  });
+
+  it('raises a low-stock alert card with the critical products', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('.low-stock-card')).toBeTruthy();
+    const text = element.textContent ?? '';
+    expect(text).toContain('Low stock');
+    expect(text).toContain('Widget');
+    expect(text).toContain('6 / 10');
+    const alertLink = element.querySelector<HTMLAnchorElement>('.alert-link');
+    expect(alertLink?.getAttribute('href')).toBe('/stock');
   });
 });

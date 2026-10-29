@@ -13,6 +13,7 @@ import { PartnerService } from '../../../crm/services/partner.service';
 import { ProductService } from '../../../products/services/product.service';
 import { PurchaseService } from '../../../purchases/services/purchase.service';
 import { PaymentService } from '../../../payments/services/payment.service';
+import { StockLevelRow } from '../../../stock/models/stock-movement';
 import { StockService } from '../../../stock/services/stock.service';
 
 @Component({
@@ -39,6 +40,8 @@ export class DashboardHome {
   paymentsMonth = signal(0);
   stockValue = signal(0);
   stockItems = signal(0);
+  lowStockLevels = signal<StockLevelRow[]>([]);
+  lowStockCount = computed(() => this.lowStockLevels().length);
   customers = signal(0);
   products = signal(0);
   pendingOrders = signal(0);
@@ -115,6 +118,7 @@ export class DashboardHome {
           );
           this.stockValue.set(data.levels.reduce((sum, row) => sum + row.value, 0));
           this.stockItems.set(data.levels.length);
+          this.lowStockLevels.set(data.levels.filter((row) => row.low).slice(0, 5));
           this.customers.set(data.partners.items.filter((partner) => partner.isCustomer).length);
           this.products.set(data.products.total);
           this.pendingOrders.set(data.purchaseSummary.awaiting);

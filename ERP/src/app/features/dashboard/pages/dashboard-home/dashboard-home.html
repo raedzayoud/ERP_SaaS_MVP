@@ -66,6 +66,28 @@
         </div>
       </div>
 
+      @if (lowStockCount() > 0) {
+        <div class="card low-stock-card">
+          <h2 class="card-title">⚠️ {{ t('dashboard.alerts.lowStock') }}</h2>
+          <ul class="alert-list">
+            @for (row of lowStockLevels(); track row.productId) {
+              <li class="alert-item">
+                <a [routerLink]="['/products', row.productId]" class="alert-product">
+                  <span class="line-title">{{ row.name }}</span>
+                  <span class="line-ref">{{ row.sku }}</span>
+                </a>
+                <span class="badge" [class]="row.quantity <= 0 ? 'badge-danger' : 'badge-warning'">
+                  {{ row.quantity }} / {{ row.minStock }}
+                </span>
+              </li>
+            }
+          </ul>
+          <a routerLink="/stock" class="alert-link">
+            {{ t('dashboard.alerts.viewStock') }} →
+          </a>
+        </div>
+      }
+
       <div class="dashboard-grid">
         <div class="card">
           <h2 class="card-title">{{ t('dashboard.recent.title') }}</h2>

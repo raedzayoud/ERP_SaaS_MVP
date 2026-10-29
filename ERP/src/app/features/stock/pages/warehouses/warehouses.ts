@@ -1,20 +1,24 @@
+import { CurrencyPipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
+import { TenantService } from '../../../../core/services/tenant.service';
 import { Warehouse } from '../../models/warehouse';
 import { StockError, StockService } from '../../services/stock.service';
 
 @Component({
   selector: 'app-warehouses',
-  imports: [ReactiveFormsModule, RouterLink, TranslocoDirective],
+  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, TranslocoDirective],
   templateUrl: './warehouses.html',
   styleUrl: './warehouses.css',
 })
 export class Warehouses {
   private readonly service = inject(StockService);
   private readonly fb = inject(FormBuilder);
+  private readonly tenantService = inject(TenantService);
   private readonly destroyRef = inject(DestroyRef);
 
   warehouses = signal<Warehouse[]>([]);
@@ -23,8 +27,14 @@ export class Warehouses {
   submitted = signal(false);
   errorKey = signal<string | null>(null);
   busyId = signal<string | null>(null);
+  editingId = signal<string | null>(null);
+  editedName = signal('');
 
   activeCount = computed(() => this.warehouses().filter((w) => w.active).length);
+  /** Stats per warehouse: references and stored value. */
+  summaries = signal<Map<string, { refs: number; value: number }>>(new Map());
+
+  readonly currency = computed(() => this.tenantService.activeCurrency());
 
   readonly form = this.fb.nonNullable.group({
     code: ['', Validators.required],
@@ -38,6 +48,54 @@ export class Warehouses {
   isInvalid(name: 'code' | 'name'): boolean {
     const control = this.form.controls[name];
     return control.invalid && (control.touched || this.submitted());
+  }
+
+  summaryOf(id: string): { refs: number; value: number } {
+    return this.summaries().get(id) ?? { refs: 0, value: 0 };
+  }
+
+  startEditing(warehouse: Warehouse): void {
+    this.editingId.set(warehouse.id);
+    this.editedName.set(warehouse.name);
+    this.errorKey.set(null);
+  }
+
+  cancelEditing(): void {
+    this.editingId.set(null);
+    this.editedName.set('');
+  }
+
+  onEditNameInput(event: Event): void {
+    this.editedName.set((event.target as HTMLInputElement).value);
+  }
+
+  rename(warehouse: Warehouse): void {
+    if (!this.editedName().trim()) {
+      this.errorKey.set('stock.warehouses.nameRequired');
+      return;
+    }
+
+    this.busyId.set(warehouse.id);
+    this.errorKey.set(null);
+
+    this.service
+      .updateWarehouse(warehouse.id, { name: this.editedName() })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.busyId.set(null);
+          this.cancelEditing();
+          this.load();
+        },
+        error: (error: unknown) => {
+          this.busyId.set(null);
+          this.errorKey.set(
+            error instanceof StockError
+              ? `stock.errors.${error.code}`
+              : 'stock.warehouses.saveError',
+          );
+        },
+      });
   }
 
   save(): void {
@@ -94,12 +152,17 @@ export class Warehouses {
   private load(): void {
     this.loading.set(true);
 
-    this.service
-      .getWarehouses()
+    forkJoin({
+      warehouses: this.service.getWarehouses(),
+      summaries: this.service.getWarehouseSummaries(),
+    })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (warehouses) => {
+        next: ({ warehouses, summaries }) => {
           this.warehouses.set(warehouses);
+          this.summaries.set(
+            new Map(summaries.map((summary) => [summary.warehouseId, summary])),
+          );
           this.loading.set(false);
         },
         error: () => this.loading.set(false),

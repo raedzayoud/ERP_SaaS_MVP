@@ -185,6 +185,28 @@
               <p class="form-hint">{{ t('products.form.vatRateHint') }}</p>
             </div>
           </div>
+
+          @if (type() === 'good') {
+            <div class="form-group min-stock-group">
+              <label class="form-label" for="minStock">{{ t('products.form.minStock') }}</label>
+              <input
+                id="minStock"
+                type="number"
+                min="0"
+                step="1"
+                class="form-control"
+                formControlName="minStock"
+                [attr.aria-invalid]="isInvalid('minStock')"
+                [attr.aria-describedby]="isInvalid('minStock') ? 'minStock-error' : null"
+              />
+              <p class="form-hint">{{ t('products.form.minStockHint') }}</p>
+              @if (isInvalid('minStock')) {
+                <p class="field-error" id="minStock-error">
+                  {{ t('products.form.minStockInvalid') }}
+                </p>
+              }
+            </div>
+          }
         </fieldset>
 
         <fieldset class="form-section">

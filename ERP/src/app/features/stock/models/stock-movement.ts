@@ -28,6 +28,10 @@ export interface StockLevelRow {
   purchasePrice: number;
   quantity: number;
   value: number;
+  /** Reordering threshold of the product (0 = not tracked). */
+  minStock: number;
+  /** True when the threshold is active and the quantity falls at or under it. */
+  low: boolean;
 }
 
 export interface StockLevelQuery {

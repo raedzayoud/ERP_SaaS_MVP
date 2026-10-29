@@ -16,3 +16,8 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Stock threshold: single narrow input, it needs no half column */
+.min-stock-group {
+  max-width: 240px;
+}

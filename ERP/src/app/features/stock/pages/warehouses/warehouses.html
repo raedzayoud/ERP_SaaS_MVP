@@ -37,6 +37,8 @@
                 <th scope="col">{{ t('stock.warehouses.code') }}</th>
                 <th scope="col">{{ t('stock.warehouses.name') }}</th>
                 <th scope="col">{{ t('stock.warehouses.status') }}</th>
+                <th scope="col" class="num">{{ t('stock.warehouses.refs') }}</th>
+                <th scope="col" class="num">{{ t('stock.warehouses.value') }}</th>
                 <th scope="col" class="col-actions">{{ t('common.actions') }}</th>
               </tr>
             </thead>
@@ -44,7 +46,20 @@
               @for (warehouse of warehouses(); track warehouse.id) {
                 <tr>
                   <td>{{ warehouse.code }}</td>
-                  <td>{{ warehouse.name }}</td>
+                  <td>
+                    @if (editingId() === warehouse.id) {
+                      <input
+                        type="text"
+                        class="form-control"
+                        [value]="editedName()"
+                        (input)="onEditNameInput($event)"
+                        [disabled]="busyId() === warehouse.id"
+                        [attr.aria-label]="t('stock.warehouses.name')"
+                      />
+                    } @else {
+                      {{ warehouse.name }}
+                    }
+                  </td>
                   <td>
                     <span
                       class="badge"
@@ -58,19 +73,51 @@
                       }}
                     </span>
                   </td>
+                  <td class="num" [class.quantity-zero]="summaryOf(warehouse.id).refs === 0">
+                    {{ summaryOf(warehouse.id).refs }}
+                  </td>
+                  <td class="num">
+                    {{ summaryOf(warehouse.id).value | currency: currency() }}
+                  </td>
                   <td class="col-actions">
-                    <button
-                      type="button"
-                      class="btn btn-secondary btn-sm"
-                      [disabled]="busyId() === warehouse.id"
-                      (click)="archive(warehouse)"
-                    >
-                      {{
-                        warehouse.active
-                          ? t('stock.warehouses.archive')
-                          : t('stock.warehouses.restore')
-                      }}
-                    </button>
+                    @if (editingId() === warehouse.id) {
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-sm"
+                        [disabled]="busyId() === warehouse.id"
+                        (click)="rename(warehouse)"
+                      >
+                        {{ t('common.save') }}
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        (click)="cancelEditing()"
+                      >
+                        {{ t('common.cancel') }}
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        [disabled]="busyId() === warehouse.id"
+                        (click)="startEditing(warehouse)"
+                      >
+                        ✏️ {{ t('common.edit') }}
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        [disabled]="busyId() === warehouse.id"
+                        (click)="archive(warehouse)"
+                      >
+                        {{
+                          warehouse.active
+                            ? t('stock.warehouses.archive')
+                            : t('stock.warehouses.restore')
+                        }}
+                      </button>
+                    }
                   </td>
                 </tr>
               }

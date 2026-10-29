@@ -31,6 +31,7 @@ export class StockList {
   warehouseFilter = signal('');
 
   totalValue = computed(() => this.rows().reduce((sum, row) => sum + row.value, 0));
+  lowCount = computed(() => this.rows().filter((row) => row.low).length);
 
   /** The currency of the current workspace, used for all money displays. */
   readonly currency = computed(() => this.tenantService.activeCurrency());

@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, map, switchMap, throwError, timer } from 'rxjs';
 import { Page } from '../../../shared/models/page';
 import { ProductService } from '../../products/services/product.service';
+import { Product } from '../../products/models/product';
 import {
   AdjustmentInput,
   ReceptionPostingInput,
@@ -13,7 +14,13 @@ import {
   StockMovementRow,
   TransferInput,
 } from '../models/stock-movement';
-import { MAIN_WAREHOUSE_ID, Warehouse, WarehouseInput } from '../models/warehouse';
+import {
+  MAIN_WAREHOUSE_ID,
+  Warehouse,
+  WarehouseInput,
+  WarehouseNameInput,
+  WarehouseSummary,
+} from '../models/warehouse';
 import { AvailabilityIssue, findAvailabilityIssues, levelFor } from '../utils/stock-calc';
 
 const LATENCY_MS = 300;
@@ -91,6 +98,46 @@ function movement(
     refId,
     createdAt: `${date}T12:00:00.000Z`,
   };
+}
+
+type MovementSortField = 'date' | 'product' | 'quantity';
+
+/** Sorts the ledger rows: by business date (default), product name or signed quantity. */
+function sortedMovements(
+  list: StockMovement[],
+  products: ProductLite[],
+  sort?: string,
+): StockMovement[] {
+  const [rawField = 'date', rawDirection = 'desc'] = (sort ?? 'date,desc').split(',');
+  const field: MovementSortField =
+    rawField === 'product' || rawField === 'quantity' ? rawField : 'date';
+  const asc = rawDirection === 'asc';
+
+  return [...list].sort((a, b) => {
+    const cmp = compareMovements(a, b, field, products);
+    if (cmp !== 0) return asc ? cmp : -cmp;
+    // Stable tie-break: most recent first, whatever the direction.
+    return b.createdAt.localeCompare(a.createdAt);
+  });
+}
+
+function compareMovements(
+  a: StockMovement,
+  b: StockMovement,
+  field: MovementSortField,
+  products: ProductLite[],
+): number {
+  if (field === 'product') {
+    const aName = products.find((p) => p.id === a.productId)?.name ?? '';
+    const bName = products.find((p) => p.id === b.productId)?.name ?? '';
+    return aName.localeCompare(bName);
+  }
+  if (field === 'quantity') {
+    const aQty = a.direction === 'in' ? a.quantity : -a.quantity;
+    const bQty = b.direction === 'in' ? b.quantity : -b.quantity;
+    return aQty - bQty;
+  }
+  return a.date.localeCompare(b.date);
 }
 
 const SEED_MOVEMENTS: StockMovement[] = [
@@ -297,40 +344,102 @@ export class StockService {
     return timer(LATENCY_MS).pipe(map(() => this.applyWarehouse(id, { active: true })));
   }
 
+  /** Renames a warehouse (the code is immutable: it is referenced everywhere). */
+  updateWarehouse(id: string, data: WarehouseNameInput): Observable<Warehouse> {
+    const existing = this.warehousesState().find((w) => w.id === id);
+    if (!existing) return this.fail('notFound');
+    if (!data.name.trim()) return this.fail('missingName');
+
+    return timer(LATENCY_MS).pipe(map(() => this.applyWarehouse(id, { name: data.name.trim() })));
+  }
+
   getLevels(query: StockLevelQuery): Observable<StockLevelRow[]> {
+    return this.products.getProducts({ page: 0, size: 500, type: 'good', active: true }).pipe(
+      switchMap((page) =>
+        timer(LATENCY_MS).pipe(
+          map(() => this.buildLevelRows(page.items, query)),
+        ),
+      ),
+    );
+  }
+
+  /** Products at or below their threshold, most critical first. */
+  getLowStockLevels(): Observable<StockLevelRow[]> {
+    return this.products.getProducts({ page: 0, size: 500, type: 'good', active: true }).pipe(
+      switchMap((page) =>
+        timer(LATENCY_MS).pipe(
+          map(() =>
+            this.buildLevelRows(page.items, {})
+              .filter((row) => row.low)
+              .sort(
+                (a, b) =>
+                  a.quantity - a.minStock - (b.quantity - b.minStock) ||
+                  a.name.localeCompare(b.name),
+              ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /** Small stats of every warehouse (references and stored value). */
+  getWarehouseSummaries(): Observable<WarehouseSummary[]> {
     return this.products.getProducts({ page: 0, size: 500, type: 'good', active: true }).pipe(
       switchMap((page) =>
         timer(LATENCY_MS).pipe(
           map(() => {
             const movements = this.movements();
-            const search = query.search?.trim().toLowerCase();
 
-            const rows = page.items.map((product) => {
-              const quantity = levelFor(movements, query.warehouseId, product.id);
-              return {
-                productId: product.id,
-                sku: product.sku,
-                name: product.name,
-                unit: product.unit,
-                purchasePrice: product.purchasePrice,
-                quantity,
-                value: quantity * product.purchasePrice,
-              };
+            return this.warehousesState().map((warehouse) => {
+              let refs = 0;
+              let value = 0;
+              for (const product of page.items) {
+                const quantity = levelFor(movements, warehouse.id, product.id);
+                if (quantity !== 0) {
+                  refs += 1;
+                  value += quantity * product.purchasePrice;
+                }
+              }
+              return { warehouseId: warehouse.id, refs, value };
             });
-
-            const filtered = search
-              ? rows.filter(
-                  (row) =>
-                    row.name.toLowerCase().includes(search) ||
-                    row.sku.toLowerCase().includes(search),
-                )
-              : rows;
-
-            return filtered.sort((a, b) => a.name.localeCompare(b.name));
           }),
         ),
       ),
     );
+  }
+
+  private buildLevelRows(
+    products: Product[],
+    query: StockLevelQuery,
+  ): StockLevelRow[] {
+    const movements = this.movements();
+    const search = query.search?.trim().toLowerCase();
+
+    const rows = products.map((product) => {
+      const quantity = levelFor(movements, query.warehouseId, product.id);
+      const minStock = product.minStock ?? 0;
+      return {
+        productId: product.id,
+        sku: product.sku,
+        name: product.name,
+        unit: product.unit,
+        purchasePrice: product.purchasePrice,
+        quantity,
+        value: quantity * product.purchasePrice,
+        minStock,
+        low: minStock > 0 && quantity <= minStock,
+      };
+    });
+
+    const filtered = search
+      ? rows.filter(
+          (row) =>
+            row.name.toLowerCase().includes(search) ||
+            row.sku.toLowerCase().includes(search),
+        )
+      : rows;
+
+    return filtered.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   getMovements(query: StockMovementQuery): Observable<Page<StockMovementRow>> {
@@ -546,12 +655,8 @@ export class StockService {
       return true;
     });
 
-    const sorted = [...filtered].sort(
-      (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
-    );
-
     return {
-      items: sorted
+      items: sortedMovements(filtered, products, query.sort)
         .slice(query.page * size, query.page * size + size)
         .map((item) => this.toRow(item, products)),
       total: filtered.length,

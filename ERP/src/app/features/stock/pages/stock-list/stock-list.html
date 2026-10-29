@@ -44,6 +44,12 @@
         </select>
       </div>
 
+      @if (lowCount() > 0) {
+        <a routerLink="/stock/movements" class="alert alert-warning low-banner">
+          ⚠️ {{ t('stock.levels.lowBanner', { count: lowCount() }) }}
+        </a>
+      }
+
       @if (loading()) {
         <div class="state-block">
           <span class="spinner" aria-hidden="true"></span>
@@ -69,6 +75,8 @@
                 <th scope="col">{{ t('stock.levels.columns.sku') }}</th>
                 <th scope="col">{{ t('stock.levels.columns.unit') }}</th>
                 <th scope="col" class="num">{{ t('stock.levels.columns.quantity') }}</th>
+                <th scope="col" class="num">{{ t('stock.levels.columns.minStock') }}</th>
+                <th scope="col">{{ t('stock.levels.columns.state') }}</th>
                 <th scope="col" class="num">{{ t('stock.levels.columns.value') }}</th>
               </tr>
             </thead>
@@ -82,6 +90,22 @@
                     {{ row.quantity | number: '1.0-3' }}
                     @if (row.quantity < 0) {
                       <span class="badge badge-danger">{{ t('stock.levels.negative') }}</span>
+                    }
+                  </td>
+                  <td class="num">
+                    @if (row.minStock > 0) {
+                      {{ row.minStock | number: '1.0-3' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td>
+                    @if (row.minStock > 0) {
+                      <span class="badge" [class]="row.low ? 'badge-warning' : 'badge-success'">
+                        {{ row.low ? t('stock.levels.low') : t('stock.levels.ok') }}
+                      </span>
+                    } @else {
+                      —
                     }
                   </td>
                   <td class="num">{{ row.value | currency: currency() }}</td>

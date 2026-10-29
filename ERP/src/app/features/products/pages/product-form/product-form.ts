@@ -15,7 +15,12 @@ import {
 import { Partner } from '../../../crm/models/partner';
 import { PartnerService } from '../../../crm/services/partner.service';
 
-type CheckedControl = 'sku' | 'name' | 'salePrice' | 'purchasePrice';
+type CheckedControl =
+  | 'sku'
+  | 'name'
+  | 'salePrice'
+  | 'purchasePrice'
+  | 'minStock';
 type SupplierControlName = 'supplierId' | 'supplierRef' | 'price' | 'minQty' | 'delayDays';
 
 @Component({
@@ -56,6 +61,7 @@ export class ProductForm {
     salePrice: [0, [Validators.required, Validators.min(0)]],
     purchasePrice: [0, Validators.min(0)],
     vatRate: [0, Validators.required],
+    minStock: [0, Validators.min(0)],
     description: [''],
     suppliers: this.fb.nonNullable.array([this.newSupplierGroup()]),
   });
@@ -113,6 +119,7 @@ export class ProductForm {
       salePrice: Number(raw.salePrice),
       purchasePrice: Number(raw.purchasePrice),
       vatRate: Number(raw.vatRate),
+      minStock: Number(raw.minStock),
       description: raw.description.trim(),
       suppliers: raw.suppliers.map((entry) => ({
         supplierId: entry.supplierId,
@@ -195,6 +202,7 @@ export class ProductForm {
       salePrice: product.salePrice,
       purchasePrice: product.purchasePrice,
       vatRate: product.vatRate,
+      minStock: product.minStock ?? 0,
       description: product.description,
       suppliers: product.suppliers.map((entry) => ({
         supplierId: entry.supplierId,

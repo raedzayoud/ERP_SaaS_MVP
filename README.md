@@ -106,7 +106,8 @@ Conventions:
 | **W2** | Purchases wave 2: supplier bills (FA) from received orders or standalone, vendor payments (`out`), order duplication (except cancelled), reports tabs (aging/customers/stock), product min-stock thresholds | ✅ Done |
 | **W3** | Access control (RBAC): fixed role templates (admin/commercial/acheteur/magasinier/comptable/directeur) with per-module actions, module route guard, permission-filtered action buttons, shared `/login/email` workspace login, forced password renewal page, audit trail in Settings (EN/FR) | ✅ Done |
 | **W9** | Super-admin SaaS console: persisted tenant registry (safeStorage), sign-up requests with KYC check (approve creates a trial tenant, reject with note), subscription payment statements (paid/pending/overdue, mark-paid), supervision stats extended (pending sign-ups, overdue amount); signup wizard step 3 uploads the three KYC documents (≤2 MB, preview kept for small images) and the console shows the real picture in the document viewer | ✅ Done |
-| **W4–W10** | Advanced stock, accounting, invoicing compliance, payments, BI dashboards, cross-cutting UX, Arabic RTL | ⏳ Planned |
+| **W4** | Advanced stock finalized: min-stock alert card on the dashboard (top 5 low products), stock list threshold/state columns + low banner, movements ledger with column sorting (date/product/quantity) and clickable document links (invoice/purchase), warehouse renaming + per-warehouse stats (references, stored value); stock alert threshold editable in the product form | ✅ Done |
+| **W5–W10** | Invoicing compliance, accounting, full quote→payment chain, BI dashboards, payments, cross-cutting UX, Arabic RTL | ⏳ Planned |
 
 ## 🛠️ Tech stack
 

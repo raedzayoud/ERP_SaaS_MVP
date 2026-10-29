@@ -9,6 +9,8 @@ import { MovementType, StockMovementRow } from '../../models/stock-movement';
 import { Warehouse } from '../../models/warehouse';
 import { StockService } from '../../services/stock.service';
 
+type MovementSortField = 'date' | 'product' | 'quantity';
+
 @Component({
   selector: 'app-stock-movements',
   imports: [DatePipe, ReactiveFormsModule, RouterLink, TranslocoDirective],
@@ -33,6 +35,7 @@ export class StockMovements {
   search = signal('');
   typeFilter = signal<MovementType | ''>('');
   warehouseFilter = signal('');
+  sort = signal('date,desc');
 
   totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
   pageStart = computed(() => (this.total() === 0 ? 0 : this.page() * this.pageSize + 1));
@@ -65,6 +68,7 @@ export class StockMovements {
         search: this.search() || undefined,
         type: this.typeFilter() || undefined,
         warehouseId: this.warehouseFilter() || undefined,
+        sort: this.sort(),
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -110,6 +114,36 @@ export class StockMovements {
 
   signedQty(row: StockMovementRow): number {
     return row.direction === 'in' ? row.quantity : -row.quantity;
+  }
+
+  // ── Column sorting (same pattern as the contacts list) ──
+  setSort(field: MovementSortField): void {
+    const [currentField, currentDirection] = this.sort().split(',');
+    const direction =
+      currentField === field && currentDirection === 'asc' ? 'desc' : 'asc';
+    this.sort.set(`${field},${direction}`);
+    this.page.set(0);
+    this.load();
+  }
+
+  sortIcon(field: MovementSortField): string {
+    const [currentField, currentDirection] = this.sort().split(',');
+    if (currentField !== field) return '';
+    return currentDirection === 'desc' ? '↓' : '↑';
+  }
+
+  ariaSort(field: MovementSortField): 'ascending' | 'descending' | 'none' {
+    const [currentField, currentDirection] = this.sort().split(',');
+    if (currentField !== field) return 'none';
+    return currentDirection === 'desc' ? 'descending' : 'ascending';
+  }
+
+  /** Document detail behind the movement: invoice or purchase order. */
+  refLink(row: StockMovementRow): string | null {
+    if (!row.refId) return null;
+    if (row.type === 'sale') return `/invoices/${row.refId}`;
+    if (row.type === 'purchase') return `/purchases/${row.refId}`;
+    return null;
   }
 
   movementBadge(type: MovementType): string {

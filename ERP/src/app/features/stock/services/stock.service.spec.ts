@@ -209,4 +209,84 @@ describe('StockService', () => {
     const promise = firstValueFrom(service.archiveWarehouse(SECONDARY_WAREHOUSE_ID));
     await expect(promise).rejects.toMatchObject({ code: 'lastActiveWarehouse' });
   });
+
+  it('joins the product threshold and low flag into stock levels', async () => {
+    const levels = await firstValueFrom(service.getLevels({ warehouseId: MAIN_WAREHOUSE_ID }));
+
+    const mouse = levels.find((row) => row.productId === MOUSE);
+    // MOUSE: 50 in main, threshold 70 -> low
+    expect(mouse?.minStock).toBe(70);
+    expect(mouse?.low).toBe(true);
+
+    const laptop = levels.find((row) => row.productId === 'a1000000-0000-4000-8000-000000000001');
+    // LAPTOP: 8 in main, threshold 6 -> not low
+    expect(laptop?.minStock).toBe(6);
+    expect(laptop?.low).toBe(false);
+  });
+
+  it('lists only low-stock products, most critical first', async () => {
+    const low = await firstValueFrom(service.getLowStockLevels());
+
+    expect(low.length).toBeGreaterThanOrEqual(2);
+    expect(low.some((row) => row.productId === MOUSE)).toBe(true);
+    expect(low.some((row) => row.productId === TONER)).toBe(true);
+    // Every row is at or below its threshold
+    for (const row of low) {
+      expect(row.low).toBe(true);
+      expect(row.quantity).toBeLessThanOrEqual(row.minStock);
+    }
+    // Sorted by the remaining gap: the first is never further from its threshold
+    expect(low[0].quantity - low[0].minStock).toBeLessThanOrEqual(
+      low[low.length - 1].quantity - low[low.length - 1].minStock,
+    );
+  });
+
+  it('summarizes warehouses with refs and stored value', async () => {
+    const summaries = await firstValueFrom(service.getWarehouseSummaries());
+    const levels = await firstValueFrom(service.getLevels({}));
+
+    expect(summaries.length).toBe(2);
+    const totalStored = summaries.reduce((sum, entry) => sum + entry.value, 0);
+    const totalLevel = levels.reduce((sum, row) => sum + row.value, 0);
+    expect(totalStored).toBeCloseTo(totalLevel, 2);
+    expect(summaries.every((entry) => entry.value >= 0 && entry.refs > 0)).toBe(true);
+  });
+
+  it('renames a warehouse and keeps the code unchanged', async () => {
+    const renamed = await firstValueFrom(
+      service.updateWarehouse(MAIN_WAREHOUSE_ID, { name: 'Central Warehouse' }),
+    );
+
+    expect(renamed.name).toBe('Central Warehouse');
+    expect(renamed.code).toBe('MAIN');
+
+    const promise = firstValueFrom(
+      service.updateWarehouse(MAIN_WAREHOUSE_ID, { name: '   ' }),
+    );
+    await expect(promise).rejects.toMatchObject({ code: 'missingName' });
+  });
+
+  it('sorts the movements by quantity or product name', async () => {
+    const byQuantity = await firstValueFrom(
+      service.getMovements({ page: 0, size: 50, sort: 'quantity,asc' }),
+    );
+    // The signed quantity (out is negative) must ascend
+    const signed = byQuantity.items.map((row) =>
+      row.direction === 'in' ? row.quantity : -row.quantity,
+    );
+    expect(signed).toEqual([...signed].sort((a, b) => a - b));
+    expect(signed[0]).toBeLessThan(0);
+
+    const byProduct = await firstValueFrom(
+      service.getMovements({ page: 0, size: 50, sort: 'product,asc' }),
+    );
+    const names = byProduct.items.map((row) => row.productName);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+  });
+
+  it('keeps the business date as the default movement sort', async () => {
+    const page = await firstValueFrom(service.getMovements({ page: 0, size: 50 }));
+    const dates = page.items.map((row) => row.date);
+    expect(dates).toEqual([...dates].sort((a, b) => b.localeCompare(a)));
+  });
 });

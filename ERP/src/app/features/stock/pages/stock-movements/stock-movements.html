@@ -70,12 +70,27 @@
           <table class="table">
             <thead>
               <tr>
-                <th scope="col">{{ t('stock.movements.columns.date') }}</th>
-                <th scope="col">{{ t('stock.movements.columns.product') }}</th>
+                <th scope="col" [attr.aria-sort]="ariaSort('date')">
+                  <button type="button" class="th-sort" (click)="setSort('date')">
+                    {{ t('stock.movements.columns.date') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('date') }}</span>
+                  </button>
+                </th>
+                <th scope="col" [attr.aria-sort]="ariaSort('product')">
+                  <button type="button" class="th-sort" (click)="setSort('product')">
+                    {{ t('stock.movements.columns.product') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('product') }}</span>
+                  </button>
+                </th>
                 <th scope="col">{{ t('stock.movements.columns.type') }}</th>
                 <th scope="col">{{ t('stock.movements.columns.direction') }}</th>
                 <th scope="col">{{ t('stock.movements.columns.warehouse') }}</th>
-                <th scope="col" class="num">{{ t('stock.movements.columns.quantity') }}</th>
+                <th scope="col" class="num" [attr.aria-sort]="ariaSort('quantity')">
+                  <button type="button" class="th-sort" (click)="setSort('quantity')">
+                    {{ t('stock.movements.columns.quantity') }}
+                    <span class="sort-icon" aria-hidden="true">{{ sortIcon('quantity') }}</span>
+                  </button>
+                </th>
                 <th scope="col">{{ t('stock.movements.columns.reason') }}</th>
               </tr>
             </thead>
@@ -97,7 +112,13 @@
                   <td class="num" [class.quantity-negative]="signedQty(row) < 0">
                     {{ signedQty(row) }}
                   </td>
-                  <td>{{ row.reason }}</td>
+                  <td>
+                    @if (refLink(row); as link) {
+                      <a [routerLink]="link">{{ row.reason }}</a>
+                    } @else {
+                      {{ row.reason }}
+                    }
+                  </td>
                 </tr>
               }
             </tbody>

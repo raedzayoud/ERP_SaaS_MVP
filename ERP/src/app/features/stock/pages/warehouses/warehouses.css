@@ -2,3 +2,11 @@
   max-width: 640px;
   margin-top: 1.5rem;
 }
+
+.quantity-zero {
+  color: var(--gray-400);
+}
+
+.warehouses-page .edit-input {
+  min-width: 180px;
+}

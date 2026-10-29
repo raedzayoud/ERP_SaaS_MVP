@@ -343,7 +343,10 @@
       "catalogPriceInvalid": "Le prix doit être supérieur ou égal à 0.",
       "minQtyInvalid": "La quantité doit être supérieure ou égale à 1.",
       "delayDaysInvalid": "Le délai doit être supérieur ou égal à 0.",
-      "removeSupplierFor": "Retirer le fournisseur"
+      "removeSupplierFor": "Retirer le fournisseur",
+      "minStock": "Seuil d’alerte stock",
+      "minStockHint": "Alerter quand le stock de ce produit tombe à ce niveau. 0 = pas de suivi.",
+      "minStockInvalid": "Le seuil doit être 0 ou plus."
     }
   },
   "invoices": {
@@ -819,7 +822,9 @@
         "sku": "SKU",
         "unit": "Unité",
         "quantity": "Quantité",
-        "value": "Valeur"
+        "value": "Valeur",
+        "minStock": "Seuil",
+        "state": "État"
       },
       "empty": "Aucun produit à afficher.",
       "loading": "Chargement du stock...",
@@ -827,7 +832,10 @@
       "newAdjustment": "Nouvel ajustement",
       "newTransfer": "Nouveau transfert",
       "manageWarehouses": "Gérer les entrepôts",
-      "negative": "Stock négatif"
+      "negative": "Stock négatif",
+      "lowBanner": "{{count}} produit(s) au seuil ou en dessous",
+      "low": "Faible",
+      "ok": "OK"
     },
     "movements": {
       "title": "Mouvements de stock",
@@ -923,7 +931,9 @@
       "archiveError": "L’entrepôt n’a pas pu être mis à jour.",
       "codeRequired": "Le code est obligatoire.",
       "nameRequired": "Le nom est obligatoire.",
-      "activeCount": "Entrepôts actifs"
+      "activeCount": "Entrepôts actifs",
+      "refs": "Références",
+      "value": "Valeur stockée"
     },
     "errors": {
       "notFound": "Introuvable.",
@@ -1036,7 +1046,11 @@
       "pendingOrders": "BC en attente",
       "lateOrders": "BC en retard"
     },
-    "errorTitle": "Un problème est survenu lors du chargement du tableau de bord"
+    "errorTitle": "Un problème est survenu lors du chargement du tableau de bord",
+    "alerts": {
+      "lowStock": "Stock faible",
+      "viewStock": "Voir le stock"
+    }
   },
   "accounting": {
     "journal": {
