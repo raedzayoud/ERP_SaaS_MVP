@@ -31,6 +31,21 @@ describe('SupplierBillService', () => {
     expect(page.total).toBe(4);
   });
 
+  it('restarts the FA sequence for a new billing year', async () => {
+    const created = await firstValueFrom(
+      service.saveDraft({
+        id: null,
+        supplierId: VERDE,
+        billingDate: '2027-01-10',
+        dueDate: '2027-02-10',
+        notes: '',
+        lines: [{ productId: null, reference: 'A', description: 'Test', unit: 'piece', quantity: 1, unitCost: 10, vatRate: 0 }],
+      }),
+    );
+
+    expect(created.number).toBe('FA-2027-0001');
+  });
+
   it('computes the seed states from the payment ledger', async () => {
     const atlas = await firstValueFrom(service.getBill(FA_ATLAS));
     const nord = await firstValueFrom(service.getBill(FA_NORD));

@@ -62,6 +62,7 @@ export class InvoicePdfService {
     const tableY = this.drawLines(doc, invoice, context, partiesY, money, qty, autoTable);
     const totalsY = this.drawTotals(doc, totals, context, tableY, money);
     this.drawNotes(doc, invoice, context, totalsY);
+    this.drawMentions(doc, totals, context);
     this.drawFooters(doc, invoice, context);
 
     doc.save(`${invoice.number ?? 'draft'}.pdf`);
@@ -283,6 +284,55 @@ export class InvoicePdfService {
       .setTextColor(...INK);
     const lines = doc.splitTextToSize(invoice.notes, CONTENT_WIDTH) as string[];
     doc.text(lines, MARGIN, y + 5);
+  }
+
+  /**
+   * Legal mentions printed once (first page), above the page footer:
+   * late-payment penalties, VAT exemptions and the seller identity.
+   */
+  private drawMentions(
+    doc: jsPDF,
+    totals: InvoiceTotals,
+    ctx: PdfContext,
+  ): void {
+    const paragraphs: string[] = [
+      ctx.translate('invoices.mentions.penalties'),
+    ];
+    if (totals.totalVat === 0) {
+      paragraphs.push(ctx.translate('invoices.mentions.noVat'));
+    }
+    if (ctx.sellerName) {
+      const taxIdPart = ctx.sellerTaxId
+        ? ` · ${ctx.translate('invoices.pdf.taxId')}: ${ctx.sellerTaxId}`
+        : '';
+      const addressPart = ctx.sellerAddress ? ` · ${ctx.sellerAddress}` : '';
+      paragraphs.push(`${ctx.sellerName}${addressPart}${taxIdPart}`);
+    }
+
+    const textLines: string[] = [];
+    for (const paragraph of paragraphs) {
+      textLines.push(...(doc.splitTextToSize(paragraph, CONTENT_WIDTH) as string[]));
+    }
+
+    // Stack upward from a fixed baseline so multi-line mentions never collide.
+    const lineHeight = 3.4;
+    let y = 284 - (textLines.length - 1) * lineHeight;
+
+    doc.setPage(1);
+    doc
+      .setFont('helvetica', 'bold')
+      .setFontSize(7.5)
+      .setTextColor(...MUTED);
+    doc.text(ctx.translate('invoices.mentions.title').toUpperCase(), MARGIN, y - 4);
+
+    doc
+      .setFont('helvetica', 'normal')
+      .setFontSize(7.5)
+      .setTextColor(...MUTED);
+    for (const line of textLines) {
+      doc.text(line, MARGIN, y);
+      y += lineHeight;
+    }
   }
 
   private drawFooters(doc: jsPDF, invoice: Invoice, ctx: PdfContext): void {

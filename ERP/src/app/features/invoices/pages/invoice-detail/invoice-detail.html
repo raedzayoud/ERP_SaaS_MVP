@@ -312,6 +312,27 @@
               }
             </div>
           }
+
+          @if (!isQuote()) {
+            <div class="mentions-block">
+              <p class="doc-label">{{ t('invoices.mentions.title') }}</p>
+              <p class="doc-line">{{ t('invoices.mentions.penalties') }}</p>
+              @if (totals()?.totalVat === 0) {
+                <p class="doc-line">{{ t('invoices.mentions.noVat') }}</p>
+              }
+              @if (sellerName(); as name) {
+                <p class="doc-line">
+                  {{ name }}
+                  @if (sellerAddress(); as address) {
+                    · {{ address }}
+                  }
+                  @if (sellerTaxId(); as taxId) {
+                    · {{ t('invoices.pdf.taxId') }}: {{ taxId }}
+                  }
+                </p>
+              }
+            </div>
+          }
         </div>
       </div>
     }

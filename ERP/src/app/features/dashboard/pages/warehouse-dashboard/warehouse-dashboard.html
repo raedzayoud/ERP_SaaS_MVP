@@ -1,0 +1,158 @@
+﻿<ng-container *transloco="let t">
+  <div class="dashboard">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('dashboard.title') }}</h1>
+        <p class="page-subtitle">{{ t('dashboard.roles.warehouse.subtitle') }}</p>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('dashboard.errorTitle') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">📦</span>
+            <span class="kpi-title">{{ t('dashboard.kpi.stockValue') }}</span>
+          </div>
+          <div class="kpi-value">{{ stockValue() | currency: currency() }}</div>
+          <div class="kpi-change change-neutral">
+            {{ stockItems() }} {{ t('dashboard.kpi.stockItems') }}
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">🏭</span>
+            <span class="kpi-title">{{ t('stock.warehouses.title') }}</span>
+          </div>
+          <div class="kpi-value">{{ warehouses() }}</div>
+          <div class="kpi-change change-neutral">
+            {{ t('stock.levels.manageWarehouses') }}
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">⚠️</span>
+            <span class="kpi-title">{{ t('dashboard.alerts.lowStock') }}</span>
+          </div>
+          <div class="kpi-value" [class.text-danger]="lowStockCount() > 0">
+            {{ lowStockCount() }}
+          </div>
+          <div class="kpi-change" [class]="lowStockCount() > 0 ? 'change-negative' : 'change-neutral'">
+            {{ t('stock.levels.low') }}: {{ lowStockCount() }}
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">📜</span>
+            <span class="kpi-title">{{ t('dashboard.roles.warehouse.recent.title') }}</span>
+          </div>
+          <div class="kpi-value">{{ recentMovements().length }}</div>
+          <div class="kpi-change change-neutral">
+            {{ t('stock.movements.title') }}
+          </div>
+        </div>
+      </div>
+
+      @if (lowStockCount() > 0) {
+        <div class="card low-stock-card">
+          <h2 class="card-title">⚠️ {{ t('dashboard.alerts.lowStock') }}</h2>
+          <ul class="alert-list">
+            @for (row of lowStockLevels(); track row.productId) {
+              <li class="alert-item">
+                <a [routerLink]="['/products', row.productId]" class="alert-product">
+                  <span class="line-title">{{ row.name }}</span>
+                  <span class="line-ref">{{ row.sku }}</span>
+                </a>
+                <span class="badge" [class]="row.quantity <= 0 ? 'badge-danger' : 'badge-warning'">
+                  {{ row.quantity }} / {{ row.minStock }}
+                </span>
+              </li>
+            }
+          </ul>
+          <a routerLink="/stock" class="alert-link">
+            {{ t('dashboard.alerts.viewStock') }} →
+          </a>
+        </div>
+      }
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <h2 class="card-title">{{ t('dashboard.roles.warehouse.recent.title') }}</h2>
+          @if (recentMovements().length === 0) {
+            <p class="state-text">{{ t('dashboard.roles.warehouse.recent.empty') }}</p>
+          } @else {
+            <div class="activity-list">
+              @for (movement of recentMovements(); track movement.id) {
+                <div class="activity-item">
+                  <span class="activity-icon">{{ movementIcon(movement.type) }}</span>
+                  <div class="activity-content">
+                    <div class="activity-message">
+                      <span>{{ movement.productName }}</span>
+                    </div>
+                    <div class="activity-time">
+                      {{ movement.date | date: 'mediumDate' }} — {{ movement.warehouseName }}
+                    </div>
+                  </div>
+                  <span class="badge badge-primary">
+                    {{ t('stock.movements.type.' + movement.type) }}
+                  </span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">{{ t('dashboard.quick.title') }}</h2>
+          <div class="quick-actions">
+            @for (action of quickActions; track action.labelKey) {
+              <a class="quick-action-btn" [routerLink]="action.route">
+                <span class="quick-action-icon">{{ action.icon }}</span>
+                <span>{{ t(action.labelKey) }}</span>
+              </a>
+            }
+          </div>
+
+          <div class="card-divider"></div>
+
+          <h2 class="card-title">{{ t('dashboard.summary.title') }}</h2>
+          <div class="summary-list">
+            <div class="summary-item">
+              <span class="summary-label">{{ t('dashboard.kpi.stockValue') }}</span>
+              <span class="summary-value">{{ stockValue() | currency: currency() }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">{{ t('stock.warehouses.title') }}</span>
+              <span class="summary-value">{{ warehouses() }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">{{ t('dashboard.alerts.lowStock') }}</span>
+              <span class="summary-value" [class.text-danger]="lowStockCount() > 0">
+                {{ lowStockCount() }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</ng-container>

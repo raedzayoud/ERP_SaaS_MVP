@@ -361,12 +361,14 @@ export class SupplierBillService {
     };
   }
 
-  /** Free the FA numbering: sequence of the same billing year. */
+  /** Free the FA numbering: sequence restarts each billing year. */
   private nextNumber(billingDate: string): string {
     const year = Number.isFinite(Number(billingDate.slice(0, 4)))
       ? Number(billingDate.slice(0, 4))
       : Number(todayIso().slice(0, 4));
+    const prefix = `FA-${year}-`;
     const numbers = this.items()
+      .filter((bill) => bill.number.startsWith(prefix))
       .map((bill) => Number(bill.number.slice(-4)))
       .filter((value) => Number.isFinite(value));
     const sequence = numbers.length ? Math.max(...numbers) + 1 : 1;

@@ -74,7 +74,11 @@
     "supplierBills": "Achats fournisseurs",
     "newSupplierBill": "Nouvelle facture d’achat",
     "newBillFromOrder": "Nouvelle facture depuis un BC",
-    "supplierBillDetail": "Détail facture fournisseur"
+    "supplierBillDetail": "Détail facture fournisseur",
+    "salesDashboard": "Tableau de bord ventes",
+    "purchaseDashboard": "Tableau de bord achats",
+    "warehouseDashboard": "Tableau de bord stock",
+    "accountingDashboard": "Tableau de bord comptabilité"
   },
   "descriptions": {
     "contacts": "Les sociétés et les personnes avec lesquelles vous travaillez.",
@@ -1050,6 +1054,58 @@
     "alerts": {
       "lowStock": "Stock faible",
       "viewStock": "Voir le stock"
+    },
+    "roles": {
+      "commercial": {
+        "subtitle": "Suivez vos ventes et vos créances en un coup d’œil.",
+        "kpi": {
+          "monthCount": "Factures du mois"
+        },
+        "quick": {
+          "reminders": "Relances",
+          "invoices": "Factures"
+        }
+      },
+      "buyer": {
+        "subtitle": "Suivez vos commandes d’achat, réceptions et fournisseurs.",
+        "kpi": {
+          "pending": "À réceptionner",
+          "suppliers": "Fournisseurs",
+          "products": "Produits"
+        },
+        "quick": {
+          "orders": "Commandes",
+          "suppliers": "Fournisseurs",
+          "products": "Produits"
+        },
+        "recent": {
+          "title": "Dernières commandes d’achat",
+          "empty": "Aucune commande d’achat pour le moment."
+        }
+      },
+      "warehouse": {
+        "subtitle": "Surveillez le stock, les mouvements et les alertes.",
+        "recent": {
+          "title": "Derniers mouvements de stock",
+          "empty": "Aucun mouvement de stock pour le moment."
+        }
+      },
+      "accountant": {
+        "subtitle": "Gardez le contrôle des créances et des factures.",
+        "kpi": {
+          "toValidate": "Factures à valider"
+        },
+        "quick": {
+          "payment": "Encaisser un paiement",
+          "payments": "Paiements",
+          "invoices": "Factures",
+          "accounting": "Comptabilité"
+        },
+        "recent": {
+          "title": "Factures à traiter",
+          "empty": "Aucune facture validée pour le moment."
+        }
+      }
     }
   },
   "accounting": {

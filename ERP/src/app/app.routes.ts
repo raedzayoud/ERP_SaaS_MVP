@@ -150,11 +150,48 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
+        canActivate: [moduleGuard],
         loadComponent: () =>
           import('./features/dashboard/pages/dashboard-home/dashboard-home').then(
             (m) => m.DashboardHome,
           ),
         data: { title: 'titles.dashboard', moduleId: 'dashboard' },
+      },
+      {
+        path: 'dashboard/sales',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/dashboard/pages/commercial-dashboard/commercial-dashboard').then(
+            (m) => m.CommercialDashboard,
+          ),
+        data: { title: 'titles.salesDashboard', moduleId: 'sales' },
+      },
+      {
+        path: 'dashboard/purchase',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/dashboard/pages/buyer-dashboard/buyer-dashboard').then(
+            (m) => m.BuyerDashboard,
+          ),
+        data: { title: 'titles.purchaseDashboard', moduleId: 'purchases' },
+      },
+      {
+        path: 'dashboard/warehouse',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/dashboard/pages/warehouse-dashboard/warehouse-dashboard').then(
+            (m) => m.WarehouseDashboard,
+          ),
+        data: { title: 'titles.warehouseDashboard', moduleId: 'stock' },
+      },
+      {
+        path: 'dashboard/accounting',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/dashboard/pages/accountant-dashboard/accountant-dashboard').then(
+            (m) => m.AccountantDashboard,
+          ),
+        data: { title: 'titles.accountingDashboard', moduleId: 'invoices' },
       },
       {
         path: 'apps',

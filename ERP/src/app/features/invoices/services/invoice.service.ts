@@ -7,6 +7,7 @@ import { roundMoney, todayIso } from '../../../shared/utils/money';
 import { MAIN_WAREHOUSE_ID } from '../../stock/models/warehouse';
 import { StockService } from '../../stock/services/stock.service';
 import { InvoicingSettingsService } from '../../invoicing/services/invoicing-settings.service';
+import { TenantService } from '../../../core/services/tenant.service';
 import {
   CustomerSnapshot,
   Invoice,
@@ -31,6 +32,8 @@ export type InvoiceErrorCode =
   | 'noLines'
   | 'missingCustomer'
   | 'dateOutOfOrder'
+  | 'missingSellerTaxId'
+  | 'numberConflict'
   | 'originMissing'
   | 'originNotPosted'
   | 'insufficientStock'
@@ -301,6 +304,7 @@ export class InvoiceService {
   private readonly partners = inject(PartnerService);
   private readonly stock = inject(StockService);
   private readonly invoicingSettings = inject(InvoicingSettingsService);
+  private readonly tenants = inject(TenantService);
 
   getInvoices(query: InvoiceQuery): Observable<Page<Invoice>> {
     return timer(LATENCY_MS).pipe(map(() => this.buildPage(query)));
@@ -440,6 +444,10 @@ export class InvoiceService {
           return this.fail('dateOutOfOrder');
         }
 
+        // A legal invoice must carry the seller tax identification.
+        const tenant = this.tenants.currentTenant();
+        if (!tenant || !tenant.taxId) return this.fail('missingSellerTaxId');
+
         // An invoice linked to a delivery note gets its stock impact from the
         // delivery note itself: never touch the stock again here.
         const linkedToDelivery = invoice.deliveryNoteId !== null;
@@ -459,9 +467,14 @@ export class InvoiceService {
           switchMap(() =>
             this.withPartner(invoice.customerId, (partner) => {
               const now = new Date().toISOString();
+              const assigned = this.nextNumber(invoice.kind, invoice.issueDate);
+              const duplicate = this.items().some(
+                (item) => item.status === 'posted' && item.number === assigned,
+              );
+              if (duplicate) return this.fail('numberConflict');
               const posted: Invoice = {
                 ...invoice,
-                number: this.nextNumber(invoice.kind, invoice.issueDate),
+                number: assigned,
                 status: 'posted',
                 customerSnapshot: toSnapshot(partner),
                 postedAt: now,

@@ -145,20 +145,27 @@ export function isTenantRole(role: Role): boolean {
 }
 
 /**
- * First page after login for each tenant role.
- * Roles without an entry land on the dashboard.
+ * Dashboard route of each tenant role.
+ * Admin-entreprise and directeur use the global dashboard; the other
+ * actors each get their own role dashboard (see features/dashboard/pages).
  */
-const HOME_BY_ROLE: Partial<Record<Role, string>> = {
-  acheteur: '/purchases',
-  magasinier: '/stock',
-  comptable: '/invoices',
+const DASHBOARD_BY_ROLE: Partial<Record<Role, string>> = {
+  commercial: '/dashboard/sales',
+  acheteur: '/dashboard/purchase',
+  magasinier: '/dashboard/warehouse',
+  comptable: '/dashboard/accounting',
 };
 
-/** Where the user lands after signing in. */
+/**
+ * Where the user lands after signing in:
+ * each tenant role gets its role dashboard (or the global one),
+ * the platform super-admin goes to the console, the external
+ * client to its portal.
+ */
 export function homeRouteForRole(role: Role): string {
   if (role === 'super-admin') return '/admin';
   if (role === 'client-externe') return '/portal/invoices';
-  return HOME_BY_ROLE[role] ?? '/dashboard';
+  return DASHBOARD_BY_ROLE[role] ?? '/dashboard';
 }
 
 const LEGACY_ROLE_MAP: Record<string, Role> = {

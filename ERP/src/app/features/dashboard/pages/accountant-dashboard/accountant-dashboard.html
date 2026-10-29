@@ -1,0 +1,133 @@
+<ng-container *transloco="let t">
+  <div class="dashboard">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('dashboard.title') }}</h1>
+        <p class="page-subtitle">{{ t('dashboard.roles.accountant.subtitle') }}</p>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('dashboard.errorTitle') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">🧾</span>
+            <span class="kpi-title">{{ t('dashboard.kpi.outstanding') }}</span>
+          </div>
+          <div class="kpi-value">{{ outstanding() | currency: currency() }}</div>
+          <div class="kpi-change" [class]="overdue() > 0 ? 'change-negative' : 'change-neutral'">
+            {{ t('dashboard.kpi.overdue') }} : {{ overdue() | currency: currency() }}
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">💳</span>
+            <span class="kpi-title">{{ t('dashboard.kpi.payments') }}</span>
+          </div>
+          <div class="kpi-value">{{ paymentsMonth() | currency: currency() }}</div>
+          <div class="kpi-change change-neutral">{{ t('dashboard.kpi.currentMonth') }}</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">✅</span>
+            <span class="kpi-title">{{ t('dashboard.roles.accountant.kpi.toValidate') }}</span>
+          </div>
+          <div class="kpi-value">{{ draftsToValidate() }}</div>
+          <div class="kpi-change" [class]="draftsToValidate() > 0 ? 'change-negative' : 'change-neutral'">
+            {{ t('invoices.draftLabel') }}
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon">🧮</span>
+            <span class="kpi-title">{{ t('dashboard.recent.title') }}</span>
+          </div>
+          <div class="kpi-value">{{ recentInvoices().length }}</div>
+          <div class="kpi-change change-neutral">{{ t('dashboard.roles.accountant.quick.invoices') }}</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <h2 class="card-title">{{ t('dashboard.roles.accountant.recent.title') }}</h2>
+          @if (recentInvoices().length === 0) {
+            <p class="state-text">{{ t('dashboard.roles.accountant.recent.empty') }}</p>
+          } @else {
+            <div class="activity-list">
+              @for (inv of recentInvoices(); track inv.id) {
+                <div class="activity-item">
+                  <span class="activity-icon">🧾</span>
+                  <div class="activity-content">
+                    <div class="activity-message">
+                      <a [routerLink]="['/invoices', inv.id]">
+                        {{ inv.number || t('invoices.draftLabel') }}
+                      </a>
+                      — {{ inv.customerSnapshot?.name }}
+                    </div>
+                    <div class="activity-time">{{ inv.issueDate | date: 'mediumDate' }}</div>
+                  </div>
+                  <span class="badge badge-primary">{{
+                    invoiceTotal(inv) | currency: inv.currency
+                  }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">{{ t('dashboard.quick.title') }}</h2>
+          <div class="quick-actions">
+            @for (action of quickActions; track action.labelKey) {
+              <a class="quick-action-btn" [routerLink]="action.route">
+                <span class="quick-action-icon">{{ action.icon }}</span>
+                <span>{{ t(action.labelKey) }}</span>
+              </a>
+            }
+          </div>
+
+          <div class="card-divider"></div>
+
+          <h2 class="card-title">{{ t('dashboard.summary.title') }}</h2>
+          <div class="summary-list">
+            <div class="summary-item">
+              <span class="summary-label">{{ t('dashboard.kpi.outstanding') }}</span>
+              <span class="summary-value">{{ outstanding() | currency: currency() }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">{{ t('dashboard.kpi.overdue') }}</span>
+              <span class="summary-value" [class.text-danger]="overdue() > 0">
+                {{ overdue() | currency: currency() }}
+              </span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">{{ t('dashboard.roles.accountant.kpi.toValidate') }}</span>
+              <span class="summary-value" [class.text-danger]="draftsToValidate() > 0">
+                {{ draftsToValidate() }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</ng-container>

@@ -3,15 +3,26 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ChartConfiguration } from 'chart.js';
+import { forkJoin } from 'rxjs';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { addDaysIso, todayIso } from '../../../../shared/utils/money';
+import {
+  NumberedDoc,
+  NumberingFamily,
+  analyzeNumbering,
+} from '../../../../shared/utils/numbering-compliance';
 import { ReportData } from '../../models/report';
 import { ReportsService } from '../../services/reports.service';
 import { ReportPdfService } from '../../services/report-pdf.service';
 import { downloadCsv } from '../../utils/export-csv';
 import { ChartCanvas } from '../../components/chart-canvas/chart-canvas';
+import { InvoiceService } from '../../../invoices/services/invoice.service';
+import { SalesOrderService } from '../../../sales/services/sales-order.service';
+import { DeliveryNoteService } from '../../../sales/services/delivery-note.service';
+import { PurchaseService } from '../../../purchases/services/purchase.service';
+import { SupplierBillService } from '../../../purchases/services/supplier-bill.service';
 
-type ReportTab = 'overview' | 'aging' | 'customers' | 'stock';
+type ReportTab = 'overview' | 'aging' | 'customers' | 'stock' | 'numbering';
 
 const PRIMARY = '#714b67';
 const ACCENT = '#017e84';
@@ -28,18 +39,28 @@ export class Reports {
   private readonly pdfService = inject(ReportPdfService);
   private readonly tenantService = inject(TenantService);
   private readonly transloco = inject(TranslocoService);
+  private readonly invoices = inject(InvoiceService);
+  private readonly salesOrders = inject(SalesOrderService);
+  private readonly deliveries = inject(DeliveryNoteService);
+  private readonly purchases = inject(PurchaseService);
+  private readonly supplierBills = inject(SupplierBillService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly from = signal(addDaysIso(todayIso(), -30));
   readonly to = signal(todayIso());
 
-  readonly tabs: ReportTab[] = ['overview', 'aging', 'customers', 'stock'];
+  readonly tabs: ReportTab[] = ['overview', 'aging', 'customers', 'stock', 'numbering'];
   readonly tab = signal<ReportTab>('overview');
 
   data = signal<ReportData | null>(null);
   loading = signal(true);
   loadFailed = signal(false);
   pdfBusy = signal(false);
+
+  numbering = signal<NumberingFamily[]>([]);
+  numberingLoading = signal(false);
+  numberingFailed = signal(false);
+  numberingLoaded = signal(false);
 
   /** The currency of the current workspace, used for all money displays. */
   readonly currency = computed(() => this.tenantService.activeCurrency());
@@ -150,6 +171,116 @@ export class Reports {
 
   setTab(nextTab: ReportTab): void {
     this.tab.set(nextTab);
+    if (nextTab === 'numbering' && !this.numberingLoaded()) {
+      this.loadNumbering();
+    }
+  }
+
+  /** Collects every numbered family once and checks its sequences. */
+  loadNumbering(): void {
+    if (this.numberingLoading()) return;
+
+    this.numberingLoading.set(true);
+    this.numberingFailed.set(false);
+
+    forkJoin({
+      invoices: this.invoices.getInvoices({ page: 0, size: 1000 }),
+      salesOrders: this.salesOrders.getOrders({ page: 0, size: 1000 }),
+      deliveries: this.deliveries.getDeliveries({ page: 0, size: 1000 }),
+      purchaseOrders: this.purchases.getOrders({ page: 0, size: 1000 }),
+      bills: this.supplierBills.getBills({ page: 0, size: 1000 }),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ invoices, salesOrders, deliveries, purchaseOrders, bills }) => {
+          const numberedInvoices = invoices.items.filter(
+            (invoice) => invoice.number !== null,
+          );
+          const families: NumberingFamily[] = [
+            {
+              familyKey: 'reports.numbering.families.invoices',
+              series: analyzeNumbering(
+                this.toDocs(
+                  numberedInvoices
+                    .filter((invoice) => invoice.kind === 'invoice')
+                    .map((invoice) => ({ number: invoice.number ?? '', date: invoice.issueDate })),
+                ),
+              ),
+            },
+            {
+              familyKey: 'reports.numbering.families.credits',
+              series: analyzeNumbering(
+                this.toDocs(
+                  numberedInvoices
+                    .filter((invoice) => invoice.kind === 'credit_note')
+                    .map((invoice) => ({ number: invoice.number ?? '', date: invoice.issueDate })),
+                ),
+              ),
+            },
+            {
+              familyKey: 'reports.numbering.families.quotes',
+              series: analyzeNumbering(
+                this.toDocs(
+                  numberedInvoices
+                    .filter((invoice) => invoice.kind === 'quote')
+                    .map((invoice) => ({ number: invoice.number ?? '', date: invoice.issueDate })),
+                ),
+              ),
+            },
+            {
+              familyKey: 'reports.numbering.families.salesOrders',
+              series: analyzeNumbering(
+                this.toDocs(
+                  salesOrders.items
+                    .filter((order) => order.number !== null)
+                    .map((order) => ({ number: order.number ?? '', date: order.orderDate })),
+                ),
+              ),
+            },
+            {
+              familyKey: 'reports.numbering.families.deliveries',
+              series: analyzeNumbering(
+                deliveries.items.map((note) => ({
+                  number: note.number,
+                  date: note.deliveryDate,
+                })),
+              ),
+            },
+            {
+              familyKey: 'reports.numbering.families.purchaseOrders',
+              series: analyzeNumbering(
+                this.toDocs(
+                  purchaseOrders.items
+                    .filter((order) => order.number !== null)
+                    .map((order) => ({ number: order.number ?? '', date: order.orderDate })),
+                ),
+              ),
+            },
+            {
+              familyKey: 'reports.numbering.families.supplierBills',
+              series: analyzeNumbering(
+                bills.items.map((bill) => ({
+                  number: bill.number,
+                  date: bill.billingDate,
+                })),
+              ),
+            },
+          ];
+
+          this.numbering.set(families);
+          this.numberingLoaded.set(true);
+          this.numberingLoading.set(false);
+        },
+        error: () => {
+          this.numberingFailed.set(true);
+          this.numberingLoading.set(false);
+        },
+      });
+  }
+
+  /** One doc per numbered entry (the analyzer skips blank numbers). */
+  private toDocs(entries: { number: string; date: string }[]): NumberedDoc[] {
+    return entries;
   }
 
   async exportPdf(): Promise<void> {

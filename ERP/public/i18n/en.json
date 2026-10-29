@@ -74,7 +74,11 @@
     "supplierBills": "Purchases by supplier",
     "newSupplierBill": "New supplier bill",
     "newBillFromOrder": "New supplier bill from an order",
-    "supplierBillDetail": "Purchase order detail"
+    "supplierBillDetail": "Purchase order detail",
+    "salesDashboard": "Sales dashboard",
+    "purchaseDashboard": "Purchases dashboard",
+    "warehouseDashboard": "Stock dashboard",
+    "accountingDashboard": "Accounting dashboard"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -1050,6 +1054,58 @@
     "alerts": {
       "lowStock": "Low stock",
       "viewStock": "View stock"
+    },
+    "roles": {
+      "commercial": {
+        "subtitle": "Follow your sales and receivables at a glance.",
+        "kpi": {
+          "monthCount": "Invoices this month"
+        },
+        "quick": {
+          "reminders": "Reminders",
+          "invoices": "Invoices"
+        }
+      },
+      "buyer": {
+        "subtitle": "Track purchase orders, receptions and suppliers.",
+        "kpi": {
+          "pending": "Awaiting reception",
+          "suppliers": "Suppliers",
+          "products": "Products"
+        },
+        "quick": {
+          "orders": "Purchase orders",
+          "suppliers": "Suppliers",
+          "products": "Products"
+        },
+        "recent": {
+          "title": "Recent purchase orders",
+          "empty": "No purchase order yet."
+        }
+      },
+      "warehouse": {
+        "subtitle": "Watch stock levels, movements and warehouse alerts.",
+        "recent": {
+          "title": "Latest stock movements",
+          "empty": "No stock movement yet."
+        }
+      },
+      "accountant": {
+        "subtitle": "Keep receivables and invoices under control.",
+        "kpi": {
+          "toValidate": "Invoices to validate"
+        },
+        "quick": {
+          "payment": "Register payment",
+          "payments": "Payments",
+          "invoices": "Invoices",
+          "accounting": "Accounting"
+        },
+        "recent": {
+          "title": "Invoices to process",
+          "empty": "No posted invoice yet."
+        }
+      }
     }
   },
   "accounting": {
