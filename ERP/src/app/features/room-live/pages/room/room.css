@@ -62,6 +62,17 @@
   .room-layout {
     grid-template-columns: minmax(0, 1fr) 260px;
   }
+
+  /* Media stage and chat stay in the main column; the side panel spans both rows. */
+  .room-media-stage,
+  .chat-panel {
+    grid-column: 1;
+  }
+
+  .side-panel {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
 }
 
 .banner-warn {
@@ -87,18 +98,21 @@
 
 .chat-feed {
   display: grid;
-  gap: 8px;
-  min-height: 180px;
-  max-height: 55vh;
+  gap: 12px;
+  min-height: 260px;
+  max-height: 520px;
   overflow-y: auto;
+  padding-right: 4px;
 }
 
 .chat-bubble {
   border: 1px solid var(--gray-200);
-  border-radius: 12px;
-  padding: 8px 12px;
+  border-radius: 14px;
+  padding: 10px 14px;
   background: var(--gray-50, #f9fafb);
-  max-width: 640px;
+  max-width: 85%;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .bubble-me {
@@ -122,7 +136,7 @@
 
 .bubble-text {
   margin: 4px 0 0;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--gray-900);
   white-space: pre-wrap;
 }
@@ -130,16 +144,25 @@
 .chat-empty {
   color: var(--gray-500);
   text-align: center;
-  padding: 18px 0;
+  padding: 40px 0;
 }
 
 .composer {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .composer .form-control {
   flex: 1;
+  font-size: 15px;
+  padding: 10px 16px;
+  border-radius: 999px;
+}
+
+.send-btn {
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 14px;
 }
 
 .room-state {

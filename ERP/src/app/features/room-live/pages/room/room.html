@@ -61,7 +61,7 @@
 
 
             @if (isMember()) {
-              <div class="chat-feed">
+              <div class="chat-feed" #chatFeed>
                 @for (message of messages(); track message.id) {
                   <article class="chat-bubble" [class.bubble-me]="isMe(message.authorUserId)">
                     <header class="bubble-head">
@@ -152,7 +152,7 @@
                   }
                   <button
                     type="submit"
-                    class="btn btn-primary"
+                    class="btn btn-primary send-btn"
                     [disabled]="(!draft().trim() && !pendingAttachment()) || !canPost()"
                   >
                     {{ t('roomlive.chat.send') }}

@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -80,6 +88,17 @@ export class RoomPage {
       this.openRoom(id);
     });
   }
+
+  /** Keeps the newest chat message in view as the conversation grows. */
+  private readonly chatFeed = viewChild<ElementRef<HTMLElement>>('chatFeed');
+  private readonly scrollFeedEffect = effect(() => {
+    this.messages();
+    const feed = this.chatFeed()?.nativeElement;
+    if (!feed) return;
+    requestAnimationFrame(() => {
+      feed.scrollTop = feed.scrollHeight;
+    });
+  });
 
   nameOf(userId: number): string {
     return this.workspaceUsers().find((user) => user.id === userId)?.name ?? '—';
