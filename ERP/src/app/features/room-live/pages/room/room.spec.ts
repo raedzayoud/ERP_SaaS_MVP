@@ -45,16 +45,6 @@ const EN = {
       roleLabel: 'Change role',
     },
     roles: { host: 'Host', participant: 'Participant', viewer: 'Observer' },
-    ai: {
-      title: 'AI summary',
-      close: 'Close summary',
-      messages: 'Messages:',
-      attachments: 'Attachments:',
-      highlights: 'Key points',
-      decisions: 'Decisions taken',
-      actions: 'Actions to complete',
-      empty: 'Nothing detected yet.',
-    },
   },
 };
 
@@ -141,17 +131,20 @@ describe('RoomPage', () => {
     expect(component.room()?.ownerUserId).toBe(2);
   });
 
-  it('shows and hides the mock-AI summary of the chat', async () => {
-    const { component, fixture } = await setupRoomPage('1');
+  it('opens a private thread with another member and sends messages', async () => {
+    const { component } = await setupRoomPage('1', [ADMIN, SALES, WIRM]);
 
-    component.toggleAI();
-    expect(component.aiSummary()).not.toBeNull();
-    fixture.detectChanges();
-    const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Key points');
-    expect(component.aiSummary()?.highlights.length).toBeGreaterThan(0);
+    component.openPeerDm(2);
+    expect(component.dmPeerId()).toBe(2);
+    expect(component.dmThread()?.messages.length ?? 0).toBe(0);
 
-    component.toggleAI();
-    expect(component.aiSummary()).toBeNull();
+    component.onDmDraftInput('Let us talk about the Oasis quote');
+    component.sendPeerDm();
+    const thread = component.dmThread();
+    expect(thread?.messages).toHaveLength(1);
+    expect(thread?.messages[0]?.fromUserId).toBe(1);
+
+    component.closeDm();
+    expect(component.dmPeerId()).toBeNull();
   });
 });

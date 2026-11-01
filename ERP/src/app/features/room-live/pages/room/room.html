@@ -57,57 +57,7 @@
           <app-media-stage class="room-media-stage"></app-media-stage>
 
           <section class="card chat-panel" [attr.aria-label]="t('roomlive.chat.title')">
-            <div class="chat-head">
-              <h2 class="section-title">{{ t('roomlive.chat.title') }}</h2>
-              @if (isMember()) {
-                <button
-                  type="button"
-                  class="btn btn-secondary ai-btn"
-                  (click)="toggleAI()"
-                  [title]="aiSummary() ? t('roomlive.ai.close') : t('roomlive.ai.title')"
-                >
-                  ✨ @if (aiSummary()) { {{ t('roomlive.ai.close') }} } @else { {{ t('roomlive.ai.title') }} }
-                </button>
-              }
-            </div>
-
-            @if (aiSummary(); as s) {
-              <div class="ai-panel">
-                <p class="ai-count">
-                  {{ t('roomlive.ai.messages') }} {{ s.totalMessages }} ·
-                  {{ t('roomlive.ai.attachments') }} {{ s.totalAttachments }}
-                </p>
-                <p class="ai-section-title">{{ t('roomlive.ai.highlights') }}</p>
-                @if (s.highlights.length === 0) {
-                  <p class="ai-empty">{{ t('roomlive.ai.empty') }}</p>
-                }
-                <ul class="ai-list">
-                  @for (point of s.highlights; track point) {
-                    <li>{{ point }}</li>
-                  }
-                </ul>
-
-                <p class="ai-section-title">{{ t('roomlive.ai.decisions') }}</p>
-                @if (s.decisions.length === 0) {
-                  <p class="ai-empty">{{ t('roomlive.ai.empty') }}</p>
-                }
-                <ul class="ai-list">
-                  @for (point of s.decisions; track point) {
-                    <li>✅ {{ point }}</li>
-                  }
-                </ul>
-
-                <p class="ai-section-title">{{ t('roomlive.ai.actions') }}</p>
-                @if (s.actions.length === 0) {
-                  <p class="ai-empty">{{ t('roomlive.ai.empty') }}</p>
-                }
-                <ul class="ai-list">
-                  @for (point of s.actions; track point) {
-                    <li>📌 {{ point }}</li>
-                  }
-                </ul>
-              </div>
-            }
+            <h2 class="section-title">{{ t('roomlive.chat.title') }}</h2>
 
 
             @if (isMember()) {
@@ -227,8 +177,18 @@
                   <span class="participant-name" [class.me-row]="isMe(p.userId)">
                     {{ nameOf(p.userId) }}@if (isMe(p.userId)) { <em> · {{ t('roomlive.participants.you') }}</em> }
                   </span>
-                  @if (isOwner() && p.role !== 'host') {
-                    <div class="row-tools">
+                  <div class="row-tools">
+                    @if (!isMe(p.userId) && room()?.status === 'active') {
+                      <button
+                        type="button"
+                        class="btn btn-secondary mod-btn dm-btn"
+                        (click)="openPeerDm(p.userId)"
+                        [title]="t('roomlive.dm.open')"
+                      >
+                        ✉
+                      </button>
+                    }
+                    @if (isOwner() && p.role !== 'host') {
                       <select
                         class="mod-select"
                         [attr.aria-label]="t('roomlive.participants.roleLabel')"
@@ -256,12 +216,12 @@
                       >
                         🚫
                       </button>
-                    </div>
-                  } @else {
-                    <span class="badge" [class.badge-host]="p.role === 'host'">
-                      {{ t('roomlive.roles.' + p.role) }}
-                    </span>
-                  }
+                    } @else {
+                      <span class="badge" [class.badge-host]="p.role === 'host'">
+                        {{ t('roomlive.roles.' + p.role) }}
+                      </span>
+                    }
+                  </div>
                 </li>
               }
             </ul>
@@ -298,6 +258,48 @@
               <p class="blocked-note">
                 🚫 {{ t('roomlive.participants.blocked') }} {{ blockedNames().join(', ') }}
               </p>
+            }
+
+            @if (dmPeerId(); as peer) {
+              <div class="dm-panel">
+                <div class="dm-head">
+                  <span class="dm-title">✉ {{ t('roomlive.dm.with') }} {{ nameOf(peer) }}</span>
+                  <button
+                    type="button"
+                    class="btn btn-secondary mod-btn"
+                    (click)="closeDm()"
+                    aria-label="✕"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div class="dm-feed">
+                  @for (message of dmThread()?.messages ?? []; track message.id) {
+                    <div class="dm-bubble" [class.dm-me]="message.fromUserId === currentUserId()">
+                      <span class="dm-text">{{ message.text }}</span>
+                      <time class="dm-time">{{ message.createdAt | date: 'h:mm a' }}</time>
+                    </div>
+                  } @empty {
+                    <p class="dm-empty">{{ t('roomlive.dm.empty') }}</p>
+                  }
+                </div>
+                <form class="dm-composer" (submit)="$event.preventDefault(); sendPeerDm()">
+                  <label class="visually-hidden" for="dm-input">
+                    {{ t('roomlive.dm.placeholder') }}
+                  </label>
+                  <input
+                    id="dm-input"
+                    type="text"
+                    class="form-control"
+                    [placeholder]="t('roomlive.dm.placeholder')"
+                    [value]="dmDraft()"
+                    (input)="onDmDraftInput($any($event.target).value)"
+                  />
+                  <button type="submit" class="btn btn-primary" [disabled]="!dmDraft().trim()">
+                    {{ t('roomlive.chat.send') }}
+                  </button>
+                </form>
+              </div>
             }
 
             @if (isMember() && !isOwner() && room()?.status === 'active') {

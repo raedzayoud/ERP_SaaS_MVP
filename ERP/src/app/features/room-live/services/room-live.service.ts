@@ -4,48 +4,16 @@ import { TenantService } from '../../../core/services/tenant.service';
 import { safeStorage } from '../../../core/utils/safe-storage';
 import {
   Room,
-  RoomAISummary,
   RoomAttachment,
   RoomCreateInput,
+  RoomDm,
+  RoomDmMessage,
   RoomParticipant,
   RoomParticipantRole,
 } from '../models/room';
 
 const MAX_ATTACHMENT_KB = 2048;
 const PREVIEW_KB = 300;
-
-const DECISION_WORDS = [
-  'decided',
-  'decision:',
-  'decision is',
-  'agreed',
-  'approved',
-  'valid\u00e9',
-  'valid\u00e9e',
-  'd\u00e9cid\u00e9',
-  'd\u00e9cision',
-  'approuv\u00e9',
-];
-const ACTION_WORDS = [
-  'will ',
-  'should ',
-  'need to',
-  'todo:',
-  'action:',
-  'follow up',
-  'please ',
-  'must ',
-  'doit ',
-  '\u00e0 faire',
-  'il faut',
-  'je fais',
-];
-
-/** Case-insensitive keyword helper for the mock AI extraction. */
-function matchesAny(text: string, words: string[]): boolean {
-  const lower = ` ${text.toLowerCase()} `;
-  return words.some((word) => lower.includes(word));
-}
 
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -85,6 +53,33 @@ function saveRooms(rooms: Room[]): void {
   } catch {
     // mock app: ignore storage issues
   }
+}
+
+const DMS_KEY = 'roomlive_dms';
+
+function loadDms(): RoomDm[] {
+  const storage = safeStorage();
+  if (!storage) return [];
+  try {
+    const raw = storage.getItem(DMS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? (parsed as RoomDm[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveDms(dms: RoomDm[]): void {
+  try {
+    safeStorage()?.setItem(DMS_KEY, JSON.stringify(dms));
+  } catch {
+    // mock app: ignore storage issues
+  }
+}
+
+/** Kept sorted so a thread stays the same one whatever user opens it. */
+function dmPair(x: number, y: number): [number, number] {
+  return x <= y ? [x, y] : [y, x];
 }
 
 function nowIso(): string {
@@ -155,6 +150,9 @@ export class RoomLiveService {
   private readonly tenantService = inject(TenantService);
 
   readonly rooms = signal<Room[]>(this.loadOrSeed());
+
+  /** Private 1-to-1 threads, persisted separately from the rooms. */
+  readonly dms = signal<RoomDm[]>(loadDms());
 
   /** User of the open workspace, or an anonymous fallback for tests. */
   private currentUserId(): number {
@@ -503,30 +501,48 @@ export class RoomLiveService {
     return true;
   }
 
-  /** R6 mock "AI": deterministically extracts the summary of a room chat. */
-  summarizeRoom(roomId: number): RoomAISummary | null {
-    const actorId = this.currentUserId();
+  /** All private threads of a user inside one room. */
+  listDms(roomId: number, meId: number): RoomDm[] {
+    return this.dms().filter(
+      (dm) => dm.roomId === roomId && (dm.aUserId === meId || dm.bUserId === meId),
+    );
+  }
+
+  /** The private thread between two members, undefined when they never wrote yet. */
+  dmWith(roomId: number, meId: number, peerId: number): RoomDm | undefined {
+    const [a, b] = dmPair(meId, peerId);
+    return this.dms().find((dm) => dm.roomId === roomId && dm.aUserId === a && dm.bUserId === b);
+  }
+
+  /** Sends a private message: both users must be participants of an active room. */
+  sendDm(roomId: number, peerId: number, text: string): boolean {
+    const meId = this.currentUserId();
     const room = this.getRoom(roomId);
-    if (!room || !this.canAccess(room, actorId)) return null;
+    if (!room || room.status !== 'active') return false;
+    if (meId <= 0 || peerId <= 0 || peerId === meId) return false;
+    const trimmed = text.trim();
+    if (!trimmed) return false;
+    if (this.participantOf(room, meId) === undefined) return false;
+    if (this.participantOf(room, peerId) === undefined) return false;
 
-    const texts = room.messages
-      .map((m) => m.text.trim())
-      .filter((text) => text.length > 0);
-    const highlights = texts
-      .filter((text) => text.length >= 15)
-      .slice()
-      .sort((a, b) => b.length - a.length)
-      .slice(0, 3);
-    const decisions = texts.filter((text) => matchesAny(text, DECISION_WORDS));
-    const actions = texts.filter((text) => matchesAny(text, ACTION_WORDS));
-
-    return {
-      totalMessages: texts.length,
-      totalAttachments: room.attachments?.length ?? 0,
-      highlights,
-      decisions,
-      actions,
+    const [a, b] = dmPair(meId, peerId);
+    const thread = this.dmWith(roomId, meId, peerId);
+    const message: RoomDmMessage = {
+      id: `dm-${nowIso()}-${Math.random().toString(36).slice(2, 6)}`,
+      fromUserId: meId,
+      toUserId: peerId,
+      text: trimmed,
+      createdAt: nowIso(),
     };
+    this.dms.update((list) =>
+      thread
+        ? list.map((item) =>
+            item === thread ? { ...item, messages: [...item.messages, message] } : item,
+          )
+        : [...list, { roomId, aUserId: a, bUserId: b, messages: [message] }],
+    );
+    saveDms(this.dms());
+    return true;
   }
 
   private updateRoom(id: number, patch: Partial<Room>): void {

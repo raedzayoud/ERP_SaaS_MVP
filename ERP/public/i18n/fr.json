@@ -2550,15 +2550,11 @@
         "invalid": "Fichier impossible à joindre (max 2 Mo, images ou PDF)."
       }
     },
-    "ai": {
-      "title": "Résumé IA",
-      "close": "Fermer le résumé",
-      "messages": "Messages :",
-      "attachments": "Pièces jointes :",
-      "highlights": "Points clés",
-      "decisions": "Décisions prises",
-      "actions": "Actions à réaliser",
-      "empty": "Rien de détecté pour le moment."
+    "dm": {
+      "open": "Discussion privée",
+      "with": "avec",
+      "empty": "Dites bonjour pour démarrer la discussion privée.",
+      "placeholder": "Message privé…"
     }
   }
 }

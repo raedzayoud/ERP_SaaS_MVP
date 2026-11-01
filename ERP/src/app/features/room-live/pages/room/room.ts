@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthService } from '../../../../core/services/auth.service';
-import { ChatMessage, Room, RoomAISummary, RoomAttachment, RoomParticipant, RoomParticipantRole } from '../../models/room';
+import { ChatMessage, Room, RoomAttachment, RoomParticipant, RoomParticipantRole } from '../../models/room';
 import { RoomLiveService } from '../../services/room-live.service';
 import { MediaStage } from '../../components/media-stage/media-stage';
 
@@ -176,16 +176,35 @@ export class RoomPage {
     this.room.set(this.service.getRoom(this.roomId()) ?? null);
   }
 
-  /** R6 mock AI: shows/hides the deterministic summary of the chat. */
-  readonly aiSummary = signal<RoomAISummary | null>(null);
+  /** Private 1-to-1 thread with another member (opened from ✉ in the panel). */
+  readonly dmPeerId = signal<number | null>(null);
+  readonly dmDraft = signal('');
+  readonly dmThread = computed(() => {
+    const peer = this.dmPeerId();
+    if (!peer) return undefined;
+    return this.service.dmWith(this.roomId(), this.currentUserId(), peer);
+  });
 
-  toggleAI(): void {
-    const current = this.aiSummary();
-    if (current) {
-      this.aiSummary.set(null);
-      return;
+  openPeerDm(userId: number): void {
+    this.dmPeerId.set(userId);
+    this.dmDraft.set('');
+  }
+
+  closeDm(): void {
+    this.dmPeerId.set(null);
+  }
+
+  onDmDraftInput(value: string): void {
+    this.dmDraft.set(value);
+  }
+
+  sendPeerDm(): void {
+    const peer = this.dmPeerId();
+    const text = this.dmDraft().trim();
+    if (!peer || !text) return;
+    if (this.service.sendDm(this.roomId(), peer, text)) {
+      this.dmDraft.set('');
     }
-    this.aiSummary.set(this.service.summarizeRoom(this.roomId()));
   }
 
   onInviteSelect(value: string): void {

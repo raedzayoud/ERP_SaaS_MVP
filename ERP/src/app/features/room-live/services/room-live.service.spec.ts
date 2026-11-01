@@ -164,20 +164,25 @@ describe('RoomLiveService', () => {
     ).toBe(true);
   });
 
-  it('extracts a deterministic mock-AI summary from the chat', () => {
-    const room = service.createRoom({ title: 'AI room', access: 'members' });
-    service.postMessage(room.id, 'We agreed to extend the Oasis quotation until Friday.');
-    service.postMessage(room.id, 'The buyer will upload the invoice tomorrow.');
-    service.postMessage(room.id, 'Please verify the delivery date.');
-    service.postMessage(room.id, 'Meeting notes are saved in the shared folder too.');
+  it('exchanges private messages between two room members only', () => {
+    const room = service.createRoom({ title: 'DM room', access: 'members' });
+    service.joinAs(room.id, SALES.id);
 
-    const summary = service.summarizeRoom(room.id);
-    if (!summary) throw new Error('summary expected');
-    expect(summary.totalMessages).toBe(4);
-    expect(summary.decisions).toContain('We agreed to extend the Oasis quotation until Friday.');
-    expect(summary.actions.length).toBe(2);
-    expect(summary.highlights[0]).toContain('We agreed');
+    expect(service.sendDm(room.id, SALES.id, 'Hello privately')).toBe(true);
+    currentUser = SALES;
+    expect(service.sendDm(room.id, ADMIN.id, 'Hi! Count me in tomorrow')).toBe(true);
 
-    expect(service.summarizeRoom(999)).toBeNull();
+    const thread = service.dmWith(room.id, ADMIN.id, SALES.id);
+    expect(thread?.messages).toHaveLength(2);
+    expect(thread?.messages[1]?.fromUserId).toBe(SALES.id);
+    expect(service.listDms(room.id, ADMIN.id)).toHaveLength(1);
+
+    // A non-participant cannot send a private message in this room.
+    currentUser = WIRM;
+    expect(service.sendDm(room.id, ADMIN.id, 'hijack attempt')).toBe(false);
+
+    currentUser = ADMIN;
+    expect(service.sendDm(room.id, SALES.id, '   ')).toBe(false);
+    expect(service.dmWith(room.id, ADMIN.id, SALES.id)?.messages).toHaveLength(2);
   });
 });

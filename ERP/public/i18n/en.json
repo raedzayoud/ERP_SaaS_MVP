@@ -2551,15 +2551,11 @@
         "invalid": "File not allowed (max 2 MB, images or PDF)."
       }
     },
-    "ai": {
-      "title": "AI summary",
-      "close": "Close summary",
-      "messages": "Messages:",
-      "attachments": "Attachments:",
-      "highlights": "Key points",
-      "decisions": "Decisions taken",
-      "actions": "Actions to complete",
-      "empty": "Nothing detected yet."
+    "dm": {
+      "open": "Private chat",
+      "with": "with",
+      "empty": "Say hello to start the private chat.",
+      "placeholder": "Private message…"
     }
   }
 }

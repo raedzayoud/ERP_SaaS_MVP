@@ -87,14 +87,19 @@ export interface RoomCreateInput {
 
 export const ROOM_ACCESS: RoomAccess[] = ['members', 'invite-only'];
 
-/** Deterministic "AI" summary of a room chat (R6, mock: computed from the messages). */
-export interface RoomAISummary {
-  totalMessages: number;
-  totalAttachments: number;
-  /** The three longest messages, used as key points. */
-  highlights: string[];
-  /** Message texts that look like a decision. */
-  decisions: string[];
-  /** Message texts that look like an action to complete. */
-  actions: string[];
+/** One line of the private 1-to-1 chat between two members of a room. */
+export interface RoomDmMessage {
+  id: string;
+  fromUserId: number;
+  toUserId: number;
+  text: string;
+  createdAt: string;
+}
+
+/** Private thread between two room members (aUserId/bUserId stay sorted ascending). */
+export interface RoomDm {
+  roomId: number;
+  aUserId: number;
+  bUserId: number;
+  messages: RoomDmMessage[];
 }
