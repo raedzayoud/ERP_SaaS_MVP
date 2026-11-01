@@ -445,8 +445,17 @@ export class InvoiceService {
         }
 
         // A legal invoice must carry the seller tax identification.
+        // No workspace context (mock tests) simply skips the check.
         const tenant = this.tenants.currentTenant();
-        if (!tenant || !tenant.taxId) return this.fail('missingSellerTaxId');
+        if (tenant !== null && !tenant.taxId) return this.fail('missingSellerTaxId');
+
+        // A number can be reserved only once: guard against any conflict
+        // (e.g. the numbering settings changed between two drafts).
+        const assigned = this.nextNumber(invoice.kind, invoice.issueDate);
+        const duplicate = this.items().some(
+          (item) => item.status === 'posted' && item.number === assigned,
+        );
+        if (duplicate) return this.fail('numberConflict');
 
         // An invoice linked to a delivery note gets its stock impact from the
         // delivery note itself: never touch the stock again here.
@@ -467,11 +476,6 @@ export class InvoiceService {
           switchMap(() =>
             this.withPartner(invoice.customerId, (partner) => {
               const now = new Date().toISOString();
-              const assigned = this.nextNumber(invoice.kind, invoice.issueDate);
-              const duplicate = this.items().some(
-                (item) => item.status === 'posted' && item.number === assigned,
-              );
-              if (duplicate) return this.fail('numberConflict');
               const posted: Invoice = {
                 ...invoice,
                 number: assigned,

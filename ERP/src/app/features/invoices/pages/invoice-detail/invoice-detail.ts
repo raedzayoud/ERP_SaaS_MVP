@@ -13,6 +13,8 @@ import { InvoiceError, InvoiceService } from '../../services/invoice.service';
 import { FacturXService } from '../../../invoicing/services/factur-x.service';
 import { SalesOrder } from '../../../sales/models/sales-order';
 import { SalesError, SalesOrderService } from '../../../sales/services/sales-order.service';
+import { Payment } from '../../../payments/models/payment';
+import { PaymentService } from '../../../payments/services/payment.service';
 import { InvoiceTotals, invoiceTotals, isOverdue, paymentState } from '../../utils/invoice-calc';
 import { PermissionService } from '../../../../core/services/permission.service';
 
@@ -25,6 +27,7 @@ import { PermissionService } from '../../../../core/services/permission.service'
 export class InvoiceDetail {
   private readonly service = inject(InvoiceService);
   private readonly salesOrders = inject(SalesOrderService);
+  private readonly paymentService = inject(PaymentService);
   private readonly pdfService = inject(InvoicePdfService);
   private readonly facturXService = inject(FacturXService);
   private readonly tenantService = inject(TenantService);
@@ -39,6 +42,7 @@ export class InvoiceDetail {
   readonly invoice = signal<Invoice | null>(null);
   readonly creditNotes = signal<Invoice[]>([]);
   readonly convertedOrder = signal<SalesOrder | null>(null);
+  readonly payments = signal<Payment[]>([]);
   readonly totals = signal<InvoiceTotals | null>(null);
   readonly payment = signal<PaymentState>('none');
   readonly overdue = signal(false);
@@ -76,10 +80,11 @@ export class InvoiceDetail {
       invoice: this.service.getInvoice(this.invoiceId),
       creditNotes: this.service.getCreditNotesFor(this.invoiceId),
       convertedOrder: this.salesOrders.getOrderByQuote(this.invoiceId),
+      payments: this.paymentService.getPaymentsByDoc(this.invoiceId),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ invoice, creditNotes, convertedOrder }) => {
+        next: ({ invoice, creditNotes, convertedOrder, payments }) => {
           if (!invoice) {
             this.loadFailed.set(true);
             this.loading.set(false);
@@ -88,6 +93,9 @@ export class InvoiceDetail {
           this.applyInvoice(invoice);
           this.creditNotes.set(creditNotes);
           this.convertedOrder.set(convertedOrder ?? null);
+          this.payments.set(
+            [...payments].sort((a, b) => b.date.localeCompare(a.date)),
+          );
           this.loading.set(false);
         },
         error: () => {

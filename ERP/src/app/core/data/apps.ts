@@ -104,6 +104,14 @@ export const ERP_APPS: ErpApp[] = [
     category: 'Tools',
     dependencies: [],
   },
+  {
+    id: 'room-live',
+    label: 'Rooms Live',
+    icon: '💬',
+    description: 'Live chat rooms, audio/video calls and file sharing',
+    category: 'Tools',
+    dependencies: [],
+  },
 ];
 
 export function getAppById(id: string): ErpApp | undefined {
@@ -121,7 +129,7 @@ export const ERP_SUITES: ErpSuite[] = [
   { id: 'purchases', apps: ['purchases'] },
   { id: 'inventory', apps: ['stock'] },
   { id: 'finance', apps: ['accounting', 'reports'] },
-  { id: 'standalone', apps: ['contacts', 'ai-assistant'] },
+  { id: 'standalone', apps: ['contacts', 'ai-assistant', 'room-live'] },
 ];
 
 /**

@@ -149,6 +149,12 @@ export class Sidebar {
           moduleId: 'invoicing',
         },
         { labelKey: 'sidebar.items.reports', icon: '📈', route: '/reports', moduleId: 'reports' },
+        {
+          labelKey: 'sidebar.items.analytics',
+          icon: '📊',
+          route: '/analytics',
+          moduleId: 'reports',
+        },
       ],
     },
     {
@@ -159,6 +165,17 @@ export class Sidebar {
           icon: '🤖',
           route: '/ai-assistant',
           moduleId: 'ai-assistant',
+        },
+      ],
+    },
+    {
+      titleKey: 'sidebar.sections.collaboration',
+      items: [
+        {
+          labelKey: 'sidebar.items.rooms',
+          icon: '💬',
+          route: '/rooms',
+          moduleId: 'collab',
         },
       ],
     },
@@ -183,6 +200,14 @@ export class Sidebar {
         ...section,
         items: section.items.filter((item) => {
           if (!this.permissions.canAccessModule(item.moduleId)) {
+            return false;
+          }
+          // The BI page is reserved to the finance roles,
+          // even commercial and acheteur who have the reports module.
+          if (
+            item.route === '/analytics' &&
+            !this.permissions.hasAnyRole(['admin-entreprise', 'directeur', 'comptable'])
+          ) {
             return false;
           }
           // Dashboard, Apps and Settings are workspace tools,

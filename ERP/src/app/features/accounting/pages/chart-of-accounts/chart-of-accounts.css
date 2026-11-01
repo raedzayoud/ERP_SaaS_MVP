@@ -7,3 +7,9 @@ tfoot td {
   font-weight: 700;
   border-block-start: 2px solid var(--gray-200);
 }
+
+.chart-hint {
+  margin-block: 12px 4px;
+  padding-block-end: 0;
+}
+

@@ -335,6 +335,40 @@
           }
         </div>
       </div>
+
+      @if (inv.kind === 'invoice' && inv.status === 'posted') {
+        <div class="card payments-card">
+          <p class="doc-label">{{ t('invoices.payments.title') }}</p>
+          @if (payments().length === 0) {
+            <p class="doc-line text-muted">{{ t('payments.list.empty') }}</p>
+          } @else {
+            <div class="table-wrap">
+              <table class="table payments-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ t('payments.columns.date') }}</th>
+                    <th scope="col">{{ t('payments.columns.mode') }}</th>
+                    <th scope="col">{{ t('payments.columns.reference') }}</th>
+                    <th scope="col" class="num">{{ t('payments.columns.amount') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of payments(); track row.id) {
+                    <tr>
+                      <td>{{ row.date | date: 'mediumDate' }}</td>
+                      <td>
+                        <span class="badge badge-info">{{ t('payments.modes.' + row.mode) }}</span>
+                      </td>
+                      <td>{{ row.reference }}</td>
+                      <td class="num">{{ row.amount | currency: row.currency }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
     }
   </div>
 </ng-container>

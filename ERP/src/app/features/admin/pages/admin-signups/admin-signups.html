@@ -58,6 +58,7 @@
               <th>{{ t('admin.signups.subdomain') }}</th>
               <th>{{ t('admin.signups.email') }}</th>
               <th>{{ t('admin.signups.country') }}</th>
+              <th>{{ t('admin.signups.taxId') }}</th>
               <th>{{ t('admin.signups.plan') }}</th>
               <th>{{ t('admin.signups.documents') }}</th>
               <th>{{ t('admin.signups.status') }}</th>
@@ -78,6 +79,9 @@
                     <span aria-hidden="true">{{ flagOf(signup.country) }}</span>
                     {{ signup.country }}
                   </span>
+                </td>
+                <td>
+                  <span class="admin-taxid">{{ signup.taxId }}</span>
                 </td>
                 <td>{{ planName(signup) }}</td>
                 <td>

@@ -34,6 +34,20 @@
           }
         </select>
 
+        <select
+          class="form-control filter-select"
+          [value]="accountFilter()"
+          [attr.aria-label]="t('accounting.list.allAccounts')"
+          (change)="onAccountFilter($event)"
+        >
+          <option value="">{{ t('accounting.list.allAccounts') }}</option>
+          @for (account of accounts; track account.code) {
+            <option [value]="account.code">
+              {{ account.code }} — {{ t('accounting.accountNames.' + account.code) }}
+            </option>
+          }
+        </select>
+
         <input
           type="date"
           class="form-control filter-select"

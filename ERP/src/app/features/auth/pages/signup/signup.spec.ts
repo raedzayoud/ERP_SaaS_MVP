@@ -154,7 +154,7 @@ describe('SignupStateService KYC documents', () => {
     state = TestBed.inject(SignupStateService);
   });
 
-  it('blocks the flow until the three KYC documents are provided', () => {
+  it('blocks the flow until the four KYC files and the tax number are provided', () => {
     state.step.set(3);
     state.next();
 
@@ -163,12 +163,21 @@ describe('SignupStateService KYC documents', () => {
     expect(state.docsComplete()).toBe(false);
 
     state.uploadedDocs.set({
-      idCard: { fileName: 'id.png', sizeKb: 80, dataUrl: 'data:image/png;base64,x' },
+      idCardRecto: { fileName: 'id-recto.png', sizeKb: 80, dataUrl: 'data:image/png;base64,x' },
+      idCardVerso: { fileName: 'id-verso.png', sizeKb: 80 },
       tradeRegister: { fileName: 'register.pdf', sizeKb: 400 },
       taxRegistration: { fileName: 'tax.pdf', sizeKb: 300 },
     });
-
     expect(state.docsComplete()).toBe(true);
+
+    // The matricule fiscal also blocks the transition.
+    state.next();
+    expect(state.step()).toBe(3);
+    expect(state.error()).toContain('signup.docStep.errors.taxIdMissing');
+    expect(state.step3Complete()).toBe(false);
+
+    state.taxId.set('1234567/A/M/000');
+    expect(state.step3Complete()).toBe(true);
 
     state.next(); // request the verification code
     state.cleanupTimers();
@@ -182,10 +191,10 @@ describe('SignupStateService KYC documents', () => {
       type: 'application/pdf',
     });
     const input = { files: [big], value: '' };
-    state.onDocPick('idCard', { target: input } as unknown as Event);
+    state.onDocPick('idCardRecto', { target: input } as unknown as Event);
 
     expect(state.docError()).toContain('signup.docStep.errors.tooLarge');
-    expect(state.uploadedDocs()['idCard']).toBeUndefined();
+    expect(state.uploadedDocs()['idCardRecto']).toBeUndefined();
     expect(state.docsComplete()).toBe(false);
   });
 

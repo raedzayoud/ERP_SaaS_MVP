@@ -32,6 +32,8 @@ export interface JournalQuery {
   to?: string;
   search?: string;
   sort?: string;
+  /** Ledger mode: only entries touching this account (e.g. 411000). */
+  accountCode?: string;
 }
 
 export interface TrialBalanceRow {

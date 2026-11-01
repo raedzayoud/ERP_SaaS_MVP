@@ -53,7 +53,72 @@
       }
     </div>
 
-    @if (loading()) {
+    @if (tab() === 'numbering') {
+      <div class="card">
+        <h2 class="section-title">{{ t('reports.numbering.title') }}</h2>
+        <p class="state-text">{{ t('reports.numbering.hint') }}</p>
+
+        @if (numberingLoading()) {
+          <div class="state-block">
+            <span class="spinner" aria-hidden="true"></span>
+            <p class="state-text">{{ t('common.loading') }}</p>
+          </div>
+        } @else if (numberingFailed()) {
+          <div class="state-block">
+            <p class="state-text">{{ t('reports.numbering.loadError') }}</p>
+            <button type="button" class="btn btn-secondary" (click)="loadNumbering()">
+              {{ t('common.retry') }}
+            </button>
+          </div>
+        } @else {
+          @for (family of numbering(); track family.familyKey) {
+            <div class="numbering-family">
+              <h3 class="numbering-family-title">{{ t(family.familyKey) }}</h3>
+              @if (family.series.length === 0) {
+                <p class="state-text">{{ t('reports.numbering.none') }}</p>
+              } @else {
+                <div class="table-wrap">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">{{ t('reports.numbering.columns.series') }}</th>
+                        <th scope="col" class="num">{{ t('reports.columns.count') }}</th>
+                        <th scope="col">{{ t('reports.numbering.columns.last') }}</th>
+                        <th scope="col">{{ t('reports.stock.columns.state') }}</th>
+                        <th scope="col">{{ t('reports.numbering.columns.detail') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (entry of family.series; track entry.series) {
+                        <tr>
+                          <td>{{ entry.series }}</td>
+                          <td class="num">{{ entry.count }}</td>
+                          <td>{{ entry.last }}</td>
+                          <td>
+                            @switch (entry.status) {
+                              @case ('ok') {
+                                <span class="badge badge-success">{{ t('reports.numbering.states.ok') }}</span>
+                              }
+                              @case ('dates') {
+                                <span class="badge badge-warning">{{ t('reports.numbering.states.dates') }}</span>
+                              }
+                              @default {
+                                <span class="badge badge-danger">{{ t('reports.numbering.states.gap') }}</span>
+                              }
+                            }
+                          </td>
+                          <td class="numbering-detail">{{ numberingDetail(entry) }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    } @else if (loading()) {
       <div class="card">
         <div class="state-block">
           <span class="spinner" aria-hidden="true"></span>

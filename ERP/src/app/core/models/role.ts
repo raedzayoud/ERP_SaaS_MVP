@@ -56,6 +56,7 @@ export const ALL_MODULES = [
   'invoicing',
   'reports',
   'ai-assistant',
+  'collab',
   'settings',
 ];
 
@@ -76,9 +77,10 @@ export const ROLE_MODULE_ACCESS: Record<Role, string[]> = {
     'payments',
     'reports',
     'ai-assistant',
+    'collab',
   ],
-  acheteur: ['apps', 'contacts', 'products', 'purchases', 'reports'],
-  magasinier: ['apps', 'products', 'stock'],
+  acheteur: ['apps', 'contacts', 'products', 'purchases', 'reports', 'collab'],
+  magasinier: ['apps', 'products', 'stock', 'collab'],
   comptable: [
     'apps',
     'invoices',
@@ -87,6 +89,7 @@ export const ROLE_MODULE_ACCESS: Record<Role, string[]> = {
     'accounting',
     'invoicing',
     'reports',
+    'collab',
   ],
   directeur: [
     'dashboard',
@@ -98,6 +101,7 @@ export const ROLE_MODULE_ACCESS: Record<Role, string[]> = {
     'purchases',
     'stock',
     'accounting',
+    'collab',
   ],
   'client-externe': [],
 };

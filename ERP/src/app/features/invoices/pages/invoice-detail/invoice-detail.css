@@ -138,3 +138,13 @@
     text-align: start;
   }
 }
+
+.payments-card {
+  margin-block-start: 16px;
+}
+
+.payments-card .doc-label {
+  font-size: 13px;
+  margin-block-end: 12px;
+}
+

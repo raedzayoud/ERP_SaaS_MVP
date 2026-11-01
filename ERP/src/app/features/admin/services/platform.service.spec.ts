@@ -86,7 +86,8 @@ describe('PlatformService (super-admin console)', () => {
 
   it('files the signup wizard request as approved with its KYC documents', async () => {
     const documents: SignupRequestDocuments = {
-      idCard: { kind: 'uploaded', fileName: 'id.jpg', sizeKb: 64, dataUrl: 'data:image/jpeg;base64,x' },
+      idCardRecto: { kind: 'uploaded', fileName: 'id.jpg', sizeKb: 64, dataUrl: 'data:image/jpeg;base64,x' },
+      idCardVerso: { kind: 'uploaded', fileName: 'id-verso.jpg', sizeKb: 62 },
       tradeRegister: { kind: 'uploaded', fileName: 'register.pdf', sizeKb: 320 },
       taxRegistration: { kind: 'submitted' },
     };
@@ -97,6 +98,7 @@ describe('PlatformService (super-admin console)', () => {
         subdomain: 'wizard',
         email: 'admin@wizard.tn',
         country: 'TN',
+        taxId: '1234567/A/M/003',
         planId: 'business',
         documents,
         decisionNote: 'Abonnement payé · justificatifs fournis',
@@ -109,7 +111,9 @@ describe('PlatformService (super-admin console)', () => {
     const signups = await firstValueFrom(service.getSignups());
     expect(signups.length).toBe(4);
     const wizard = signups.find((s) => s.subdomain === 'wizard')!;
-    expect(wizard.documents.idCard.kind).toBe('uploaded');
+      expect(wizard.documents.idCardRecto.kind).toBe('uploaded');
+      expect(wizard.documents.idCardVerso.kind).toBe('uploaded');
+      expect(wizard.taxId).toBe('1234567/A/M/003');
     expect(wizard.decisionNote).toContain('Abonnement payé');
 
     // The wizard request never waits for a manual approval

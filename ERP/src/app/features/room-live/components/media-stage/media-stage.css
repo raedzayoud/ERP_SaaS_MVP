@@ -1,0 +1,137 @@
+﻿.stage {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 10px;
+  height: 100%;
+}
+
+.notice {
+  padding: 10px 14px;
+  background: var(--gray-100, #f3f4f6);
+  color: var(--gray-600);
+  border-radius: var(--radius-md, 8px);
+  font-size: 13px;
+  text-align: center;
+}
+
+.tiles {
+  display: grid;
+  gap: 8px;
+  min-height: 200px;
+  padding: 0 8px;
+}
+
+@media (min-width: 640px) {
+  .tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1000px) {
+  .tiles {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.tile {
+  position: relative;
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  background: var(--gray-100, #f3f4f6);
+}
+
+.tile-video-wrap {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  background: #000;
+}
+
+.tile-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tile-empty {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.tile-kind {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  letter-spacing: 0.04em;
+}
+
+.tile-status {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.6);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.tile-camera-off { background: rgba(156, 163, 175, 0.8); }
+.tile-mic-off { background: rgba(107, 114, 128, 0.8); }
+
+.tile-remote {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.tile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ddd6fe;
+  color: #4c1d95;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tile-waiting {
+  font-size: 11px;
+  color: var(--gray-500);
+  text-align: center;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  flex-wrap: wrap;
+}
+
+.media-join {
+  flex: 1 1 200px;
+  min-width: 140px;
+}
+
+.media-error {
+  margin-left: auto;
+  font-size: 12px;
+  color: #b91c1c;
+  white-space: nowrap;
+}

@@ -20,7 +20,8 @@ const FLAGS: Record<string, string> = {
 
 /** Icon displayed on the simulated scan of each KYC document type. */
 const DOC_ICONS: Record<string, string> = {
-  idCard: '🪪',
+  idCardRecto: '🪪',
+  idCardVerso: '🪪',
   tradeRegister: '🏛️',
   taxRegistration: '🧮',
 };
@@ -35,8 +36,13 @@ export class AdminSignups {
   private readonly platformService = inject(PlatformService);
   private readonly transloco = inject(TranslocoService);
 
-  /** The three simulated KYC documents of the registration form. */
-  readonly documentKeys = ['idCard', 'tradeRegister', 'taxRegistration'] as const;
+  /** KYC documents expected from the registration form. */
+  readonly documentKeys = [
+    'idCardRecto',
+    'idCardVerso',
+    'tradeRegister',
+    'taxRegistration',
+  ] as const;
 
   signups = signal<SignupRequest[]>([]);
   loading = signal(true);
@@ -142,7 +148,9 @@ export class AdminSignups {
 
   /** The document record of the open viewer slot (undefined when unknown). */
   docEntry(view: { signup: SignupRequest; doc: string }): KycDocument | undefined {
-    return view.signup.documents[view.doc as 'idCard' | 'tradeRegister' | 'taxRegistration'];
+    return view.signup.documents[
+      view.doc as 'idCardRecto' | 'idCardVerso' | 'tradeRegister' | 'taxRegistration'
+    ];
   }
 
   statusClass(status: string): string {
@@ -155,6 +163,7 @@ export class AdminSignups {
     return this.transloco.translate(key, params);
   }
 
+  /** Auto-clears the transient confirmation message. */
   private clearLater(): void {
     setTimeout(() => this.message.set(''), 3000);
   }

@@ -223,7 +223,13 @@ export class TenantService {
     const data = safeStorage()?.getItem(this.storageKey);
     if (data) {
       try {
-        return JSON.parse(data) as Tenant;
+        const tenant = JSON.parse(data) as Tenant;
+        // Migration: workspaces created before Rooms Live get the module.
+        if (!tenant.enabledModules.includes('collab')) {
+          tenant.enabledModules = [...tenant.enabledModules, 'collab'];
+          this.saveTenant(tenant);
+        }
+        return tenant;
       } catch {
         return null;
       }

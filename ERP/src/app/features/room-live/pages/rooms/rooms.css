@@ -1,0 +1,159 @@
+.rooms-page {
+  display: grid;
+  gap: 16px;
+}
+
+.search-input {
+  max-width: 320px;
+}
+
+.room-create {
+  display: grid;
+  gap: 14px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.form-field {
+  display: grid;
+  gap: 6px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.form-error {
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.invite-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid var(--gray-300);
+  background: white;
+  color: var(--gray-800);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chip-active {
+  background: #292524;
+  border-color: #292524;
+  color: white;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rooms-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .rooms-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1000px) {
+  .rooms-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.room-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--gray-200);
+  background: white;
+  transition: border-color 0.15s ease;
+}
+
+.room-card:hover {
+  border-color: #a78bfa;
+}
+
+.room-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.room-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.badge-secret {
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.room-card-doc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--gray-700);
+}
+
+.doc-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray-500);
+}
+
+.room-card-last {
+  margin: 0;
+  font-size: 13px;
+  color: var(--gray-600);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.room-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.rooms-empty {
+  text-align: center;
+  color: var(--gray-500);
+}

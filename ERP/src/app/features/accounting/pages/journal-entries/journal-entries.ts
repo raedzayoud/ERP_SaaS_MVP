@@ -1,11 +1,11 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
-import { JournalCode, JournalEntry, JOURNAL_CODES } from '../../models/journal';
+import { JournalCode, JournalEntry, JOURNAL_CODES, CHART_OF_ACCOUNTS } from '../../models/journal';
 import { AccountingService } from '../../services/accounting.service';
 
 @Component({
@@ -16,10 +16,12 @@ import { AccountingService } from '../../services/accounting.service';
 })
 export class JournalEntries {
   private readonly service = inject(AccountingService);
+  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly pageSize = 10;
   readonly journals = JOURNAL_CODES;
+  readonly accounts = CHART_OF_ACCOUNTS;
 
   rows = signal<JournalEntry[]>([]);
   total = signal(0);
@@ -30,6 +32,7 @@ export class JournalEntries {
   searchControl = new FormControl('', { nonNullable: true });
   search = signal('');
   journalFilter = signal<JournalCode | ''>('');
+  accountFilter = signal('');
   fromFilter = signal('');
   toFilter = signal('');
 
@@ -40,11 +43,16 @@ export class JournalEntries {
     () =>
       this.search() !== '' ||
       this.journalFilter() !== '' ||
+      this.accountFilter() !== '' ||
       this.fromFilter() !== '' ||
       this.toFilter() !== '',
   );
 
   constructor() {
+    // Deep link from the chart of accounts: /accounting?account=411000
+    const presetAccount = this.route.snapshot.queryParamMap.get('account') ?? '';
+    if (presetAccount) this.accountFilter.set(presetAccount);
+
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe((value) => {
@@ -66,6 +74,7 @@ export class JournalEntries {
         size: this.pageSize,
         search: this.search() || undefined,
         journal: this.journalFilter() || undefined,
+        accountCode: this.accountFilter() || undefined,
         from: this.fromFilter() || undefined,
         to: this.toFilter() || undefined,
       })
@@ -97,6 +106,12 @@ export class JournalEntries {
     this.load();
   }
 
+  onAccountFilter(event: Event): void {
+    this.accountFilter.set((event.target as HTMLSelectElement).value);
+    this.page.set(0);
+    this.load();
+  }
+
   onFromFilter(event: Event): void {
     this.fromFilter.set((event.target as HTMLSelectElement).value);
     this.page.set(0);
@@ -112,6 +127,7 @@ export class JournalEntries {
   clearFilters(): void {
     this.searchControl.setValue('');
     this.journalFilter.set('');
+    this.accountFilter.set('');
     this.fromFilter.set('');
     this.toFilter.set('');
     this.page.set(0);

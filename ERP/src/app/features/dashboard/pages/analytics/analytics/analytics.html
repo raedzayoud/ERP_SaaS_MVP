@@ -1,0 +1,93 @@
+<ng-container *transloco="let t">
+  <div class="analytics-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('titles.analytics') }}</h1>
+        <p class="page-subtitle">{{ t('descriptions.analytics') }}</p>
+      </div>
+      <div class="page-actions period-actions">
+        @for (option of periods; track option) {
+          <button
+            type="button"
+            class="btn"
+            [class.btn-primary]="isPeriod(option)"
+            [class.btn-secondary]="!isPeriod(option)"
+            (click)="switchPeriod(option)"
+          >
+            {{ t('analytics.periods.' + option) }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="card">
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="card">
+        <div class="state-block">
+          <p class="state-title">{{ t('analytics.loadError') }}</p>
+          <p class="state-text">{{ t('analytics.loadErrorHint') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="load()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      </div>
+    } @else if (data(); as report) {
+      <p class="analytics-range">
+        {{ rangeFrom() | date: 'mediumDate' }} → {{ rangeTo() | date: 'mediumDate' }}
+      </p>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <p class="kpi-label">{{ t('analytics.kpi.sales') }}</p>
+          <p class="kpi-value">{{ report.totalSales | currency: currency() }}</p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-label">{{ t('analytics.kpi.collected') }}</p>
+          <p class="kpi-value">{{ collected() | currency: currency() }}</p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-label">{{ t('analytics.kpi.outstanding') }}</p>
+          <p class="kpi-value">{{ report.outstanding | currency: currency() }}</p>
+        </div>
+        <div class="kpi-card kpi-danger">
+          <p class="kpi-label">{{ t('analytics.kpi.overdue') }}</p>
+          <p class="kpi-value">{{ report.overdue | currency: currency() }}</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">{{ t('analytics.charts.salesTitle') }}</h2>
+        <div class="chart-box">
+          <app-chart-canvas type="line" [data]="salesChartData()" [options]="lineOptions" />
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">{{ t('analytics.charts.customersTitle') }}</h2>
+        <div class="chart-box chart-box-tall">
+          <app-chart-canvas type="bar" [data]="topCustomersData()" [options]="columnsOptions" />
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">{{ t('analytics.charts.paymentsTitle') }}</h2>
+        <div class="chart-box">
+          <app-chart-canvas type="doughnut" [data]="paymentsChartData()" [options]="donutOptions" />
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">{{ t('analytics.charts.flowsTitle') }}</h2>
+        <div class="chart-box">
+          <app-chart-canvas type="bar" [data]="flowsChartData()" [options]="stackedOptions" />
+        </div>
+      </div>
+    }
+  </div>
+</ng-container>

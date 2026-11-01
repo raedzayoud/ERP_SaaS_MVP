@@ -269,6 +269,24 @@
       @if (state.step() === 3) {
         <div class="step-content">
           <p class="step-intro">{{ t('signup.docStep.intro') }}</p>
+
+          <div class="form-group doc-taxid-group">
+            <label class="form-label" for="signup-taxid">
+              {{ t('signup.docStep.taxId.label') }}
+            </label>
+            <input
+              id="signup-taxid"
+              type="text"
+              class="form-control"
+              [placeholder]="t('signup.docStep.taxId.placeholder')"
+              [value]="state.taxId()"
+              (input)="state.onTaxIdInput($event)"
+            />
+            <div class="field-hint">
+              {{ t('signup.docStep.taxId.hint') }}
+            </div>
+          </div>
+
           <div class="doc-uploads">
             @for (slot of state.docSlots; track slot) {
               <div class="doc-upload" [class.filled]="state.uploadedDocs()[slot]">
@@ -513,7 +531,7 @@
             <button
               class="btn btn-primary"
               (click)="state.next()"
-              [disabled]="!state.docsComplete()"
+              [disabled]="!state.step3Complete()"
             >
               {{ t('signup.actions.sendCode') }}
             </button>

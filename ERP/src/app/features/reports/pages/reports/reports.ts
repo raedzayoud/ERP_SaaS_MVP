@@ -7,16 +7,17 @@ import { forkJoin } from 'rxjs';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { addDaysIso, todayIso } from '../../../../shared/utils/money';
 import {
-  NumberedDoc,
   NumberingFamily,
+  NumberingSeries,
   analyzeNumbering,
 } from '../../../../shared/utils/numbering-compliance';
+import { Invoice } from '../../../invoices/models/invoice';
+import { InvoiceService } from '../../../invoices/services/invoice.service';
 import { ReportData } from '../../models/report';
 import { ReportsService } from '../../services/reports.service';
 import { ReportPdfService } from '../../services/report-pdf.service';
 import { downloadCsv } from '../../utils/export-csv';
 import { ChartCanvas } from '../../components/chart-canvas/chart-canvas';
-import { InvoiceService } from '../../../invoices/services/invoice.service';
 import { SalesOrderService } from '../../../sales/services/sales-order.service';
 import { DeliveryNoteService } from '../../../sales/services/delivery-note.service';
 import { PurchaseService } from '../../../purchases/services/purchase.service';
@@ -186,7 +187,7 @@ export class Reports {
     forkJoin({
       invoices: this.invoices.getInvoices({ page: 0, size: 1000 }),
       salesOrders: this.salesOrders.getOrders({ page: 0, size: 1000 }),
-      deliveries: this.deliveries.getDeliveries({ page: 0, size: 1000 }),
+      deliveries: this.deliveries.getDeliveries({}),
       purchaseOrders: this.purchases.getOrders({ page: 0, size: 1000 }),
       bills: this.supplierBills.getBills({ page: 0, size: 1000 }),
     })
@@ -196,52 +197,36 @@ export class Reports {
           const numberedInvoices = invoices.items.filter(
             (invoice) => invoice.number !== null,
           );
+          const invoiceDocs = (kind: Invoice['kind']) =>
+            numberedInvoices
+              .filter((invoice) => invoice.kind === kind)
+              .map((invoice) => ({ number: invoice.number ?? '', date: invoice.issueDate }));
           const families: NumberingFamily[] = [
             {
               familyKey: 'reports.numbering.families.invoices',
-              series: analyzeNumbering(
-                this.toDocs(
-                  numberedInvoices
-                    .filter((invoice) => invoice.kind === 'invoice')
-                    .map((invoice) => ({ number: invoice.number ?? '', date: invoice.issueDate })),
-                ),
-              ),
+              series: analyzeNumbering(invoiceDocs('invoice')),
             },
             {
               familyKey: 'reports.numbering.families.credits',
-              series: analyzeNumbering(
-                this.toDocs(
-                  numberedInvoices
-                    .filter((invoice) => invoice.kind === 'credit_note')
-                    .map((invoice) => ({ number: invoice.number ?? '', date: invoice.issueDate })),
-                ),
-              ),
+              series: analyzeNumbering(invoiceDocs('credit_note')),
             },
             {
               familyKey: 'reports.numbering.families.quotes',
-              series: analyzeNumbering(
-                this.toDocs(
-                  numberedInvoices
-                    .filter((invoice) => invoice.kind === 'quote')
-                    .map((invoice) => ({ number: invoice.number ?? '', date: invoice.issueDate })),
-                ),
-              ),
+              series: analyzeNumbering(invoiceDocs('quote')),
             },
             {
               familyKey: 'reports.numbering.families.salesOrders',
               series: analyzeNumbering(
-                this.toDocs(
-                  salesOrders.items
-                    .filter((order) => order.number !== null)
-                    .map((order) => ({ number: order.number ?? '', date: order.orderDate })),
-                ),
+                salesOrders.items
+                  .filter((order) => order.number !== null)
+                  .map((order) => ({ number: order.number ?? '', date: order.orderDate })),
               ),
             },
             {
               familyKey: 'reports.numbering.families.deliveries',
               series: analyzeNumbering(
                 deliveries.items.map((note) => ({
-                  number: note.number,
+                  number: note.deliveryNumber,
                   date: note.deliveryDate,
                 })),
               ),
@@ -249,11 +234,9 @@ export class Reports {
             {
               familyKey: 'reports.numbering.families.purchaseOrders',
               series: analyzeNumbering(
-                this.toDocs(
-                  purchaseOrders.items
-                    .filter((order) => order.number !== null)
-                    .map((order) => ({ number: order.number ?? '', date: order.orderDate })),
-                ),
+                purchaseOrders.items
+                  .filter((order) => order.number !== null)
+                  .map((order) => ({ number: order.number ?? '', date: order.orderDate })),
               ),
             },
             {
@@ -278,9 +261,27 @@ export class Reports {
       });
   }
 
-  /** One doc per numbered entry (the analyzer skips blank numbers). */
-  private toDocs(entries: { number: string; date: string }[]): NumberedDoc[] {
-    return entries;
+  /** Readable problem summary of one series (used by the CSV and the table). */
+  numberingDetail(entry: NumberingSeries): string {
+    const t = (key: string, params?: Record<string, unknown>) =>
+      this.transloco.translate(key, params);
+    const parts: string[] = [];
+
+    if (entry.gaps.length > 0) {
+      parts.push(t('reports.numbering.detail.missing', { numbers: entry.gaps.join(', ') }));
+    }
+    if (entry.duplicates.length > 0) {
+      parts.push(t('reports.numbering.detail.duplicated', { numbers: entry.duplicates.join(', ') }));
+    }
+    if (entry.dateBreak) {
+      parts.push(
+        t('reports.numbering.detail.chrono', {
+          number: entry.dateBreak.number,
+          previous: entry.dateBreak.previous,
+        }),
+      );
+    }
+    return parts.join(' ');
   }
 
   async exportPdf(): Promise<void> {
@@ -344,6 +345,20 @@ export class Reports {
         [t('reports.columns.customer'), t('reports.columns.count'), t('reports.columns.revenue')],
         ...data.customers.map((row) => [row.name, row.invoices, row.revenue]),
       );
+    } else if (this.tab() === 'numbering') {
+      rows.push([t('reports.numbering.title')]);
+      for (const family of this.numbering()) {
+        rows.push([t(family.familyKey)]);
+        for (const entry of family.series) {
+          rows.push([
+            entry.series,
+            entry.count,
+            entry.last,
+            t('reports.numbering.states.' + entry.status),
+            this.numberingDetail(entry),
+          ]);
+        }
+      }
     } else {
       rows.push(
         [

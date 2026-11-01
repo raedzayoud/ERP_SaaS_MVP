@@ -114,3 +114,23 @@
   color: #ffffff;
   font-weight: 600;
 }
+
+.numbering-family {
+  margin-block-end: 24px;
+}
+
+.numbering-family:last-child {
+  margin-block-end: 0;
+}
+
+.numbering-family-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-block-end: 8px;
+}
+
+.numbering-detail {
+  font-size: 12px;
+  color: var(--gray-600);
+}

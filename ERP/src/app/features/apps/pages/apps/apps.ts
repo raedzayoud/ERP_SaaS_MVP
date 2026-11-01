@@ -26,6 +26,7 @@ const APP_ROUTES: Record<string, string> = {
   invoicing: '/invoicing',
   reports: '/reports',
   'ai-assistant': '/ai-assistant',
+  'room-live': '/rooms',
 };
 
 @Component({

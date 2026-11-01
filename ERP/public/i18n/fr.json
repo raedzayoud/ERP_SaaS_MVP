@@ -78,7 +78,9 @@
     "salesDashboard": "Tableau de bord ventes",
     "purchaseDashboard": "Tableau de bord achats",
     "warehouseDashboard": "Tableau de bord stock",
-    "accountingDashboard": "Tableau de bord comptabilité"
+    "accountingDashboard": "Tableau de bord comptabilité",
+    "analytics": "Analytique BI",
+    "rooms": "Salons live"
   },
   "descriptions": {
     "contacts": "Les sociétés et les personnes avec lesquelles vous travaillez.",
@@ -97,7 +99,9 @@
     "leads": "Suivez les prospects avant leur qualification.",
     "opportunities": "Suivez vos affaires dans le pipeline de vente.",
     "reminders": "Rappels et relances à traiter.",
-    "supplierBills": "Enregistrez et payez les factures de vos fournisseurs"
+    "supplierBills": "Enregistrez et payez les factures de vos fournisseurs",
+    "analytics": "Business intelligence sur l'ensemble du PGI.",
+    "rooms": "Salons de discussion avec visio et partage de documents."
   },
   "navbar": {
     "toggleSidebar": "Afficher ou masquer le menu",
@@ -115,7 +119,8 @@
       "inventory": "Inventaire",
       "finance": "Finance",
       "tools": "Outils",
-      "workspace": "Espace de travail"
+      "workspace": "Espace de travail",
+      "collaboration": "Collaboration"
     },
     "items": {
       "dashboard": "Tableau de bord",
@@ -136,7 +141,9 @@
       "leads": "Pistes",
       "opportunities": "Opportunités",
       "reminders": "Rappels",
-      "supplierBills": "Achats fournisseurs"
+      "supplierBills": "Achats fournisseurs",
+      "analytics": "Analytique BI",
+      "rooms": "Salons live"
     }
   },
   "placeholder": {
@@ -510,7 +517,9 @@
       "creditLimitExceeded": "Le total des avoirs de cette facture ne peut pas dépasser son montant.",
       "insufficientStock": "Stock insuffisant dans l’entrepôt principal pour confirmer cette facture.",
       "notQuote": "Ce document n'est pas un devis",
-      "quoteAlreadyConverted": "Ce devis a déjà été converti en facture"
+      "quoteAlreadyConverted": "Ce devis a déjà été converti en facture",
+      "missingSellerTaxId": "Une facture validée doit porter le numéro fiscal du vendeur. Renseignez-le dans Paramètres → Société.",
+      "numberConflict": "Ce numéro est déjà utilisé par un autre document validé."
     },
     "pdf": {
       "billTo": "Facturé à",
@@ -527,6 +536,14 @@
       "colVatRate": "TVA %",
       "notes": "Notes",
       "page": "Page"
+    },
+    "mentions": {
+      "title": "Mentions obligatoires",
+      "penalties": "Pénalités de retard : 1,5 % par mois du solde restant dû, exigibles immédiatement.",
+      "noVat": "TVA non applicable."
+    },
+    "payments": {
+      "title": "Paiements clients reçus"
     }
   },
   "purchases": {
@@ -1161,7 +1178,8 @@
       "from": "Du",
       "to": "Au",
       "empty": "Aucune écriture trouvée.",
-      "page": "Page"
+      "page": "Page",
+      "allAccounts": "Tous les comptes"
     },
     "detail": {
       "title": "Écriture comptable",
@@ -1178,7 +1196,8 @@
     "accounts": {
       "title": "Plan comptable",
       "subtitle": "Comptes standards et balance générale.",
-      "totalRow": "Total"
+      "totalRow": "Total",
+      "ledgerHint": "Cliquez sur un code de compte pour ouvrir son grand livre dans le journal."
     }
   },
   "landing": {
@@ -1348,7 +1367,8 @@
       "overview": "Vue générale",
       "aging": "Factures par ancienneté",
       "customers": "Meilleurs clients",
-      "stock": "Stock"
+      "stock": "Stock",
+      "numbering": "Numérotation légale"
     },
     "aging": {
       "title": "Factures fournisseurs par ancienneté",
@@ -1377,6 +1397,36 @@
       },
       "low": "Faible",
       "ok": "OK"
+    },
+    "numbering": {
+      "title": "Contrôle de la numérotation",
+      "hint": "Chaque série doit démarrer à 0001, sans doublon, avec des dates qui suivent la numérotation. Les brouillons sans numéro sont ignorés.",
+      "none": "Aucun document numéroté pour le moment.",
+      "loadError": "Impossible de charger les familles de documents.",
+      "families": {
+        "invoices": "Factures de vente",
+        "credits": "Avoirs",
+        "quotes": "Devis",
+        "salesOrders": "Commandes de vente",
+        "deliveries": "Bons de livraison",
+        "purchaseOrders": "Commandes d’achat",
+        "supplierBills": "Factures fournisseurs"
+      },
+      "states": {
+        "ok": "Conforme",
+        "gap": "Trous ou doublons",
+        "dates": "Dates non chronologiques"
+      },
+      "columns": {
+        "series": "Série",
+        "last": "Dernier numéro",
+        "detail": "Détail"
+      },
+      "detail": {
+        "missing": "Manquants : {{numbers}}",
+        "duplicated": "Doublons : {{numbers}}",
+        "chrono": "Dates non chronologiques : {{number}} vient après {{previous}}."
+      }
     }
   },
   "invoicing": {
@@ -1662,9 +1712,10 @@
         "rejected": "Rejetées"
       },
       "doc": {
-        "idCard": "CIN",
         "tradeRegister": "Registre de commerce",
-        "taxRegistration": "Matricule fiscal"
+        "taxRegistration": "Matricule fiscal",
+        "idCardRecto": "CIN – recto",
+        "idCardVerso": "CIN – verso"
       },
       "rejectHint": "Cette demande reste dans l'historique avec votre note ; aucune entreprise n'est créée.",
       "approvedTenant": "Entreprise en essaai créée",
@@ -1673,7 +1724,8 @@
         "close": "Fermer",
         "simulated": "Scan simulé (démo) — la vraie image arrivera avec le dépôt de fichiers.",
         "uploadedFile": "Fichier fourni : {{name}} ({{size}} Ko)"
-      }
+      },
+      "taxId": "Matricule fiscal"
     },
     "payments": {
       "subtitle": "Relevés mensuels d'abonnement de chaque entreprise.",
@@ -1753,6 +1805,10 @@
       "ai-assistant": {
         "label": "Assistant IA",
         "description": "Chatbot RAG et extraction de factures"
+      },
+      "room-live": {
+        "label": "Rooms Live",
+        "description": "Salons de chat, visio et partage de fichiers"
       }
     }
   },
@@ -2032,24 +2088,34 @@
       "sizeKb": "{{size}} Ko",
       "hint": "PNG, JPG ou PDF · {{size}} Ko max par document. Les images légères affichent un aperçu réel dans la console super-admin.",
       "errors": {
-        "missing": "Ajoutez les trois documents pour continuer.",
+        "missing": "Ajoutez tous les documents pour continuer.",
         "tooLarge": "Fichier trop volumineux (max {{size}} Ko).",
         "type": "Formats acceptés : PNG, JPG, PDF.",
-        "read": "La lecture du fichier a échoué, veuillez réessayer."
+        "read": "La lecture du fichier a échoué, veuillez réessayer.",
+        "taxIdMissing": "Saisissez le matricule fiscal (au moins 5 caractères)."
       },
       "docs": {
-        "idCard": {
-          "label": "f",
-          "hint": "r"
+        "idCardRecto": {
+          "label": "CIN – recto",
+          "hint": "Carte d'identité nationale, recto"
+        },
+        "idCardVerso": {
+          "label": "CIN – verso",
+          "hint": "Carte d'identité nationale, verso"
         },
         "tradeRegister": {
-          "label": "f",
-          "hint": "r"
+          "label": "Registre de commerce",
+          "hint": "Extrait du registre de commerce"
         },
         "taxRegistration": {
-          "label": "f",
-          "hint": "r"
+          "label": "Patente / déclaration fiscale",
+          "hint": "Déclaration de patente ou attestation fiscale"
         }
+      },
+      "taxId": {
+        "label": "Matricule fiscal",
+        "placeholder": "1234567/A/M/000",
+        "hint": "Il figure sur votre patente ou votre extrait de registre de commerce."
       }
     },
     "request": {
@@ -2325,7 +2391,8 @@
     "invoicing": "Facturation",
     "reports": "Rapports",
     "ai-assistant": "Assistant IA",
-    "settings": "Réglages"
+    "settings": "Réglages",
+    "collab": "Salons live"
   },
   "rbac": {
     "actions": {
@@ -2363,6 +2430,135 @@
       "mismatch": "Les deux mots de passe ne correspondent pas.",
       "minLength": "Le mot de passe doit contenir au moins 6 caractères.",
       "submit": "Enregistrer et continuer"
+    }
+  },
+  "analytics": {
+    "periods": {
+      "month": "Mois",
+      "quarter": "Trimestre",
+      "year": "Année"
+    },
+    "loadError": "Impossible de charger l'analytique.",
+    "loadErrorHint": "Vérifiez la connexion puis réessayez.",
+    "kpi": {
+      "sales": "Ventes de la période",
+      "collected": "Encaissé des clients",
+      "outstanding": "Créances à encaisser",
+      "overdue": "Créances en retard"
+    },
+    "charts": {
+      "sales": "Ventes",
+      "salesTitle": "Ventes par mois",
+      "customers": "Chiffre d'affaires",
+      "customersTitle": "Top 5 clients",
+      "payments": "Paiements",
+      "paymentsTitle": "Paiements par mode",
+      "flowsTitle": "Ventes vs dépenses",
+      "flows": {
+        "sales": "Ventes",
+        "expenses": "Dépenses"
+      }
+    }
+  },
+  "roomlive": {
+    "list": {
+      "newRoom": "Nouveau salon live",
+      "searchPlaceholder": "Rechercher par titre ou document…",
+      "empty": "Aucun salon live. Créez-en un pour commencer à collaborer."
+    },
+    "create": {
+      "title": "Créer un salon live",
+      "titleLabel": "Titre du salon",
+      "titlePlaceholder": "ex. Suivi Oasis",
+      "accessLabel": "Qui peut entrer ?",
+      "linkedDocLabel": "Document lié (optionnel)",
+      "linkedDocPlaceholder": "ex. FA-2026-031",
+      "inviteHint": "Invitez les membres de l'espace de travail :",
+      "submit": "Créer le salon"
+    },
+    "access": {
+      "members": "Ouvert aux membres",
+      "invite-only": "Privé (sur invitation)"
+    },
+    "status": {
+      "active": "En direct",
+      "archived": "Archivé"
+    },
+    "card": {
+      "linkedDoc": "Document",
+      "noMessagesYet": "Aucun message pour l'instant."
+    },
+    "room": {
+      "back": "Salons",
+      "notFound": "Ce salon n'existe pas.",
+      "privateTitle": "Salon privé",
+      "privateHint": "Seuls les participants invités peuvent entrer dans ce salon.",
+      "joinHint": "Vous visitez ce salon ouvert.",
+      "join": "Entrer dans le salon",
+      "leave": "Quitter",
+      "archivedBanner": "Ce salon est archivé : l'historique reste visible, l'écriture est désactivée.",
+      "reopen": "Réactiver le salon",
+      "backToRooms": "Retour aux salons"
+    },
+    "chat": {
+      "title": "Chat en direct",
+      "placeholder": "Écrire un message…",
+      "send": "Envoyer",
+      "empty": "La conversation démarre avec votre premier message."
+    },
+    "participants": {
+      "title": "Participants",
+      "you": "vous",
+      "inviteLabel": "Ajouter un membre",
+      "invitePlaceholder": "Choisir un membre…",
+      "add": "Ajouter",
+      "remove": "Retirer",
+      "block": "Bloquer",
+      "blocked": "Utilisateurs bloqués :",
+      "roleLabel": "Changer le rôle"
+    },
+    "roles": {
+      "host": "Hôte",
+      "participant": "Participant",
+      "viewer": "Observateur"
+    },
+    "errors": {
+      "titleLength": "Le titre doit contenir au moins 3 caractères."
+    },
+    "media": {
+      "you": "Vous",
+      "waiting": "En attente de la vidéo…",
+      "notStarted": "Session en direct non démarrée",
+      "join": "Démarrer la session",
+      "leave": "Terminer la session",
+      "micOn": "Couper le micro",
+      "micOff": "Activer le micro",
+      "cameraOn": "Éteindre la caméra",
+      "cameraOff": "Allumer la caméra",
+      "shareScreen": "Partager l'écran",
+      "shareShort": "Écran",
+      "errors": {
+        "unsupported": "L'audio/la vidéo en direct n'est pas disponible dans ce navigateur.",
+        "denied": "L'accès à la caméra ou au micro a été refusé."
+      }
+    },
+    "files": {
+      "attach": "Joindre un fichier",
+      "remove": "Retirer le fichier",
+      "removed": "Fichier retiré",
+      "errors": {
+        "invalid": "Fichier impossible à joindre (max 2 Mo, images ou PDF)."
+      }
+    },
+    "ai": {
+      "title": "Résumé IA",
+      "close": "Fermer le résumé",
+      "messages": "Messages :",
+      "attachments": "Pièces jointes :",
+      "highlights": "Points clés",
+      "decisions": "Décisions prises",
+      "actions": "Actions à réaliser",
+      "empty": "Rien de détecté pour le moment."
     }
   }
 }

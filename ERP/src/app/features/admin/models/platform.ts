@@ -5,6 +5,8 @@ export interface PlatformTenant {
   companyName: string;
   subdomain: string;
   email: string;
+  /** Tax-registration number (matricule fiscal), kept from signup approval. */
+  taxId?: string;
   planId: string;
   status: PlatformTenantStatus;
   usersCount: number;
@@ -37,7 +39,9 @@ export type KycDocument =
   | { kind: 'uploaded'; fileName: string; sizeKb: number; dataUrl?: string };
 
 export type SignupRequestDocuments = {
-  idCard: KycDocument;
+  /** National identity card, both sides. */
+  idCardRecto: KycDocument;
+  idCardVerso: KycDocument;
   tradeRegister: KycDocument;
   taxRegistration: KycDocument;
 };
@@ -48,6 +52,8 @@ export interface SignupRequest {
   subdomain: string;
   email: string;
   country: string;
+  /** Tax-registration number typed at signup (matricule fiscal). */
+  taxId: string;
   planId: string;
   status: SignupStatus;
   /** KYC documents requested at registration. */

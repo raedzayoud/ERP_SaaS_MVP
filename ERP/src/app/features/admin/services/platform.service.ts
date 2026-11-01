@@ -99,9 +99,10 @@ const SEED_SIGNUPS: SignupRequest[] = [
     subdomain: 'falcon',
     email: 'contact@falcon.tn',
     country: 'TN',
+    taxId: '12034567/A/M/000',
     planId: 'business',
     status: 'pending',
-    documents: { idCard: { kind: 'submitted' }, tradeRegister: { kind: 'submitted' }, taxRegistration: { kind: 'submitted' } },
+    documents: { idCardRecto: { kind: 'submitted' }, idCardVerso: { kind: 'submitted' }, tradeRegister: { kind: 'submitted' }, taxRegistration: { kind: 'submitted' } },
     createdAt: '2026-10-20T09:00:00.000Z',
   },
   {
@@ -110,9 +111,10 @@ const SEED_SIGNUPS: SignupRequest[] = [
     subdomain: 'oasis',
     email: 'info@oasis.tn',
     country: 'TN',
+    taxId: '0987654/B/M/001',
     planId: 'starter',
     status: 'pending',
-    documents: { idCard: { kind: 'submitted' }, tradeRegister: { kind: 'submitted' }, taxRegistration: { kind: 'submitted' } },
+    documents: { idCardRecto: { kind: 'submitted' }, idCardVerso: { kind: 'submitted' }, tradeRegister: { kind: 'submitted' }, taxRegistration: { kind: 'submitted' } },
     createdAt: '2026-10-24T15:30:00.000Z',
   },
   {
@@ -121,9 +123,10 @@ const SEED_SIGNUPS: SignupRequest[] = [
     subdomain: 'silk',
     email: 'sales@silk.ma',
     country: 'MA',
+    taxId: '5432101/C/M/002',
     planId: 'enterprise',
     status: 'pending',
-    documents: { idCard: { kind: 'submitted' }, tradeRegister: { kind: 'submitted' }, taxRegistration: { kind: 'submitted' } },
+    documents: { idCardRecto: { kind: 'submitted' }, idCardVerso: { kind: 'submitted' }, tradeRegister: { kind: 'submitted' }, taxRegistration: { kind: 'submitted' } },
     createdAt: '2026-10-26T11:45:00.000Z',
   },
 ];
@@ -186,7 +189,7 @@ export class PlatformService {
     );
   }
 
-  // ── Signups & KYC ─────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Signups & KYC Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   getSignups(): Observable<SignupRequest[]> {
     return timer(LATENCY_MS).pipe(map(() => this.signups()));
@@ -201,6 +204,7 @@ export class PlatformService {
     subdomain: string;
     email: string;
     country: string;
+    taxId: string;
     planId: string;
     documents: SignupRequestDocuments;
     decisionNote: string;
@@ -234,6 +238,7 @@ export class PlatformService {
           companyName: signup.companyName,
           subdomain: signup.subdomain,
           email: signup.email,
+          taxId: signup.taxId,
           planId: signup.planId,
           status: 'trial',
           usersCount: 1,
@@ -265,7 +270,7 @@ export class PlatformService {
             ...signup,
             status: 'rejected' as SignupStatus,
             decidedAt: new Date().toISOString(),
-            decisionNote: note.trim() || '—',
+            decisionNote: note.trim() || 'Ã¢â‚¬â€',
           },
           'rejected',
         );
@@ -273,7 +278,7 @@ export class PlatformService {
     );
   }
 
-  // ── Subscription payments ─────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Subscription payments Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   getPayments(): Observable<SubscriptionPayment[]> {
     return timer(LATENCY_MS).pipe(map(() => this.payments()));
@@ -293,7 +298,7 @@ export class PlatformService {
     );
   }
 
-  // ── Price catalog ─────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Price catalog Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   /** New price catalog for the super-admin console (single function). */
   updatePlanPrice(planId: string, priceMonthly: number, priceAnnual: number): Observable<Plan> {
@@ -315,7 +320,7 @@ export class PlatformService {
     );
   }
 
-  // ── Internals ─────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Internals Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   private replaceTenant(updated: PlatformTenant): PlatformTenant {
     this.items.update((list) => list.map((t) => (t.id === updated.id ? updated : t)));

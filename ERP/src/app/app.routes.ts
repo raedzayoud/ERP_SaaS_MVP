@@ -682,6 +682,44 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'analytics',
+        canActivate: [roleGuard],
+        loadComponent: () =>
+          import('./features/dashboard/pages/analytics/analytics/analytics').then(
+            (m) => m.Analytics,
+          ),
+        data: {
+          title: 'titles.analytics',
+          description: 'descriptions.analytics',
+          icon: '📊',
+          roles: ['admin-entreprise', 'directeur', 'comptable'],
+        },
+      },
+      {
+        path: 'rooms',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/room-live/pages/rooms/rooms').then((m) => m.Rooms),
+        data: {
+          title: 'titles.rooms',
+          description: 'descriptions.rooms',
+          icon: '💬',
+          moduleId: 'collab',
+        },
+      },
+      {
+        path: 'rooms/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/room-live/pages/room/room').then((m) => m.RoomPage),
+        data: {
+          title: 'titles.rooms',
+          description: 'descriptions.rooms',
+          icon: '💬',
+          moduleId: 'collab',
+        },
+      },
+      {
         path: 'ai-assistant',
         canActivate: [moduleGuard],
         loadComponent: () =>

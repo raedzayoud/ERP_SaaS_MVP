@@ -155,4 +155,19 @@ describe('AccountingService', () => {
     ).toBe(true);
     expect(range.total).toBeGreaterThan(0);
   });
+
+  it('builds the ledger of one account only', async () => {
+    const all = await firstValueFrom(service.getJournalEntries({ page: 0, size: 500 }));
+    const ledger = await firstValueFrom(
+      service.getJournalEntries({ page: 0, size: 500, accountCode: '411000' }),
+    );
+
+    expect(ledger.total).toBeGreaterThan(0);
+    expect(
+      ledger.items.every((entry) =>
+        entry.lines.some((line) => line.accountCode === '411000'),
+      ),
+    ).toBe(true);
+    expect(ledger.total).toBeLessThan(all.total);
+  });
 });

@@ -41,7 +41,11 @@
             <tbody>
               @for (account of accounts(); track account.code) {
                 <tr>
-                  <td>{{ account.code }}</td>
+                  <td>
+                    <a [routerLink]="['/accounting']" [queryParams]="{ account: account.code }">
+                      {{ account.code }}
+                    </a>
+                  </td>
                   <td>{{ t('accounting.accountNames.' + account.code) }}</td>
                   <td>
                     <span class="badge badge-secondary">
@@ -52,21 +56,21 @@
                     @if (balanceRow(account.code); as row) {
                       {{ row.debit | currency: currency() }}
                     } @else {
-                      â€”
+                      —
                     }
                   </td>
                   <td class="num">
                     @if (balanceRow(account.code); as row) {
                       {{ row.credit | currency: currency() }}
                     } @else {
-                      â€”
+                      —
                     }
                   </td>
                   <td class="num">
                     @if (balanceRow(account.code); as row) {
                       {{ row.balance | currency: currency() }}
                     } @else {
-                      â€”
+                      —
                     }
                   </td>
                 </tr>
@@ -84,6 +88,9 @@
             </tfoot>
           </table>
         </div>
+        <p class="doc-line text-muted chart-hint">
+          {{ t('accounting.accounts.ledgerHint') }}
+        </p>
       }
     </div>
   </div>

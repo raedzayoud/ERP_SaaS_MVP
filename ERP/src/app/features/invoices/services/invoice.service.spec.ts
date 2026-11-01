@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { InvoiceService } from './invoice.service';
+import { TenantService } from '../../../core/services/tenant.service';
 import { PaymentService } from '../../payments/services/payment.service';
 import { StockService } from '../../stock/services/stock.service';
 import { todayIso } from '../../../shared/utils/money';
@@ -122,3 +123,33 @@ describe('InvoiceService credit note cap', () => {
     await expect(promise).rejects.toMatchObject({ code: 'creditLimitExceeded' });
   });
 });
+
+describe('InvoiceService seller compliance', () => {
+  let service: InvoiceService;
+
+  function setup(tenant: unknown): void {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: TenantService, useValue: { currentTenant: () => tenant } },
+      ],
+    });
+    service = TestBed.inject(InvoiceService);
+  }
+
+  it('blocks the posting when the seller tax number is missing', async () => {
+    setup({ taxId: '' });
+
+    const promise = firstValueFrom(service.postInvoice(QUOTE_DRAFT));
+
+    await expect(promise).rejects.toMatchObject({ code: 'missingSellerTaxId' });
+  });
+
+  it('posts anyway once the seller tax number is set', async () => {
+    setup({ taxId: '1234567' });
+
+    const posted = await firstValueFrom(service.postInvoice(QUOTE_DRAFT));
+
+    expect(posted.number).toMatch(/^DEV-2026-\d{4}$/);
+  });
+});
+

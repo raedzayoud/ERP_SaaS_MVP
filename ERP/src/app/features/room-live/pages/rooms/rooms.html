@@ -1,0 +1,131 @@
+<ng-container *transloco="let t">
+  <div class="rooms-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">{{ t('titles.rooms') }}</h1>
+        <p class="page-subtitle">{{ t('descriptions.rooms') }}</p>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="toggleCreate()">
+        + {{ t('roomlive.list.newRoom') }}
+      </button>
+    </div>
+
+    @if (showCreate()) {
+      <div class="card room-create">
+        <h2 class="section-title">{{ t('roomlive.create.title') }}</h2>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="room-title">{{ t('roomlive.create.titleLabel') }}</label>
+            <input
+              id="room-title"
+              type="text"
+              class="form-control"
+              [placeholder]="t('roomlive.create.titlePlaceholder')"
+              [value]="newTitle()"
+              (input)="onTitleInput($any($event.target).value)"
+            />
+          </div>
+          <div class="form-field">
+            <label for="room-access">{{ t('roomlive.create.accessLabel') }}</label>
+            <select
+              id="room-access"
+              class="form-control"
+              [value]="newAccess()"
+              (change)="onAccessChoice($any($event.target).value)"
+            >
+              @for (access of roomAccess; track access) {
+                <option [value]="access">{{ t('roomlive.access.' + access) }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="room-doc">{{ t('roomlive.create.linkedDocLabel') }}</label>
+            <input
+              id="room-doc"
+              type="text"
+              class="form-control"
+              [placeholder]="t('roomlive.create.linkedDocPlaceholder')"
+              [value]="newLinkedDoc()"
+              (input)="onLinkedDocInput($any($event.target).value)"
+            />
+          </div>
+        </div>
+
+        @if (workspaceUsers.length > 0) {
+          <p class="field-hint">{{ t('roomlive.create.inviteHint') }}</p>
+          <div class="invite-chips">
+            @for (member of workspaceUsers; track member.id) {
+              <button
+                type="button"
+                class="chip"
+                [class.chip-active]="isInvited(member.id)"
+                (click)="toggleInvite(member.id)"
+              >
+                {{ member.name }}
+              </button>
+            }
+          </div>
+        }
+
+        @if (createError()) {
+          <div class="form-error">{{ t(createError()) }}</div>
+        }
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="toggleCreate()">
+            {{ t('common.cancel') }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="createRoom()">
+            {{ t('roomlive.create.submit') }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <input
+      type="search"
+      class="form-control search-input"
+      [placeholder]="t('roomlive.list.searchPlaceholder')"
+      [attr.aria-label]="t('roomlive.list.searchPlaceholder')"
+      [ngModel]="search()"
+      (ngModelChange)="onSearch($event)"
+    />
+
+    @if (rooms().length === 0) {
+      <div class="card rooms-empty">
+        <p>{{ t('roomlive.list.empty') }}</p>
+      </div>
+    } @else {
+      <div class="rooms-grid">
+        @for (room of rooms(); track room.id) {
+          <a class="card room-card" [routerLink]="['/rooms', room.id]">
+            <div class="room-card-head">
+              <h2 class="room-card-title">{{ room.title }}</h2>
+              <span class="badge" [class.badge-secret]="room.access === 'invite-only'">
+                {{ t('roomlive.access.' + room.access) }}
+              </span>
+            </div>
+            @if (room.linkedDocRef) {
+              <p class="room-card-doc">
+                <span class="doc-label">{{ t('roomlive.card.linkedDoc') }}</span> {{ room.linkedDocRef }}
+              </p>
+            }
+            <p class="room-card-last">
+              @if (lastMessageOf(room); as last) {
+                {{ last }}
+              } @else {
+                {{ t('roomlive.card.noMessagesYet') }}
+              }
+            </p>
+            <div class="room-card-foot">
+              <span class="room-card-members">
+                👥 {{ memberCount(room) }}
+              </span>
+              <span>{{ lastActivityDate(room) | date: 'MMM d, y, h:mm a' }}</span>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</ng-container>

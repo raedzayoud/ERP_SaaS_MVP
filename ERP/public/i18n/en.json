@@ -78,7 +78,9 @@
     "salesDashboard": "Sales dashboard",
     "purchaseDashboard": "Purchases dashboard",
     "warehouseDashboard": "Stock dashboard",
-    "accountingDashboard": "Accounting dashboard"
+    "accountingDashboard": "Accounting dashboard",
+    "analytics": "Analytics",
+    "rooms": "Rooms Live"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -97,7 +99,9 @@
     "leads": "Track incoming prospects before qualification.",
     "opportunities": "Follow deals through the sales pipeline.",
     "reminders": "Call-backs and follow-ups to close.",
-    "supplierBills": "Receive and pay the bills your suppliers send"
+    "supplierBills": "Receive and pay the bills your suppliers send",
+    "analytics": "Business intelligence across the whole ERP.",
+    "rooms": "Chat rooms with audio/video meetings and shared documents."
   },
   "navbar": {
     "toggleSidebar": "Toggle sidebar",
@@ -115,7 +119,8 @@
       "inventory": "Inventory",
       "finance": "Finance",
       "tools": "Tools",
-      "workspace": "Workspace"
+      "workspace": "Workspace",
+      "collaboration": "Collaboration"
     },
     "items": {
       "dashboard": "Dashboard",
@@ -136,7 +141,9 @@
       "leads": "Leads",
       "opportunities": "Opportunities",
       "reminders": "Reminders",
-      "supplierBills": "Purchases by supplier"
+      "supplierBills": "Purchases by supplier",
+      "analytics": "Analytics",
+      "rooms": "Rooms Live"
     }
   },
   "placeholder": {
@@ -510,7 +517,9 @@
       "creditLimitExceeded": "The credit notes for this invoice cannot go over its total.",
       "insufficientStock": "Not enough stock in the main warehouse to confirm this invoice.",
       "notQuote": "This document is not a quote",
-      "quoteAlreadyConverted": "This quote has already been converted into an invoice"
+      "quoteAlreadyConverted": "This quote has already been converted into an invoice",
+      "missingSellerTaxId": "A posted invoice must carry the seller tax number. Fill it in Settings → Company.",
+      "numberConflict": "This number is already used by another posted document."
     },
     "pdf": {
       "billTo": "Bill to",
@@ -527,6 +536,14 @@
       "colVatRate": "VAT %",
       "notes": "Notes",
       "page": "Page"
+    },
+    "mentions": {
+      "title": "Mandatory mentions",
+      "penalties": "Late-payment penalties: 1.5 % per month of the remaining balance, payable immediately.",
+      "noVat": "VAT not applicable."
+    },
+    "payments": {
+      "title": "Customer payments"
     }
   },
   "purchases": {
@@ -1161,7 +1178,8 @@
       "from": "From",
       "to": "To",
       "empty": "No entries found.",
-      "page": "Page"
+      "page": "Page",
+      "allAccounts": "All accounts"
     },
     "detail": {
       "title": "Journal entry",
@@ -1178,7 +1196,8 @@
     "accounts": {
       "title": "Chart of accounts",
       "subtitle": "Standard accounts and trial balance.",
-      "totalRow": "Total"
+      "totalRow": "Total",
+      "ledgerHint": "Click an account code to open its general ledger in the journal."
     }
   },
   "landing": {
@@ -1348,7 +1367,8 @@
       "overview": "Overview",
       "aging": "Bills by age",
       "customers": "Top customers",
-      "stock": "Stock"
+      "stock": "Stock",
+      "numbering": "Legal numbering"
     },
     "aging": {
       "title": "Supplier bills by age",
@@ -1377,6 +1397,36 @@
       },
       "low": "Low",
       "ok": "OK"
+    },
+    "numbering": {
+      "title": "Legal numbering audit",
+      "hint": "Each series must run from 0001 without duplicates, with dates that follow the numbering order. Drafts without a number are ignored.",
+      "none": "No numbered document yet.",
+      "loadError": "Failed to load the document families.",
+      "families": {
+        "invoices": "Sales invoices",
+        "credits": "Credit notes",
+        "quotes": "Quotations",
+        "salesOrders": "Sales orders",
+        "deliveries": "Delivery notes",
+        "purchaseOrders": "Purchase orders",
+        "supplierBills": "Supplier bills"
+      },
+      "states": {
+        "ok": "Compliant",
+        "gap": "Gaps or duplicates",
+        "dates": "Dates out of order"
+      },
+      "columns": {
+        "series": "Series",
+        "last": "Last number",
+        "detail": "Detail"
+      },
+      "detail": {
+        "missing": "Missing: {{numbers}}",
+        "duplicated": "Duplicated: {{numbers}}",
+        "chrono": "Dates not in sequence: {{number}} comes after {{previous}}."
+      }
     }
   },
   "invoicing": {
@@ -1662,9 +1712,10 @@
         "rejected": "Rejected"
       },
       "doc": {
-        "idCard": "ID card",
         "tradeRegister": "Trade register",
-        "taxRegistration": "Tax registration"
+        "taxRegistration": "Tax registration",
+        "idCardRecto": "ID card – front",
+        "idCardVerso": "ID card – back"
       },
       "rejectHint": "This request stays in the history with your note; no tenant is created.",
       "approvedTenant": "Trial tenant created",
@@ -1673,7 +1724,8 @@
         "close": "Close",
         "simulated": "Simulated scan (demo) — the real image comes with the file upload.",
         "uploadedFile": "Uploaded file: {{name}} ({{size}} KB)"
-      }
+      },
+      "taxId": "Matricule fiscal"
     },
     "payments": {
       "subtitle": "Monthly subscription statements of every tenant.",
@@ -1753,6 +1805,10 @@
       "ai-assistant": {
         "label": "AI Assistant",
         "description": "RAG chatbot and invoice extraction"
+      },
+      "room-live": {
+        "label": "Rooms Live",
+        "description": "Live chat rooms, audio/video calls and file sharing"
       }
     }
   },
@@ -2032,24 +2088,34 @@
       "sizeKb": "{{size}} KB",
       "hint": "PNG, JPG or PDF · up to {{size}} KB per document. Small images show a real preview in the super-admin console.",
       "errors": {
-        "missing": "Add all three documents to continue.",
+        "missing": "Add all the documents to continue.",
         "tooLarge": "File too large (max {{size}} KB).",
         "type": "Accepted formats: PNG, JPG, PDF.",
-        "read": "Could not read the file, please try again."
+        "read": "Could not read the file, please try again.",
+        "taxIdMissing": "Enter the matricule fiscal (at least 5 characters)."
       },
       "docs": {
-        "idCard": {
-          "label": "e",
-          "hint": "n"
+        "idCardRecto": {
+          "label": "CIN – front side",
+          "hint": "National ID card, front side"
+        },
+        "idCardVerso": {
+          "label": "CIN – back side",
+          "hint": "National ID card, back side"
         },
         "tradeRegister": {
-          "label": "e",
-          "hint": "n"
+          "label": "Trade register",
+          "hint": "Extract of the trade register"
         },
         "taxRegistration": {
-          "label": "e",
-          "hint": "n"
+          "label": "Tax registration",
+          "hint": "Patente declaration or tax file"
         }
+      },
+      "taxId": {
+        "label": "Matricule fiscal (tax ID)",
+        "placeholder": "1234567/A/M/000",
+        "hint": "Find it on your tax file (patente) or trade-register extract."
       }
     },
     "request": {
@@ -2326,7 +2392,8 @@
     "invoicing": "Invoicing",
     "reports": "Reports",
     "ai-assistant": "AI assistant",
-    "settings": "Settings"
+    "settings": "Settings",
+    "collab": "Rooms Live"
   },
   "rbac": {
     "actions": {
@@ -2364,6 +2431,135 @@
       "mismatch": "The two passwords do not match.",
       "minLength": "The password must contain at least 6 characters.",
       "submit": "Save and continue"
+    }
+  },
+  "analytics": {
+    "periods": {
+      "month": "Month",
+      "quarter": "Quarter",
+      "year": "Year"
+    },
+    "loadError": "Failed to load the analytics.",
+    "loadErrorHint": "Check your connection and try again.",
+    "kpi": {
+      "sales": "Sales of the period",
+      "collected": "Collected from customers",
+      "outstanding": "Receivables to collect",
+      "overdue": "Overdue receivables"
+    },
+    "charts": {
+      "sales": "Sales",
+      "salesTitle": "Sales by month",
+      "customers": "Revenue",
+      "customersTitle": "Top 5 customers",
+      "payments": "Payments",
+      "paymentsTitle": "Payments by mode",
+      "flowsTitle": "Sales vs expenses",
+      "flows": {
+        "sales": "Sales",
+        "expenses": "Expenses"
+      }
+    }
+  },
+  "roomlive": {
+    "list": {
+      "newRoom": "New live room",
+      "searchPlaceholder": "Search by title or document…",
+      "empty": "No live room yet. Create one to start collaborating."
+    },
+    "create": {
+      "title": "Create a live room",
+      "titleLabel": "Room title",
+      "titlePlaceholder": "e.g. Oasis follow-up",
+      "accessLabel": "Who can enter?",
+      "linkedDocLabel": "Linked document (optional)",
+      "linkedDocPlaceholder": "e.g. FA-2026-031",
+      "inviteHint": "Invite workspace members:",
+      "submit": "Create room"
+    },
+    "access": {
+      "members": "Open to members",
+      "invite-only": "Private (invitation)"
+    },
+    "status": {
+      "active": "Live",
+      "archived": "Archived"
+    },
+    "card": {
+      "linkedDoc": "Document",
+      "noMessagesYet": "No message yet."
+    },
+    "room": {
+      "back": "Rooms",
+      "notFound": "This room does not exist.",
+      "privateTitle": "Private room",
+      "privateHint": "Only invited participants can enter this room.",
+      "joinHint": "You are visiting this open room.",
+      "join": "Enter the room",
+      "leave": "Leave",
+      "archivedBanner": "This room is archived: the history stays visible, writing is disabled.",
+      "reopen": "Reopen room",
+      "backToRooms": "Back to rooms"
+    },
+    "chat": {
+      "title": "Live chat",
+      "placeholder": "Write a message…",
+      "send": "Send",
+      "empty": "The conversation starts with your first message."
+    },
+    "participants": {
+      "title": "Participants",
+      "you": "you",
+      "inviteLabel": "Add a member",
+      "invitePlaceholder": "Select a member…",
+      "add": "Add",
+      "remove": "Kick out",
+      "block": "Block",
+      "blocked": "Blocked users:",
+      "roleLabel": "Change role"
+    },
+    "roles": {
+      "host": "Host",
+      "participant": "Participant",
+      "viewer": "Observer"
+    },
+    "errors": {
+      "titleLength": "The title needs at least 3 characters."
+    },
+    "media": {
+      "you": "You",
+      "waiting": "Waiting for video…",
+      "notStarted": "Live session not started",
+      "join": "Start live session",
+      "leave": "End live session",
+      "micOn": "Mute microphone",
+      "micOff": "Unmute microphone",
+      "cameraOn": "Turn camera off",
+      "cameraOff": "Turn camera on",
+      "shareScreen": "Share screen",
+      "shareShort": "Screen",
+      "errors": {
+        "unsupported": "Live audio/video is not available in this browser.",
+        "denied": "Camera or microphone access was denied."
+      }
+    },
+    "files": {
+      "attach": "Attach a file",
+      "remove": "Remove file",
+      "removed": "File removed",
+      "errors": {
+        "invalid": "File not allowed (max 2 MB, images or PDF)."
+      }
+    },
+    "ai": {
+      "title": "AI summary",
+      "close": "Close summary",
+      "messages": "Messages:",
+      "attachments": "Attachments:",
+      "highlights": "Key points",
+      "decisions": "Decisions taken",
+      "actions": "Actions to complete",
+      "empty": "Nothing detected yet."
     }
   }
 }

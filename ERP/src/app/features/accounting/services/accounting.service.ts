@@ -276,6 +276,9 @@ export class AccountingService {
       if (query.journal && entry.journal !== query.journal) return false;
       if (query.from && entry.date < query.from) return false;
       if (query.to && entry.date > query.to) return false;
+      if (query.accountCode) {
+        if (!entry.lines.some((line) => line.accountCode === query.accountCode)) return false;
+      }
       if (search) {
         const haystack = `${entry.ref} ${entry.label}`.toLowerCase();
         if (!haystack.includes(search)) return false;

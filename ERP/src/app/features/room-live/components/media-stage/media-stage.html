@@ -1,0 +1,87 @@
+﻿<ng-container *transloco="let t">
+  <section class="stage">
+    @if (!mediaSupported()) {
+      <div class="notice">
+        {{ t('roomlive.media.errors.unsupported') }}
+      </div>
+    }
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="tile-kind">📹 {{ t('roomlive.media.you') }}</div>
+        <div class="tile-video-wrap">
+          @if (sessionOn()) {
+            <video #localVideo autoplay playsInline muted class="tile-video"></video>
+            <span
+              class="tile-status"
+              [class.tile-camera-off]="!camOn()"
+              [class.tile-mic-off]="!micOn()"
+              [class.tile-screen]="screening()"
+            >
+            </span>
+          } @else {
+            <div class="tile-empty">{{ t('roomlive.media.notStarted') }}</div>
+          }
+        </div>
+      </div>
+
+      @for (p of participants(); track p.id) {
+        @if (p.id !== currentUserId()) {
+          <div class="tile tile-remote">
+            <div class="tile-avatar">{{ initials(nameOf(p.id)) }}</div>
+            <div class="tile-kind">{{ nameOf(p.id) }}</div>
+            <div class="tile-status tile-waiting">
+              {{ t('roomlive.media.waiting') }}
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="controls">
+      @if (!sessionOn()) {
+        <button
+          type="button"
+          class="btn btn-primary media-join"
+          (click)="startSession()"
+          [disabled]="!mediaSupported()"
+        >
+          {{ t('roomlive.media.join') }}
+        </button>
+      } @else {
+        <button type="button" class="btn btn-primary media-leave" (click)="stopSession()">
+          {{ t('roomlive.media.leave') }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="toggleMic()"
+          [attr.aria-pressed]="micOn()"
+          [title]="micOn() ? t('roomlive.media.micOff') : t('roomlive.media.micOn')"
+        >
+          {{ micOn() ? '🎤' : '🔇' }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="toggleCamera()"
+          [attr.aria-pressed]="camOn()"
+          [title]="camOn() ? t('roomlive.media.cameraOff') : t('roomlive.media.cameraOn')"
+        >
+          {{ camOn() ? '📹' : '📷' }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="shareScreen()"
+          [title]="t('roomlive.media.shareScreen')"
+        >
+          {{ t('roomlive.media.shareShort') }}
+        </button>
+        @if (errorKey(); as err) {
+          <span class="media-error">{{ t(err) }}</span>
+        }
+      }
+    </div>
+  </section>
+</ng-container>

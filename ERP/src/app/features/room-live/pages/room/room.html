@@ -1,0 +1,313 @@
+﻿<ng-container *transloco="let t">
+  <div class="room-page">
+    <div class="room-header">
+      <button type="button" class="btn btn-secondary" (click)="backToList()">
+        ← {{ t('common.back') }}
+      </button>
+      @if (room(); as r) {
+        <div class="room-title-block">
+          <h1 class="page-title">{{ r.title }}</h1>
+          <div class="room-meta">
+            <span class="badge" [class.badge-secret]="r.access === 'invite-only'">
+              {{ t('roomlive.access.' + r.access) }}
+            </span>
+            <span class="badge" [class.badge-archived]="r.status === 'archived'">
+              {{ t('roomlive.status.' + r.status) }}
+            </span>
+            @if (r.linkedDocRef) {
+              <span class="doc-chip">{{ r.linkedDocRef }}</span>
+            }
+          </div>
+        </div>
+        @if (isMember() && r.status === 'active') {
+          <span class="badge badge-host">{{ t('roomlive.roles.host') }}</span>
+        }
+      }
+    </div>
+
+    @switch (state()) {
+
+      @case ('notFound') {
+        <div class="card room-state">
+          <p>{{ t('roomlive.room.notFound') }}</p>
+          <a routerLink="/rooms" class="btn btn-primary">{{ t('roomlive.room.backToRooms') }}</a>
+        </div>
+      }
+
+      @case ('locked') {
+        <div class="card room-state">
+          <h2 class="section-title">🔒 {{ t('roomlive.room.privateTitle') }}</h2>
+          <p>{{ t('roomlive.room.privateHint') }}</p>
+        </div>
+      }
+
+      @case ('archived') {
+        <div class="room-layout">
+          <div class="banner banner-warn">{{ t('roomlive.room.archivedBanner') }}</div>
+          @if (isOwner()) {
+            <button type="button" class="btn btn-secondary" (click)="reopenRoom()">
+              {{ t('roomlive.room.reopen') }}
+            </button>
+          }
+        </div>
+      }
+
+      @default {
+        <div class="room-layout">
+          <app-media-stage class="room-media-stage"></app-media-stage>
+
+          <section class="card chat-panel" [attr.aria-label]="t('roomlive.chat.title')">
+            <div class="chat-head">
+              <h2 class="section-title">{{ t('roomlive.chat.title') }}</h2>
+              @if (isMember()) {
+                <button
+                  type="button"
+                  class="btn btn-secondary ai-btn"
+                  (click)="toggleAI()"
+                  [title]="aiSummary() ? t('roomlive.ai.close') : t('roomlive.ai.title')"
+                >
+                  ✨ @if (aiSummary()) { {{ t('roomlive.ai.close') }} } @else { {{ t('roomlive.ai.title') }} }
+                </button>
+              }
+            </div>
+
+            @if (aiSummary(); as s) {
+              <div class="ai-panel">
+                <p class="ai-count">
+                  {{ t('roomlive.ai.messages') }} {{ s.totalMessages }} ·
+                  {{ t('roomlive.ai.attachments') }} {{ s.totalAttachments }}
+                </p>
+                <p class="ai-section-title">{{ t('roomlive.ai.highlights') }}</p>
+                @if (s.highlights.length === 0) {
+                  <p class="ai-empty">{{ t('roomlive.ai.empty') }}</p>
+                }
+                <ul class="ai-list">
+                  @for (point of s.highlights; track point) {
+                    <li>{{ point }}</li>
+                  }
+                </ul>
+
+                <p class="ai-section-title">{{ t('roomlive.ai.decisions') }}</p>
+                @if (s.decisions.length === 0) {
+                  <p class="ai-empty">{{ t('roomlive.ai.empty') }}</p>
+                }
+                <ul class="ai-list">
+                  @for (point of s.decisions; track point) {
+                    <li>✅ {{ point }}</li>
+                  }
+                </ul>
+
+                <p class="ai-section-title">{{ t('roomlive.ai.actions') }}</p>
+                @if (s.actions.length === 0) {
+                  <p class="ai-empty">{{ t('roomlive.ai.empty') }}</p>
+                }
+                <ul class="ai-list">
+                  @for (point of s.actions; track point) {
+                    <li>📌 {{ point }}</li>
+                  }
+                </ul>
+              </div>
+            }
+
+
+            @if (isMember()) {
+              <div class="chat-feed">
+                @for (message of messages(); track message.id) {
+                  <article class="chat-bubble" [class.bubble-me]="isMe(message.authorUserId)">
+                    <header class="bubble-head">
+                      <span class="bubble-author">{{ nameOf(message.authorUserId) }}</span>
+                      <time [attr.datetime]="message.createdAt"
+                            [title]="message.createdAt">
+                        {{ message.createdAt | date: 'h:mm a' }}
+                      </time>
+                    </header>
+                    @if (message.attachmentId; as attId) {
+                      <div class="bubble-attachment">
+                        @if (attachmentsById().get(attId); as att) {
+                          @if (att.dataUrl) {
+                            <img [src]="att.dataUrl" [alt]="att.fileName" class="att-preview" />
+                          } @else {
+                            <div class="att-file">
+                              <span>📄 {{ att.fileName }}</span>
+                              <span class="att-size">{{ att.sizeKb }} KB</span>
+                            </div>
+                          }
+                          @if (canRemoveAttachment(att.authorUserId)) {
+                            <button
+                              type="button"
+                              class="btn btn-secondary att-remove"
+                              (click)="removeAttachment(message.id, att.id)"
+                              [title]="t('roomlive.files.remove')"
+                            >
+                              ✕
+                            </button>
+                          }
+                        } @else {
+                          <span class="att-removed">{{ t('roomlive.files.removed') }}</span>
+                        }
+                      </div>
+                    } @else if (message.text) {
+                      <p class="bubble-text">{{ message.text }}</p>
+                    }
+                  </article>
+                } @empty {
+                  <p class="chat-empty">{{ t('roomlive.chat.empty') }}</p>
+                }
+              </div>
+
+              <form class="composer" (submit)="$event.preventDefault(); sendMessage()">
+                <label class="visually-hidden" for="chat-input">
+                  {{ t('roomlive.chat.placeholder') }}
+                </label>
+                <input
+                  id="chat-input"
+                  type="text"
+                  class="form-control"
+                  [placeholder]="t('roomlive.chat.placeholder')"
+                  [value]="draft()"
+                  (input)="onDraftInput($any($event.target).value)"
+                />
+
+                <div class="composer-attach">
+                  <button
+                    type="button"
+                    class="btn btn-secondary attach-btn"
+                    (click)="fileInput.click()"
+                    [title]="t('roomlive.files.attach')"
+                    [disabled]="!canPost()"
+                  >
+                    📎
+                  </button>
+                  <input
+                    #fileInput
+                    type="file"
+                    hidden
+                    accept="image/*,application/pdf"
+                    (change)="onFilePick($event)"
+                  />
+                  @if (pendingAttachment(); as p) {
+                    <div class="attach-chip">
+                      <span class="chip-name">{{ p.fileName }} ({{ p.sizeKb }} KB)</span>
+                      <button
+                        type="button"
+                        class="btn btn-secondary chip-remove"
+                        (click)="removePending()"
+                      >
+                        {{ t('common.cancel') }}
+                      </button>
+                    </div>
+                  }
+                  @if (attachError(); as err) {
+                    <span class="media-error">{{ t(err) }}</span>
+                  }
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    [disabled]="(!draft().trim() && !pendingAttachment()) || !canPost()"
+                  >
+                    {{ t('roomlive.chat.send') }}
+                  </button>
+                </div>
+              </form>
+            } @else {
+              <div class="room-state-inline">
+                <p>{{ t('roomlive.room.joinHint') }}</p>
+                <button type="button" class="btn btn-primary" (click)="joinRoom()">
+                  {{ t('roomlive.room.join') }}
+                </button>
+              </div>
+            }
+          </section>
+
+          <aside class="card side-panel">
+            <h2 class="section-title">{{ t('roomlive.participants.title') }}</h2>
+            <ul class="participant-list">
+              @for (p of participants(); track p.userId) {
+                <li class="participant-row">
+                  <span class="participant-name" [class.me-row]="isMe(p.userId)">
+                    {{ nameOf(p.userId) }}@if (isMe(p.userId)) { <em> · {{ t('roomlive.participants.you') }}</em> }
+                  </span>
+                  @if (isOwner() && p.role !== 'host') {
+                    <div class="row-tools">
+                      <select
+                        class="mod-select"
+                        [attr.aria-label]="t('roomlive.participants.roleLabel')"
+                        (change)="onRoleChange(p.userId, $any($event.target).value)"
+                      >
+                        @for (option of ROLE_OPTIONS; track option) {
+                          <option [value]="option" [selected]="option === p.role">
+                            {{ t('roomlive.roles.' + option) }}
+                          </option>
+                        }
+                      </select>
+                      <button
+                        type="button"
+                        class="btn btn-secondary mod-btn"
+                        (click)="kickParticipant(p.userId)"
+                        [title]="t('roomlive.participants.remove')"
+                      >
+                        ✕
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-secondary mod-btn"
+                        (click)="blockParticipant(p.userId)"
+                        [title]="t('roomlive.participants.block')"
+                      >
+                        🚫
+                      </button>
+                    </div>
+                  } @else {
+                    <span class="badge" [class.badge-host]="p.role === 'host'">
+                      {{ t('roomlive.roles.' + p.role) }}
+                    </span>
+                  }
+                </li>
+              }
+            </ul>
+
+            @if (isOwner()) {
+              <div class="mod-invite">
+                <label class="visually-hidden" for="invite-select">
+                  {{ t('roomlive.participants.inviteLabel') }}
+                </label>
+                <select
+                  id="invite-select"
+                  class="form-control"
+                  (change)="onInviteSelect($any($event.target).value)"
+                >
+                  <option value="0" [selected]="inviteUserId() === 0">
+                    {{ t('roomlive.participants.invitePlaceholder') }}
+                  </option>
+                  @for (user of invitableUsers(); track user.id) {
+                    <option [value]="user.id">{{ user.name }}</option>
+                  }
+                </select>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  (click)="inviteSelected()"
+                  [disabled]="inviteUserId() === 0"
+                >
+                  {{ t('roomlive.participants.add') }}
+                </button>
+              </div>
+            }
+
+            @if (blockedNames().length > 0) {
+              <p class="blocked-note">
+                🚫 {{ t('roomlive.participants.blocked') }} {{ blockedNames().join(', ') }}
+              </p>
+            }
+
+            @if (isMember() && !isOwner() && room()?.status === 'active') {
+              <button type="button" class="btn btn-secondary leave-btn" (click)="leaveRoom()">
+                {{ t('roomlive.room.leave') }}
+              </button>
+            }
+          </aside>
+        </div>
+      }
+    }
+  </div>
+</ng-container>

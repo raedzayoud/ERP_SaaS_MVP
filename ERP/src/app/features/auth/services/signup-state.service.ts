@@ -4,7 +4,7 @@ import { TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
 import { TenantService } from '../../../core/services/tenant.service';
 import { PlatformService } from '../../admin/services/platform.service';
-import type { SignupRequestDocuments } from '../../admin/models/platform';
+import type { KycDocument, SignupRequestDocuments } from '../../admin/models/platform';
 import {
   ErpApp,
   ERP_APPS,
@@ -32,6 +32,9 @@ interface UploadedKycDoc {
   /** Kept only for small images so the super-admin console can show it. */
   dataUrl?: string;
 }
+
+/** A line of the KYC request: either declared, or the real uploaded file. */
+type KycDocumentLike = KycDocument;
 
 /**
  * Holds the whole signup wizard state so it survives navigation between
@@ -64,18 +67,33 @@ export class SignupStateService {
   subdomainChecked = signal<boolean | null>(null);
 
   // ── Step 3: KYC documents ─────────────────────
-  readonly docSlots = ['idCard', 'tradeRegister', 'taxRegistration'] as const;
+  readonly docSlots = [
+    'idCardRecto',
+    'idCardVerso',
+    'tradeRegister',
+    'taxRegistration',
+  ] as const;
   readonly maxDocSizeKb = 2048;
   private readonly docIcons: Record<string, string> = {
-    idCard: '🪪',
+    idCardRecto: '🪪',
+    idCardVerso: '🪪',
     tradeRegister: '🏛️',
     taxRegistration: '🧮',
   };
   uploadedDocs = signal<Partial<Record<string, UploadedKycDoc>>>({});
   docError = signal('');
 
+  /** Matricule fiscal typed at step 3 (kept as text, uppercase). */
+  taxId = signal('');
+  taxIdTouched = signal(false);
+
   docsComplete = computed(() =>
     this.docSlots.every((slot) => this.uploadedDocs()[slot] !== undefined),
+  );
+
+  /** Step 3 asks for the four KYC files AND the tax number. */
+  step3Complete = computed(
+    () => this.docsComplete() && this.taxId().trim().length >= 5,
   );
 
   // ── Step 4: email verification ────────────────
@@ -471,16 +489,24 @@ export class SignupStateService {
     });
   }
 
+  /** Keeps only matricule-fiscal-like characters, uppercased. */
+  onTaxIdInput(event: Event): void {
+    this.taxIdTouched.set(true);
+    const raw = (event.target as HTMLInputElement).value.toUpperCase();
+    this.taxId.set(raw.replace(/[^A-Z0-9/-]/g, ''));
+  }
+
   /** Builds the request history kept by the super-admin console. */
   private documentsForRequest(): SignupRequestDocuments {
     return {
-      idCard: this.docEntry('idCard'),
+      idCardRecto: this.docEntry('idCardRecto'),
+      idCardVerso: this.docEntry('idCardVerso'),
       tradeRegister: this.docEntry('tradeRegister'),
       taxRegistration: this.docEntry('taxRegistration'),
     };
   }
 
-  private docEntry(slot: string): SignupRequestDocuments['idCard'] {
+  private docEntry(slot: string): KycDocumentLike {
     const uploaded = this.uploadedDocs()[slot];
     return uploaded ? { kind: 'uploaded', ...uploaded } : { kind: 'submitted' };
   }
@@ -713,6 +739,7 @@ export class SignupStateService {
           subdomain: this.subdomain(),
           email: this.email(),
           country: this.country(),
+          taxId: this.taxId(),
           planId: this.selectedPlan().id,
           documents: this.documentsForRequest(),
           decisionNote: this.transloco.translate('signup.request.autoApprovedNote'),
@@ -767,6 +794,10 @@ export class SignupStateService {
     if (this.step() === 3) {
       if (!this.docsComplete()) {
         this.error.set(this.transloco.translate('signup.docStep.errors.missing'));
+        return;
+      }
+      if (this.taxId().trim().length < 5) {
+        this.error.set(this.transloco.translate('signup.docStep.errors.taxIdMissing'));
         return;
       }
       this.startVerification();
