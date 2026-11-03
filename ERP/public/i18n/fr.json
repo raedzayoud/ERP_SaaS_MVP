@@ -2556,5 +2556,31 @@
       "empty": "Dites bonjour pour démarrer la discussion privée.",
       "placeholder": "Message privé…"
     }
+  },
+  "assistant": {
+    "welcome": "Posez-moi une question sur vos données ERP : factures, stock, clients, revenus.",
+    "placeholder": "Demandez à l’assistant…",
+    "send": "Envoyer",
+    "typing": "L’assistant est en train d’écrire…",
+    "quota": "{{used}} / {{limit}} requêtes ce mois-ci",
+    "quotaBanner": "Quota IA mensuel atteint. Il sera renouvelé le mois prochain.",
+    "you": "Vous",
+    "name": "Assistant",
+    "suggestions": {
+      "unpaid": "Combien de factures impayées ?",
+      "stock": "Qu’en est-il du stock ?",
+      "revenue": "Quel est le revenu du mois ?",
+      "extract": "Extraire la facture FA-2026-031"
+    },
+    "answers": {
+      "unpaid": "Vous avez {{count}} factures impayées pour un total de {{total}} EUR. La plus ancienne est en retard de 32 jours.",
+      "stock": "Le stock est sain : 128 articles dans 3 entrepôts, 4 produits sont sous leur niveau minimum.",
+      "revenue": "Le revenu du mois est de 48 250 EUR, en hausse de 12 % par rapport au mois dernier.",
+      "clients": "Vous avez 42 clients actifs. Oasis Group est votre meilleur client ce trimestre avec 4 factures.",
+      "payments": "Derniers paiements : 3 reçus cette semaine pour un total de 9 600 EUR, 1 paiement est encore en attente.",
+      "extract": "Facture {{number}} : montant {{amount}} EUR, échéance le {{due}}, client Oasis Group, statut impayée.",
+      "fallback": "Je n’ai pas trouvé de réponse dans vos données. Essayez une des questions suggérées.",
+      "quotaExceeded": "Votre quota IA mensuel est épuisé. Vous pouvez changer de formule pour obtenir plus de requêtes."
+    }
   }
 }

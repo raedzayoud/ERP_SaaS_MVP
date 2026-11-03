@@ -2557,5 +2557,31 @@
       "empty": "Say hello to start the private chat.",
       "placeholder": "Private message…"
     }
+  },
+  "assistant": {
+    "welcome": "Ask me anything about your ERP data: invoices, stock, clients, revenue.",
+    "placeholder": "Ask the assistant…",
+    "send": "Send",
+    "typing": "The assistant is writing…",
+    "quota": "{{used}} / {{limit}} queries this month",
+    "quotaBanner": "Monthly AI quota reached. It resets next month.",
+    "you": "You",
+    "name": "Assistant",
+    "suggestions": {
+      "unpaid": "How many unpaid invoices?",
+      "stock": "What is the stock situation?",
+      "revenue": "What is the revenue this month?",
+      "extract": "Extract invoice FA-2026-031"
+    },
+    "answers": {
+      "unpaid": "You have {{count}} unpaid invoices totaling {{total}} EUR. The oldest one is 32 days overdue.",
+      "stock": "Stock is healthy: 128 items in 3 warehouses, 4 products are below their minimum level.",
+      "revenue": "Revenue this month is 48 250 EUR, up 12% compared to last month.",
+      "clients": "You have 42 active clients. Oasis Group is your top client this quarter with 4 invoices.",
+      "payments": "Last payments: 3 received this week for a total of 9 600 EUR, 1 payment is still pending.",
+      "extract": "Invoice {{number}}: amount {{amount}} EUR, due on {{due}}, customer Oasis Group, status unpaid.",
+      "fallback": "I could not find an answer in your data yet. Try one of the suggested questions.",
+      "quotaExceeded": "Your monthly AI quota is used up. You can upgrade your plan for more queries."
+    }
   }
 }

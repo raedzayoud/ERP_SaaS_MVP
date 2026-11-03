@@ -1,0 +1,53 @@
+package com.erp.erp.auth;
+
+import com.erp.erp.user.User;
+import java.time.Instant;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.stereotype.Service;
+
+/**
+ * Creates signed JWT tokens (HS256). The decoder lives in SecurityConfig and
+ * is used by Spring Security to validate incoming requests.
+ */
+@Service
+public class JwtService {
+
+    private final JwtEncoder jwtEncoder;
+    private final long expirationMs;
+
+    public JwtService(JwtEncoder jwtEncoder, @Value("${app.jwt.expiration-ms}") long expirationMs) {
+        this.jwtEncoder = jwtEncoder;
+        this.expirationMs = expirationMs;
+    }
+
+    public String generateToken(User user) {
+        Instant now = Instant.now();
+
+        JwtClaimsSet.Builder claims = JwtClaimsSet.builder()
+                .issuer("erp-backend")
+                .subject(user.getEmail())
+                .issuedAt(now)
+                .expiresAt(now.plusMillis(expirationMs))
+                .claims(claimMap -> {
+                    claimMap.put("userId", user.getId());
+                    claimMap.put("role", user.getRole().getCode());
+                    if (user.getTenant() != null) {
+                        claimMap.put("tenantId", user.getTenant().getId());
+                    }
+                });
+
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+        return jwtEncoder.encode(JwtEncoderParameters.from(header, claims.build())).getTokenValue();
+    }
+
+    /** Small helper used by the seeder to log what it created. */
+    public Map<String, Object> debugClaims(String token) {
+        return Map.of("tokenPrefix", token.substring(0, Math.min(20, token.length())) + "...");
+    }
+}

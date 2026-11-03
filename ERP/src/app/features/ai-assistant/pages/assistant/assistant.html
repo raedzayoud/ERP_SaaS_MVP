@@ -1,0 +1,74 @@
+<ng-container *transloco="let t">
+  <div class="assistant-page">
+    <header class="card assistant-header">
+      <div class="header-title">
+        <span class="header-icon">🤖</span>
+        <div>
+          <h1>{{ t('titles.ai-assistant') }}</h1>
+          <p>{{ t('descriptions.ai-assistant') }}</p>
+        </div>
+      </div>
+      <span class="quota-badge" [class.quota-out]="quotaReached()">
+        {{ t('assistant.quota', { used: quotaUsed(), limit: quotaLimit }) }}
+      </span>
+    </header>
+
+    <section class="card chat-panel">
+      @if (messages().length === 0) {
+        <div class="chat-empty">
+          <p class="empty-title">{{ t('assistant.welcome') }}</p>
+          <div class="suggestions">
+            @for (suggestion of suggestions; track suggestion) {
+              <button type="button" class="suggestion-chip" (click)="useSuggestion(suggestion)">
+                {{ t(suggestion) }}
+              </button>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="chat-feed" #feed>
+          @for (message of messages(); track trackMessage($index, message)) {
+            <article class="chat-bubble" [class.bubble-me]="message.role === 'user'">
+              <div class="bubble-head">
+                <span class="bubble-author">
+                  {{ message.role === 'user' ? t('assistant.you') : '🤖 ' + t('assistant.name') }}
+                </span>
+                <span class="bubble-time">{{ message.createdAt | date: 'HH:mm' }}</span>
+              </div>
+              @if (message.role === 'user') {
+                <p class="bubble-text">{{ message.params?.['text'] }}</p>
+              } @else {
+                <p class="bubble-text">{{ t(message.answerKey, message.params) }}</p>
+              }
+            </article>
+          }
+          @if (pending()) {
+            <article class="chat-bubble bubble-ai">
+              <p class="bubble-text typing">{{ t('assistant.typing') }}</p>
+            </article>
+          }
+        </div>
+      }
+
+      @if (quotaReached()) {
+        <p class="quota-banner">{{ t('assistant.quotaBanner') }}</p>
+      }
+      <form class="composer" (submit)="$event.preventDefault(); send()">
+        <label class="visually-hidden" for="assistant-input">
+          {{ t('assistant.placeholder') }}
+        </label>
+        <input
+          id="assistant-input"
+          class="form-control"
+          type="text"
+          [placeholder]="t('assistant.placeholder')"
+          [value]="draft()"
+          (input)="onDraftInput($any($event.target).value)"
+        />
+        <button type="submit" class="btn btn-primary send-btn" [disabled]="!canSend()">
+          {{ t('assistant.send') }}
+        </button>
+      </form>
+    </section>
+  </div>
+</ng-container>

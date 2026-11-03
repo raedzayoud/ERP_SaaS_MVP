@@ -723,8 +723,8 @@ export const routes: Routes = [
         path: 'ai-assistant',
         canActivate: [moduleGuard],
         loadComponent: () =>
-          import('./shared/components/module-placeholder/module-placeholder').then(
-            (m) => m.ModulePlaceholder,
+          import('./features/ai-assistant/pages/assistant/assistant').then(
+            (m) => m.AssistantPage,
           ),
         data: {
           title: 'titles.ai-assistant',
