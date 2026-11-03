@@ -1,10 +1,10 @@
 package com.erp.erp.config;
 
-import com.erp.erp.tenant.Tenant;
-import com.erp.erp.tenant.TenantRepository;
-import com.erp.erp.user.Role;
-import com.erp.erp.user.User;
-import com.erp.erp.user.UserRepository;
+import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.tenant.repository.TenantRepository;
+import com.erp.erp.user.model.Role;
+import com.erp.erp.user.model.User;
+import com.erp.erp.user.repository.UserRepository;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

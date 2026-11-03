@@ -1487,6 +1487,45 @@
       "demoHint": "Mode démo : l’e-mail est pré-rempli, tout mot de passe est accepté."
     }
   },
+  "forgot": {
+    "link": "Mot de passe oublié ?",
+    "title": "Mot de passe oublié ?",
+    "description": "Saisissez l’e-mail de votre compte, nous vous enverrons un code de réinitialisation.",
+    "stepEmail": "Votre e-mail",
+    "stepSecure": "Nouveau mot de passe",
+    "backToSignIn": "Retour à la connexion",
+    "submit": "Envoyer le code",
+    "sending": "Envoi...",
+    "sentTitle": "Vérifiez vos e-mails",
+    "sentDescription": "Un code de réinitialisation a été envoyé à",
+    "demoBadge": "Démo",
+    "goReset": "Saisir le code",
+    "resend": "Renvoyer le code",
+    "changeEmail": "Changer d’e-mail",
+    "unknown": "Aucun compte trouvé pour cet e-mail."
+  },
+  "reset": {
+    "title": "Choisissez un nouveau mot de passe",
+    "description": "Saisissez le code reçu et votre nouveau mot de passe.",
+    "backToSignIn": "Retour à la connexion",
+    "code": "Code de réinitialisation",
+    "codePlaceholder": "Code à 6 chiffres",
+    "newPassword": "Nouveau mot de passe",
+    "confirm": "Confirmer le mot de passe",
+    "showPassword": "Afficher les mots de passe",
+    "reqLength": "Au moins 6 caractères",
+    "reqMatch": "Les mots de passe correspondent",
+    "submit": "Réinitialiser le mot de passe",
+    "minLength": "Le mot de passe doit contenir au moins 6 caractères.",
+    "mismatch": "Les deux mots de passe ne correspondent pas.",
+    "invalidCode": "Code incorrect.",
+    "expired": "Ce code a expiré. Demandez-en un nouveau.",
+    "newCode": "Demander un nouveau code",
+    "successTitle": "Mot de passe mis à jour",
+    "successDescription": "Votre mot de passe a été mis à jour. Vous pouvez vous connecter.",
+    "signIn": "Se connecter",
+    "back": "Retour"
+  },
   "roles": {
     "super-admin": {
       "label": "Super-administrateur",

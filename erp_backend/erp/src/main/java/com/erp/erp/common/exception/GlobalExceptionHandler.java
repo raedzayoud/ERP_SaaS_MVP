@@ -1,5 +1,6 @@
-package com.erp.erp.auth;
+package com.erp.erp.common.exception;
 
+import com.erp.erp.auth.exception.AuthException;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

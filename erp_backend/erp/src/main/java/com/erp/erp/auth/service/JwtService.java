@@ -1,6 +1,6 @@
-package com.erp.erp.auth;
+package com.erp.erp.auth.service;
 
-import com.erp.erp.user.User;
+import com.erp.erp.user.model.User;
 import java.time.Instant;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;

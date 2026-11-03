@@ -1,6 +1,6 @@
-package com.erp.erp.user;
+package com.erp.erp.user.model;
 
-import com.erp.erp.tenant.Tenant;
+import com.erp.erp.tenant.model.Tenant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

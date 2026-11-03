@@ -1,15 +1,16 @@
-package com.erp.erp.auth;
+package com.erp.erp.auth.service;
 
 import com.erp.erp.auth.dto.AuthResponse;
 import com.erp.erp.auth.dto.LoginRequest;
 import com.erp.erp.auth.dto.SignupRequest;
 import com.erp.erp.auth.dto.TenantResponse;
 import com.erp.erp.auth.dto.UserResponse;
-import com.erp.erp.tenant.Tenant;
-import com.erp.erp.tenant.TenantRepository;
-import com.erp.erp.user.Role;
-import com.erp.erp.user.User;
-import com.erp.erp.user.UserRepository;
+import com.erp.erp.auth.exception.AuthException;
+import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.tenant.repository.TenantRepository;
+import com.erp.erp.user.model.Role;
+import com.erp.erp.user.model.User;
+import com.erp.erp.user.repository.UserRepository;
 import java.util.List;
 import java.util.Set;
 import org.springframework.security.crypto.password.PasswordEncoder;

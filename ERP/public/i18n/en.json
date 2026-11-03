@@ -1487,6 +1487,45 @@
       "demoHint": "Demo mode: the email is pre-filled, any password is accepted."
     }
   },
+  "forgot": {
+    "link": "Forgot password?",
+    "title": "Forgot your password?",
+    "description": "Enter your account e-mail and we will send you a reset code.",
+    "stepEmail": "Your e-mail",
+    "stepSecure": "New password",
+    "backToSignIn": "Back to sign in",
+    "submit": "Send reset code",
+    "sending": "Sending...",
+    "sentTitle": "Check your e-mail",
+    "sentDescription": "We sent a reset code to",
+    "demoBadge": "Demo",
+    "goReset": "Enter the code",
+    "resend": "Send it again",
+    "changeEmail": "Use another e-mail",
+    "unknown": "No account found for this e-mail."
+  },
+  "reset": {
+    "title": "Choose a new password",
+    "description": "Enter the code you received and your new password.",
+    "backToSignIn": "Back to sign in",
+    "code": "Reset code",
+    "codePlaceholder": "6-digit code",
+    "newPassword": "New password",
+    "confirm": "Confirm new password",
+    "showPassword": "Show passwords",
+    "reqLength": "At least 6 characters",
+    "reqMatch": "Both passwords match",
+    "submit": "Reset password",
+    "minLength": "The password must be at least 6 characters.",
+    "mismatch": "The two passwords do not match.",
+    "invalidCode": "Incorrect code.",
+    "expired": "This code has expired. Please request a new one.",
+    "newCode": "Request a new code",
+    "successTitle": "Password updated",
+    "successDescription": "Your password has been updated. You can sign in now.",
+    "signIn": "Sign in",
+    "back": "Back"
+  },
   "roles": {
     "super-admin": {
       "label": "Super administrator",

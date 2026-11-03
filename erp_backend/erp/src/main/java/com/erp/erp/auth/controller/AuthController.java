@@ -1,8 +1,9 @@
-package com.erp.erp.auth;
+package com.erp.erp.auth.controller;
 
 import com.erp.erp.auth.dto.AuthResponse;
 import com.erp.erp.auth.dto.LoginRequest;
 import com.erp.erp.auth.dto.SignupRequest;
+import com.erp.erp.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -31,6 +31,18 @@ export const routes: Routes = [
       import('./features/auth/pages/renew-password/renew-password').then((m) => m.RenewPassword),
   },
   {
+    path: 'forgot-password',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/pages/forgot-password/forgot-password').then((m) => m.ForgotPassword),
+  },
+  {
+    path: 'reset-password',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/pages/reset-password/reset-password').then((m) => m.ResetPassword),
+  },
+  {
     path: 'signup',
     canActivate: [guestGuard],
     loadComponent: () =>

@@ -1,4 +1,4 @@
-package com.erp.erp.auth;
+package com.erp.erp.auth.exception;
 
 /** Business error carrying the HTTP status returned to the client. */
 public class AuthException extends RuntimeException {

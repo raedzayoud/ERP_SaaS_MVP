@@ -38,6 +38,12 @@
         />
       </div>
 
+      <p class="forgot-link">
+        <a routerLink="/forgot-password" [queryParams]="{ email: email() }">
+          {{ t('forgot.link') }}
+        </a>
+      </p>
+
       <p class="demo-hint">{{ t('rbac.login.genericHint') }}</p>
 
       <button type="submit" class="btn btn-primary btn-lg login-btn" [disabled]="loading()">

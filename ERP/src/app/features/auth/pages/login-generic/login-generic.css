@@ -74,6 +74,14 @@
   text-align: center;
   margin: 0 0 4px;
 }
+.forgot-link {
+  font-size: 13px;
+  text-align: right;
+  margin: -8px 0 8px;
+}
+.forgot-link a {
+  color: var(--primary, #2563eb);
+}
 
 .login-footer {
   text-align: center;

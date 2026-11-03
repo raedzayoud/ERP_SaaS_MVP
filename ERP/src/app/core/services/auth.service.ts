@@ -4,6 +4,7 @@ import { User } from '../models/user';
 import { Role, homeRouteForRole, normalizeRole, roleDisplayName } from '../models/role';
 import { DEMO_USERS, DemoUser } from '../data/demo-users';
 import { TenantService, RegisterTenantData } from './tenant.service';
+import { PasswordResetService } from '../../features/auth/services/password-reset.service';
 import { safeStorage } from '../utils/safe-storage';
 
 @Injectable({ providedIn: 'root' })
@@ -11,6 +12,7 @@ export class AuthService {
   private readonly storageKey = 'erp_user';
   private readonly router = inject(Router);
   private readonly tenantService = inject(TenantService);
+  private readonly passwordReset = inject(PasswordResetService);
 
   currentUser = signal<User | null>(this.loadUser());
 
@@ -30,6 +32,12 @@ export class AuthService {
     }
 
     if (demo.email.toLowerCase() !== email.trim().toLowerCase()) {
+      return false;
+    }
+
+    // A password chosen on the forgot-password page replaces the old one.
+    const override = this.passwordReset.getOverride(demo.email);
+    if (override !== null && override !== password) {
       return false;
     }
 

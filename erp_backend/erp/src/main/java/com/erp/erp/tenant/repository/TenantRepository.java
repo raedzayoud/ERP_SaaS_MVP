@@ -1,5 +1,6 @@
-package com.erp.erp.tenant;
+package com.erp.erp.tenant.repository;
 
+import com.erp.erp.tenant.model.Tenant;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

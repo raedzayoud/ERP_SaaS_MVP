@@ -182,6 +182,11 @@ export class TenantService {
     this.patchUser(userId, { mustRenewPassword: mustRenew });
   }
 
+  /** Saves a password chosen by the member on the forgot-password flow. */
+  setUserPassword(userId: number, password: string): void {
+    this.patchUser(userId, { password });
+  }
+
   private patchUser(userId: number, patch: Partial<TenantUser>): void {
     const tenant = this.currentTenant();
     if (!tenant) return;

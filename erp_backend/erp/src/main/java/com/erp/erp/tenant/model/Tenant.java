@@ -1,4 +1,4 @@
-package com.erp.erp.tenant;
+package com.erp.erp.tenant.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

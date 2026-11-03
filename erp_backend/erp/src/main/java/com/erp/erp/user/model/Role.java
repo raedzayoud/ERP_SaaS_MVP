@@ -1,4 +1,4 @@
-package com.erp.erp.user;
+package com.erp.erp.user.model;
 
 /**
  * The 8 roles of the platform. The code is the exact string used by the
