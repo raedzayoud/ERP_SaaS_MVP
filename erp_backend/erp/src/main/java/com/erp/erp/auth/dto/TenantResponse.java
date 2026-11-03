@@ -1,10 +1,12 @@
 package com.erp.erp.auth.dto;
 
+import com.erp.erp.tenant.model.Tenant;
 import java.util.List;
+import java.util.UUID;
 
 /** Mirrors the Angular Tenant interface (core/models/tenant.ts), without the user list. */
 public record TenantResponse(
-        Long id,
+        UUID id,
         String companyName,
         String email,
         String subdomain,
@@ -16,4 +18,24 @@ public record TenantResponse(
         String currency,
         String taxId,
         String address,
-        String createdAt) {}
+        String createdAt,
+        String kycStatus) {
+
+    public static TenantResponse from(Tenant tenant) {
+        return new TenantResponse(
+                tenant.getId(),
+                tenant.getCompanyName(),
+                tenant.getEmail(),
+                tenant.getSubdomain(),
+                tenant.getCountry(),
+                tenant.getLanguage(),
+                tenant.getCompanySize(),
+                tenant.getPlanId(),
+                tenant.getModuleList(),
+                tenant.getCurrency(),
+                tenant.getTaxId(),
+                tenant.getAddress(),
+                tenant.getCreatedAt() == null ? null : tenant.getCreatedAt().toString(),
+                tenant.getKycStatus() == null ? null : tenant.getKycStatus().name());
+    }
+}

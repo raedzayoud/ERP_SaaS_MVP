@@ -1751,8 +1751,8 @@
         "rejected": "Rejected"
       },
       "doc": {
-        "tradeRegister": "Trade register",
-        "taxRegistration": "Tax registration",
+        "tradeRegister": "RNE extract",
+        "taxRegistration": "Tax card (Patente)",
         "idCardRecto": "ID card – front",
         "idCardVerso": "ID card – back"
       },
@@ -2143,18 +2143,18 @@
           "hint": "National ID card, back side"
         },
         "tradeRegister": {
-          "label": "Trade register",
-          "hint": "Extract of the trade register"
+          "label": "Extract from the National Business Register (RNE)",
+          "hint": "Official proof of company registration"
         },
         "taxRegistration": {
-          "label": "Tax registration",
-          "hint": "Patente declaration or tax file"
+          "label": "Tax identification card (Patente)",
+          "hint": "Tax document showing your tax ID"
         }
       },
       "taxId": {
         "label": "Matricule fiscal (tax ID)",
         "placeholder": "1234567/A/M/000",
-        "hint": "Find it on your tax file (patente) or trade-register extract."
+        "hint": "Found on your tax identification card (patente) or your RNE extract."
       }
     },
     "request": {

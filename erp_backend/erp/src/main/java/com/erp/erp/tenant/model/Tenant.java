@@ -2,6 +2,8 @@ package com.erp.erp.tenant.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -9,6 +11,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,8 +29,8 @@ import lombok.Setter;
 public class Tenant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String companyName;
@@ -54,6 +57,20 @@ public class Tenant {
     /** Comma-separated module ids, e.g. "dashboard,contacts,products". */
     @Column(length = 2000)
     private String enabledModules;
+
+    /**
+     * KYC validation state. The SQL default keeps existing companies working
+     * when the column is added by ddl-auto=update.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'APPROVED'")
+    private KycStatus kycStatus = KycStatus.APPROVED;
+
+    /** Super-admin note written when the signup is rejected. */
+    @Column(length = 500)
+    private String decisionNote;
+
+    private Instant decidedAt;
 
     @Column(nullable = false)
     private String currency = "USD";

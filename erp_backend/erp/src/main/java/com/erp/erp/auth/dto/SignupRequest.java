@@ -35,5 +35,9 @@ public record SignupRequest(
         @NotBlank(message = "companySize is required")
         String companySize,
 
+        @NotBlank(message = "taxId is required")
+        @Pattern(regexp = "^[A-Z0-9/-]{5,30}$", message = "taxId must have 5 to 30 chars (A-Z, 0-9, -, /)")
+        String taxId,
+
         @NotEmpty(message = "at least one module is required")
         List<String> modules) {}

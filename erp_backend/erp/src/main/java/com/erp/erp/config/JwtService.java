@@ -1,5 +1,6 @@
-package com.erp.erp.auth.service;
+package com.erp.erp.config;
 
+import com.erp.erp.tenant.model.KycStatus;
 import com.erp.erp.user.model.User;
 import java.time.Instant;
 import java.util.Map;
@@ -35,10 +36,11 @@ public class JwtService {
                 .issuedAt(now)
                 .expiresAt(now.plusMillis(expirationMs))
                 .claims(claimMap -> {
-                    claimMap.put("userId", user.getId());
+                    claimMap.put("userId", user.getId().toString());
                     claimMap.put("role", user.getRole().getCode());
+                    claimMap.put("kycStatus", kycStatus(user));
                     if (user.getTenant() != null) {
-                        claimMap.put("tenantId", user.getTenant().getId());
+                        claimMap.put("tenantId", user.getTenant().getId().toString());
                     }
                 });
 
@@ -46,7 +48,15 @@ public class JwtService {
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims.build())).getTokenValue();
     }
 
-    /** Small helper used by the seeder to log what it created. */
+    /** The claim lets Spring Security restrict a pending signup to GET /me. */
+    private String kycStatus(User user) {
+        if (user.getTenant() == null || user.getTenant().getKycStatus() == null) {
+            return KycStatus.APPROVED.name();
+        }
+        return user.getTenant().getKycStatus().name();
+    }
+
+    /** Small debug helper that exposes only a short prefix of the token. */
     public Map<String, Object> debugClaims(String token) {
         return Map.of("tokenPrefix", token.substring(0, Math.min(20, token.length())) + "...");
     }

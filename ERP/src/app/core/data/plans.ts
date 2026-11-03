@@ -132,6 +132,7 @@ export const PLANS: Plan[] = [
       'invoicing',
       'reports',
       'ai-assistant',
+      'room-live',
       'collab',
     ],
     features: [

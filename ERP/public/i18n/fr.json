@@ -1751,8 +1751,8 @@
         "rejected": "Rejetées"
       },
       "doc": {
-        "tradeRegister": "Registre de commerce",
-        "taxRegistration": "Matricule fiscal",
+        "tradeRegister": "Extrait RNE",
+        "taxRegistration": "Carte fiscale (Patente)",
         "idCardRecto": "CIN – recto",
         "idCardVerso": "CIN – verso"
       },
@@ -2143,18 +2143,18 @@
           "hint": "Carte d'identité nationale, verso"
         },
         "tradeRegister": {
-          "label": "Registre de commerce",
-          "hint": "Extrait du registre de commerce"
+          "label": "Extrait du Registre National des Entreprises (RNE)",
+          "hint": "Document officiel attestant l'immatriculation de l'entreprise"
         },
         "taxRegistration": {
-          "label": "Patente / déclaration fiscale",
-          "hint": "Déclaration de patente ou attestation fiscale"
+          "label": "Carte d'identification fiscale (Patente)",
+          "hint": "Document fiscal mentionnant votre matricule fiscal"
         }
       },
       "taxId": {
         "label": "Matricule fiscal",
         "placeholder": "1234567/A/M/000",
-        "hint": "Il figure sur votre patente ou votre extrait de registre de commerce."
+        "hint": "Il figure sur votre carte d'identification fiscale (patente) ou votre extrait RNE."
       }
     },
     "request": {

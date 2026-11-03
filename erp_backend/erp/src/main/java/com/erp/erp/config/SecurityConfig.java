@@ -2,24 +2,38 @@ package com.erp.erp.config;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
@@ -27,7 +41,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
- * Stateless JWT security: public auth endpoints, everything else protected.
+ * Stateless JWT security: public auth endpoints, business APIs reserved to
+ * approved KYC files, admin signup review reserved to the super-admin.
  */
 @Configuration
 @EnableWebSecurity
@@ -46,11 +61,61 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_PATHS).permitAll()
+                        .requestMatchers("/api/v1/auth/me").authenticated()
+                        .requestMatchers("/api/v1/admin/**").hasAuthority("super-admin")
+                        .requestMatchers("/api/**").hasAuthority("kyc:approved")
                         .anyRequest().authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        .accessDeniedHandler(this::denyAccess));
         return http.build();
+    }
+
+    /**
+     * Adds two authorities to the authenticated user:
+     * - the role code as-is (e.g. "super-admin")
+     * - "kyc:" + kycStatus (e.g. "kyc:pending"), defaulting to approved.
+     */
+    private Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
+        return jwt -> {
+            List<GrantedAuthority> authorities = new ArrayList<>();
+
+            String role = jwt.getClaimAsString("role");
+            if (role != null && !role.isBlank()) {
+                authorities.add(new SimpleGrantedAuthority(role));
+            }
+
+            String kycStatus = jwt.getClaimAsString("kycStatus");
+            String normalized = kycStatus == null || kycStatus.isBlank() ? "APPROVED" : kycStatus;
+            authorities.add(new SimpleGrantedAuthority("kyc:" + normalized.toLowerCase(Locale.ROOT)));
+
+            return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
+        };
+    }
+
+    /** Returns an explicit 403 message so the client can show the KYC state. */
+    private void denyAccess(HttpServletRequest request, HttpServletResponse response, Exception ex)
+            throws IOException {
+        String message = "access denied";
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            boolean pending = authentication.getAuthorities().stream()
+                    .anyMatch(authority -> "kyc:pending".equals(authority.getAuthority()));
+            boolean rejected = authentication.getAuthorities().stream()
+                    .anyMatch(authority -> "kyc:rejected".equals(authority.getAuthority()));
+            if (pending) {
+                message = "registration pending approval";
+            } else if (rejected) {
+                message = "registration rejected";
+            }
+        }
+
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write("{\"message\":\"" + message + "\"}");
     }
 
     @Bean
