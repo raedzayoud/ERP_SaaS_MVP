@@ -19,7 +19,11 @@ public record TenantResponse(
         String taxId,
         String address,
         String createdAt,
-        String kycStatus) {
+        String kycStatus,
+        String billingStatus,
+        String billingInterval,
+        String currentPeriodEnd,
+        boolean cancelAtPeriodEnd) {
 
     public static TenantResponse from(Tenant tenant) {
         return new TenantResponse(
@@ -36,6 +40,10 @@ public record TenantResponse(
                 tenant.getTaxId(),
                 tenant.getAddress(),
                 tenant.getCreatedAt() == null ? null : tenant.getCreatedAt().toString(),
-                tenant.getKycStatus() == null ? null : tenant.getKycStatus().name());
+                tenant.getKycStatus() == null ? null : tenant.getKycStatus().name(),
+                tenant.getBillingStatus() == null ? null : tenant.getBillingStatus().name(),
+                tenant.getBillingInterval() == null ? null : tenant.getBillingInterval().name(),
+                tenant.getCurrentPeriodEnd() == null ? null : tenant.getCurrentPeriodEnd().toString(),
+                tenant.isCancelAtPeriodEnd());
     }
 }

@@ -20,14 +20,17 @@ class KycStorageServiceTest {
     private static final UUID USER_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final UUID DOCUMENT_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
+    private static final byte[] PNG_SIGNATURE = {(byte) 0x89, 0x50, 0x4E, 0x47};
+    private static final byte[] JPEG_SIGNATURE = {(byte) 0xFF, (byte) 0xD8};
+
     @TempDir
     Path tempDir;
 
     @Test
     void storesPngAndReturnsMetadata() {
         KycStorageService service = new KycStorageService(tempDir.toString(), 2048);
-        MockMultipartFile file =
-                new MockMultipartFile("file", "cin.png", "image/png", new byte[] {1, 2, 3});
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "cin.png", "image/png", PNG_SIGNATURE);
 
         KycStorageService.StoredFile stored =
                 service.store(file, TENANT_ID, USER_ID, DOCUMENT_ID, DocumentSlot.ID_CARD_RECTO);
@@ -45,7 +48,7 @@ class KycStorageServiceTest {
         KycStorageService service = new KycStorageService(tempDir.toString(), 2048);
         UUID otherDocumentId = UUID.fromString("44444444-4444-4444-4444-444444444444");
         MockMultipartFile file =
-                new MockMultipartFile("file", "cin.png", "image/png", new byte[] {1});
+                new MockMultipartFile("file", "cin.png", "image/png", PNG_SIGNATURE);
 
         service.store(file, TENANT_ID, USER_ID, DOCUMENT_ID, DocumentSlot.ID_CARD_RECTO);
         KycStorageService.StoredFile other =
@@ -87,5 +90,30 @@ class KycStorageServiceTest {
         assertTrue(DocumentSlot.fromKey("idCardRecto").isPresent());
         assertTrue(DocumentSlot.fromKey("ID_CARD_VERSO").isPresent());
         assertTrue(DocumentSlot.fromKey("unknown").isEmpty());
+    }
+
+    @Test
+    void rejectsContentThatDoesNotMatchItsType() {
+        KycStorageService service = new KycStorageService(tempDir.toString(), 2048);
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "photo.jpg", "image/jpeg", PNG_SIGNATURE);
+
+        AuthException ex = assertThrows(
+                AuthException.class,
+                () -> service.store(file, TENANT_ID, USER_ID, DOCUMENT_ID, DocumentSlot.ID_CARD_RECTO));
+
+        assertEquals(400, ex.getStatus());
+    }
+
+    @Test
+    void acceptsJpegWithValidSignature() {
+        KycStorageService service = new KycStorageService(tempDir.toString(), 2048);
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "scan.jpg", "image/jpeg", JPEG_SIGNATURE);
+
+        KycStorageService.StoredFile stored =
+                service.store(file, TENANT_ID, USER_ID, DOCUMENT_ID, DocumentSlot.TAX_REGISTRATION);
+
+        assertEquals("scan.jpg", stored.originalFileName());
     }
 }

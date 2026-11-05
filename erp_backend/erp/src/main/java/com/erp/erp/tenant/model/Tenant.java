@@ -1,5 +1,7 @@
 package com.erp.erp.tenant.model;
 
+import com.erp.erp.billing.model.BillingInterval;
+import com.erp.erp.billing.model.BillingStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -71,6 +73,29 @@ public class Tenant {
     private String decisionNote;
 
     private Instant decidedAt;
+
+    /**
+     * Existing companies are exempt from billing. New signups explicitly start
+     * with NONE and must complete Stripe Checkout before KYC approval.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'EXEMPT'")
+    private BillingStatus billingStatus = BillingStatus.NONE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private BillingInterval billingInterval;
+
+    @Column(unique = true)
+    private String stripeCustomerId;
+
+    @Column(unique = true)
+    private String stripeSubscriptionId;
+
+    private Instant currentPeriodEnd;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean cancelAtPeriodEnd = false;
 
     @Column(nullable = false)
     private String currency = "USD";

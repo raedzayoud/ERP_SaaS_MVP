@@ -11,6 +11,10 @@ public interface TenantRepository extends JpaRepository<Tenant, UUID> {
 
     Optional<Tenant> findBySubdomain(String subdomain);
 
+    Optional<Tenant> findByStripeCustomerId(String stripeCustomerId);
+
+    Optional<Tenant> findByStripeSubscriptionId(String stripeSubscriptionId);
+
     List<Tenant> findByKycStatusOrderByCreatedAtDesc(KycStatus kycStatus);
 
     boolean existsBySubdomain(String subdomain);

@@ -48,4 +48,35 @@ class PlanResolverTest {
 
         assertEquals(400, ex.getStatus());
     }
+
+    @Test
+    void selectedPlanIsReturnedWhenItContainsEveryModule() {
+        assertEquals("business", PlanResolver.resolve(
+                "business", List.of("dashboard", "stock", "accounting")));
+    }
+
+    @Test
+    void selectedPlanCannotBeCheaperThanTheRequestedModules() {
+        AuthException ex = assertThrows(
+                AuthException.class,
+                () -> PlanResolver.resolve("starter", List.of("dashboard", "stock")));
+
+        assertEquals(400, ex.getStatus());
+        assertEquals("plan does not include all selected modules", ex.getMessage());
+    }
+
+    @Test
+    void selectedPlanIsCaseInsensitive() {
+        assertEquals("starter", PlanResolver.resolve(
+                "STARTER", List.of("dashboard", "invoices")));
+    }
+
+    @Test
+    void unknownSelectedPlanIsRejected() {
+        AuthException ex = assertThrows(
+                AuthException.class,
+                () -> PlanResolver.resolve("gold", List.of("dashboard")));
+
+        assertEquals(400, ex.getStatus());
+    }
 }

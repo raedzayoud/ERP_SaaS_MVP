@@ -2,10 +2,15 @@ package com.erp.erp.auth.service;
 
 import com.erp.erp.auth.dto.AuthResponse;
 import com.erp.erp.auth.dto.LoginRequest;
+import com.erp.erp.auth.dto.LoginResponse;
 import com.erp.erp.auth.dto.SignupRequest;
+import com.erp.erp.auth.dto.SignupResponse;
 import com.erp.erp.auth.dto.TenantResponse;
 import com.erp.erp.auth.dto.UserResponse;
 import com.erp.erp.auth.exception.AuthException;
+import com.erp.erp.billing.dto.BillingUrlResponse;
+import com.erp.erp.billing.model.BillingStatus;
+import com.erp.erp.billing.service.BillingService;
 import com.erp.erp.config.JwtService;
 import com.erp.erp.kyc.model.DocumentSlot;
 import com.erp.erp.kyc.model.SignupDocument;
@@ -22,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,12 +40,16 @@ public class AuthService {
     private static final Set<String> RESERVED_SUBDOMAINS =
             Set.of("admin", "api", "www", "app", "login", "signup", "dashboard");
 
+    private static final String SIGNUP_PENDING_MESSAGE =
+            "Account created. Complete the Stripe payment, then wait for administrator approval.";
+
     private final UserRepository userRepository;
     private final TenantRepository tenantRepository;
     private final SignupDocumentRepository documentRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final KycStorageService storageService;
+    private final BillingService billingService;
 
     public AuthService(
             UserRepository userRepository,
@@ -47,17 +57,19 @@ public class AuthService {
             SignupDocumentRepository documentRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            KycStorageService storageService) {
+            KycStorageService storageService,
+            BillingService billingService) {
         this.userRepository = userRepository;
         this.tenantRepository = tenantRepository;
         this.documentRepository = documentRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.storageService = storageService;
+        this.billingService = billingService;
     }
 
     @Transactional(readOnly = true)
-    public AuthResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         String email = request.email().trim().toLowerCase();
 
         User user = userRepository
@@ -72,13 +84,14 @@ public class AuthService {
             throw new AuthException(403, "account disabled");
         }
 
-        return buildResponse(user);
+        return new LoginResponse(jwtService.generateToken(user));
     }
 
     @Transactional
-    public AuthResponse signup(SignupRequest request, Map<DocumentSlot, MultipartFile> documents) {
+    public SignupResponse signup(SignupRequest request, Map<DocumentSlot, MultipartFile> documents) {
         String email = request.email().trim().toLowerCase();
         String subdomain = request.subdomain().trim().toLowerCase();
+        String planId = PlanResolver.resolve(request.planId(), request.modules());
 
         if (userRepository.existsByEmail(email)) {
             throw new AuthException(400, "email already in use");
@@ -105,10 +118,11 @@ public class AuthService {
         tenant.setCountry(request.country().trim());
         tenant.setLanguage(request.language().trim());
         tenant.setCompanySize(request.companySize().trim());
-        tenant.setPlanId(PlanResolver.resolve(request.modules()));
+        tenant.setPlanId(planId);
         tenant.setModuleList(request.modules());
         tenant.setTaxId(request.taxId().trim());
         tenant.setKycStatus(KycStatus.PENDING);
+        tenant.setBillingStatus(BillingStatus.NONE);
         tenant = tenantRepository.save(tenant);
 
         User user = new User();
@@ -119,9 +133,17 @@ public class AuthService {
         user.setTenant(tenant);
         user = userRepository.save(user);
 
-        storeDocuments(tenant, user, documents);
+        List<String> storedPaths = storeDocuments(tenant, user, documents);
 
-        return buildResponse(user);
+        try {
+            BillingUrlResponse checkout =
+                    billingService.checkout(tenant.getId(), request.billingInterval());
+            return new SignupResponse(SIGNUP_PENDING_MESSAGE, checkout.url());
+        } catch (RuntimeException ex) {
+            storedPaths.forEach(storageService::deleteQuietly);
+            billingService.deleteCustomerQuietly(tenant.getStripeCustomerId());
+            throw ex;
+        }
     }
 
     /** Used by GET /api/v1/auth/me — loads the user behind the JWT subject. */
@@ -134,11 +156,12 @@ public class AuthService {
     }
 
     /**
-     * Validates the four files, saves their DB rows to get UUID ids, then writes
-     * {tenantId}/{userId}/{documentId}.{ext}. If a write fails, the files
-     * already written are removed and the transaction rolls the rows back.
+     * Validates the four files, writes them using a generated file id, then
+     * inserts the rows with their storage paths. If anything fails, files
+     * already written are removed.
      */
-    private void storeDocuments(Tenant tenant, User user, Map<DocumentSlot, MultipartFile> documents) {
+    private List<String> storeDocuments(
+            Tenant tenant, User user, Map<DocumentSlot, MultipartFile> documents) {
         for (DocumentSlot slot : DocumentSlot.values()) {
             storageService.validate(documents.get(slot), slot);
         }
@@ -159,25 +182,27 @@ public class AuthService {
             document.setSizeBytes(file.getSize());
             toSave.add(document);
         }
-        documentRepository.saveAllAndFlush(toSave);
 
         List<String> storedPaths = new ArrayList<>();
         try {
             for (SignupDocument document : toSave) {
+                UUID fileId = UUID.randomUUID();
                 KycStorageService.StoredFile stored = storageService.store(
                         documents.get(document.getSlot()),
                         tenant.getId(),
                         user.getId(),
-                        document.getId(),
+                        fileId,
                         document.getSlot());
                 storedPaths.add(stored.storagePath());
                 document.setStoragePath(stored.storagePath());
             }
-            documentRepository.saveAll(toSave);
+            documentRepository.saveAllAndFlush(toSave);
         } catch (RuntimeException ex) {
             storedPaths.forEach(storageService::deleteQuietly);
             throw ex;
         }
+
+        return storedPaths;
     }
 
     private AuthResponse buildResponse(User user) {

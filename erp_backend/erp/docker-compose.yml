@@ -1,4 +1,4 @@
-# PostgreSQL for the ERP backend (dev).
+# PostgreSQL and pgAdmin for the ERP backend (dev).
 #   Start:   docker compose up -d
 #   Stop:    docker compose down   (data is kept in the erp_pgdata volume)
 # The backend connects on localhost:5433 (5432 is used by the local Windows PostgreSQL).
@@ -15,6 +15,22 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: erp-pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@erp-test.com
+      PGADMIN_DEFAULT_PASSWORD: erpdev1234
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    depends_on:
+      - postgres
+
 volumes:
   pgdata:
     name: erp_pgdata
+  pgadmin:
+    name: erp_pgadmin

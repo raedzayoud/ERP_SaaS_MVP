@@ -1,5 +1,10 @@
 HELP.md
 target/
+
+# Local environment variables (never commit real secrets)
+.env
+.env.*
+!.env.example
 uploads/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

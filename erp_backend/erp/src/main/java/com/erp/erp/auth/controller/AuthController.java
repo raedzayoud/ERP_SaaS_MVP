@@ -2,7 +2,9 @@ package com.erp.erp.auth.controller;
 
 import com.erp.erp.auth.dto.AuthResponse;
 import com.erp.erp.auth.dto.LoginRequest;
+import com.erp.erp.auth.dto.LoginResponse;
 import com.erp.erp.auth.dto.SignupRequest;
+import com.erp.erp.auth.dto.SignupResponse;
 import com.erp.erp.auth.service.AuthService;
 import com.erp.erp.kyc.model.DocumentSlot;
 import jakarta.validation.Valid;
@@ -32,7 +34,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
@@ -42,7 +44,7 @@ public class AuthController {
      * - parts "idCardRecto", "idCardVerso", "tradeRegister", "taxRegistration": the KYC files
      */
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<AuthResponse> signup(
+    public ResponseEntity<SignupResponse> signup(
             @Valid @RequestPart("data") SignupRequest data,
             @RequestPart("idCardRecto") MultipartFile idCardRecto,
             @RequestPart("idCardVerso") MultipartFile idCardVerso,

@@ -62,6 +62,9 @@ public class SignupReviewService {
     @Transactional
     public SignupDecisionResponse approve(UUID tenantId) {
         Tenant tenant = requirePending(tenantId);
+        if (tenant.getBillingStatus() == null || !tenant.getBillingStatus().allowsKycApproval()) {
+            throw new AuthException(400, "payment required before approval");
+        }
         tenant.setKycStatus(KycStatus.APPROVED);
         tenant.setDecisionNote(null);
         tenant.setDecidedAt(Instant.now());

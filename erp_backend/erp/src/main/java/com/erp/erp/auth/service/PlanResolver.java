@@ -33,7 +33,37 @@ public final class PlanResolver {
 
     private PlanResolver() {}
 
+    /** Validates that the selected plan includes every requested module. */
+    public static String resolve(String planId, List<String> modules) {
+        String plan = normalizePlan(planId);
+        Set<String> requested = requestedModules(modules);
+
+        if (!PLANS.get(plan).containsAll(requested)) {
+            throw new AuthException(400, "plan does not include all selected modules");
+        }
+        return plan;
+    }
+
     public static String resolve(List<String> modules) {
+        Set<String> requested = requestedModules(modules);
+
+        for (String plan : ORDERED_PLANS) {
+            if (PLANS.get(plan).containsAll(requested)) {
+                return plan;
+            }
+        }
+        return "starter";
+    }
+
+    private static String normalizePlan(String planId) {
+        String value = planId == null ? "" : planId.trim().toLowerCase(Locale.ROOT);
+        if (!PLANS.containsKey(value)) {
+            throw new AuthException(400, "planId must be starter, business or enterprise");
+        }
+        return value;
+    }
+
+    private static Set<String> requestedModules(List<String> modules) {
         Set<String> requested = new LinkedHashSet<>();
         if (modules != null) {
             for (String module : modules) {
@@ -49,12 +79,6 @@ public final class PlanResolver {
                 }
             }
         }
-
-        for (String plan : ORDERED_PLANS) {
-            if (PLANS.get(plan).containsAll(requested)) {
-                return plan;
-            }
-        }
-        return "starter";
+        return requested;
     }
 }

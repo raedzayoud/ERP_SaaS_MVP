@@ -1,5 +1,6 @@
 package com.erp.erp.config;
 
+import com.erp.erp.billing.model.BillingStatus;
 import com.erp.erp.tenant.model.KycStatus;
 import com.erp.erp.user.model.User;
 import java.time.Instant;
@@ -39,6 +40,7 @@ public class JwtService {
                     claimMap.put("userId", user.getId().toString());
                     claimMap.put("role", user.getRole().getCode());
                     claimMap.put("kycStatus", kycStatus(user));
+                    claimMap.put("billingStatus", billingStatus(user));
                     if (user.getTenant() != null) {
                         claimMap.put("tenantId", user.getTenant().getId().toString());
                     }
@@ -54,6 +56,14 @@ public class JwtService {
             return KycStatus.APPROVED.name();
         }
         return user.getTenant().getKycStatus().name();
+    }
+
+    /** Missing billing means a legacy token or the tenant-less super-admin. */
+    private String billingStatus(User user) {
+        if (user.getTenant() == null || user.getTenant().getBillingStatus() == null) {
+            return BillingStatus.EXEMPT.name();
+        }
+        return user.getTenant().getBillingStatus().name();
     }
 
     /** Small debug helper that exposes only a short prefix of the token. */

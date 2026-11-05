@@ -3,8 +3,10 @@ package com.erp.erp.kyc.service;
 import com.erp.erp.auth.exception.AuthException;
 import com.erp.erp.kyc.model.DocumentSlot;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,6 +31,12 @@ public class KycStorageService {
             "image/png", "png",
             "image/jpeg", "jpg",
             "application/pdf", "pdf");
+
+    /** First bytes of each accepted format (file signature / magic bytes). */
+    private static final Map<String, byte[]> SIGNATURES = Map.of(
+            "image/png", new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47},
+            "image/jpeg", new byte[] {(byte) 0xFF, (byte) 0xD8},
+            "application/pdf", new byte[] {0x25, 0x50, 0x44, 0x46});
 
     private final Path root;
     private final long maxBytes;
@@ -97,7 +105,26 @@ public class KycStorageService {
         if (file.getSize() > maxBytes) {
             throw new AuthException(400, slot.getKey() + ": file is larger than " + (maxBytes / 1024) + " KB");
         }
+        checkSignature(file, contentType, slot);
         return extension;
+    }
+
+    /** Rejects a file whose bytes are not the format declared in Content-Type. */
+    private void checkSignature(MultipartFile file, String contentType, DocumentSlot slot) {
+        byte[] expected = SIGNATURES.get(contentType);
+        if (expected == null) {
+            return;
+        }
+
+        byte[] actual = new byte[expected.length];
+        try (InputStream in = file.getInputStream()) {
+            if (in.readNBytes(actual, 0, actual.length) < actual.length
+                    || !Arrays.equals(expected, actual)) {
+                throw new AuthException(400, slot.getKey() + ": file content does not match its type");
+            }
+        } catch (IOException ex) {
+            throw new AuthException(400, slot.getKey() + ": file could not be read");
+        }
     }
 
     private String contentType(MultipartFile file) {

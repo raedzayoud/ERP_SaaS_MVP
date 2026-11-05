@@ -40,4 +40,12 @@ public record SignupRequest(
         String taxId,
 
         @NotEmpty(message = "at least one module is required")
-        List<String> modules) {}
+        List<String> modules,
+
+        @NotBlank(message = "planId is required")
+        @Pattern(regexp = "(?i)starter|business|enterprise", message = "planId must be starter, business or enterprise")
+        String planId,
+
+        @NotBlank(message = "billingInterval is required")
+        @Pattern(regexp = "(?i)MONTHLY|ANNUAL", message = "billingInterval must be MONTHLY or ANNUAL")
+        String billingInterval) {}

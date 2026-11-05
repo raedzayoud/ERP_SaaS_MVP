@@ -51,6 +51,7 @@ public class SecurityConfig {
     private static final String[] PUBLIC_PATHS = {
         "/api/v1/auth/login",
         "/api/v1/auth/signup",
+        "/api/v1/webhooks/stripe",
     };
 
     @Bean
@@ -63,7 +64,9 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_PATHS).permitAll()
                         .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers("/api/v1/admin/**").hasAuthority("super-admin")
-                        .requestMatchers("/api/**").hasAuthority("kyc:approved")
+                        .requestMatchers("/api/v1/billing/**")
+                                .hasAnyAuthority("kyc:pending", "kyc:approved")
+                        .requestMatchers("/api/**").hasAuthority("access:full")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
@@ -91,6 +94,19 @@ public class SecurityConfig {
             String normalized = kycStatus == null || kycStatus.isBlank() ? "APPROVED" : kycStatus;
             authorities.add(new SimpleGrantedAuthority("kyc:" + normalized.toLowerCase(Locale.ROOT)));
 
+            // Legacy tokens have no billingStatus: treat them as exempt so
+            // existing approved users are not locked out after deployment.
+            String billingStatus = jwt.getClaimAsString("billingStatus");
+            String normalizedBilling =
+                    billingStatus == null || billingStatus.isBlank() ? "EXEMPT" : billingStatus;
+
+            boolean kycApproved = "approved".equalsIgnoreCase(normalized);
+            boolean billingOk = "active".equalsIgnoreCase(normalizedBilling)
+                    || "exempt".equalsIgnoreCase(normalizedBilling);
+            if (kycApproved && billingOk) {
+                authorities.add(new SimpleGrantedAuthority("access:full"));
+            }
+
             return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
         };
     }
@@ -109,6 +125,14 @@ public class SecurityConfig {
                 message = "registration pending approval";
             } else if (rejected) {
                 message = "registration rejected";
+            } else {
+                boolean approved = authentication.getAuthorities().stream()
+                        .anyMatch(authority -> "kyc:approved".equals(authority.getAuthority()));
+                boolean fullAccess = authentication.getAuthorities().stream()
+                        .anyMatch(authority -> "access:full".equals(authority.getAuthority()));
+                if (approved && !fullAccess) {
+                    message = "payment required";
+                }
             }
         }
 
