@@ -2,10 +2,11 @@ package com.erp.erp.auth.service;
 
 import com.erp.erp.auth.dto.AuthResponse;
 import com.erp.erp.auth.dto.LoginRequest;
-import com.erp.erp.auth.dto.LoginResponse;
+import com.erp.erp.auth.dto.RefreshTokenRequest;
 import com.erp.erp.auth.dto.SignupRequest;
 import com.erp.erp.auth.dto.SignupResponse;
 import com.erp.erp.auth.dto.TenantResponse;
+import com.erp.erp.auth.dto.TokenPairResponse;
 import com.erp.erp.auth.dto.UserResponse;
 import com.erp.erp.auth.exception.AuthException;
 import com.erp.erp.billing.dto.BillingUrlResponse;
@@ -48,6 +49,7 @@ public class AuthService {
     private final SignupDocumentRepository documentRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
     private final KycStorageService storageService;
     private final BillingService billingService;
 
@@ -57,6 +59,7 @@ public class AuthService {
             SignupDocumentRepository documentRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
+            RefreshTokenService refreshTokenService,
             KycStorageService storageService,
             BillingService billingService) {
         this.userRepository = userRepository;
@@ -64,12 +67,13 @@ public class AuthService {
         this.documentRepository = documentRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
         this.storageService = storageService;
         this.billingService = billingService;
     }
 
-    @Transactional(readOnly = true)
-    public LoginResponse login(LoginRequest request) {
+    @Transactional
+    public TokenPairResponse login(LoginRequest request) {
         String email = request.email().trim().toLowerCase();
 
         User user = userRepository
@@ -84,7 +88,19 @@ public class AuthService {
             throw new AuthException(403, "account disabled");
         }
 
-        return new LoginResponse(jwtService.generateToken(user));
+        return tokenPair(user, refreshTokenService.create(user));
+    }
+
+    /** Rotates the refresh token and returns a fresh access token. */
+    @Transactional
+    public TokenPairResponse refresh(RefreshTokenRequest request) {
+        RefreshTokenService.Rotation rotation = refreshTokenService.rotate(request.refreshToken());
+        return tokenPair(rotation.user(), rotation.refreshToken());
+    }
+
+    /** Revokes the refresh token; safe to call more than once. */
+    public void logout(RefreshTokenRequest request) {
+        refreshTokenService.revoke(request.refreshToken());
     }
 
     @Transactional
@@ -203,6 +219,14 @@ public class AuthService {
         }
 
         return storedPaths;
+    }
+
+    private TokenPairResponse tokenPair(User user, String refreshToken) {
+        return new TokenPairResponse(
+                jwtService.generateToken(user),
+                refreshToken,
+                "Bearer",
+                jwtService.getExpirationSeconds());
     }
 
     private AuthResponse buildResponse(User user) {

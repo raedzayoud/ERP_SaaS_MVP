@@ -1,11 +1,17 @@
 package com.erp.erp.auth.controller;
 
+import com.erp.erp.auth.dto.AuthMessageResponse;
 import com.erp.erp.auth.dto.AuthResponse;
+import com.erp.erp.auth.dto.ForgotPasswordRequest;
+import com.erp.erp.auth.dto.ForgotPasswordResponse;
 import com.erp.erp.auth.dto.LoginRequest;
-import com.erp.erp.auth.dto.LoginResponse;
+import com.erp.erp.auth.dto.RefreshTokenRequest;
+import com.erp.erp.auth.dto.ResetPasswordRequest;
 import com.erp.erp.auth.dto.SignupRequest;
 import com.erp.erp.auth.dto.SignupResponse;
+import com.erp.erp.auth.dto.TokenPairResponse;
 import com.erp.erp.auth.service.AuthService;
+import com.erp.erp.auth.service.PasswordResetService;
 import com.erp.erp.kyc.model.DocumentSlot;
 import jakarta.validation.Valid;
 import java.util.EnumMap;
@@ -28,14 +34,28 @@ import org.springframework.web.multipart.MultipartFile;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
         this.authService = authService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<TokenPairResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenPairResponse> refresh(
+            @Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refresh(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authService.logout(request);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -58,6 +78,18 @@ public class AuthController {
         documents.put(DocumentSlot.TAX_REGISTRATION, taxRegistration);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.signup(data, documents));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity.ok(passwordResetService.forgotPassword(request));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<AuthMessageResponse> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(passwordResetService.resetPassword(request));
     }
 
     /** Returns the current user + tenant from the JWT. Protected by the filter chain. */

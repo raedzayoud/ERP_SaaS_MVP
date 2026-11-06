@@ -1,5 +1,6 @@
 package com.erp.erp.config;
 
+import com.erp.erp.auth.permission.RolePermissions;
 import com.erp.erp.billing.model.BillingStatus;
 import com.erp.erp.tenant.model.KycStatus;
 import com.erp.erp.user.model.User;
@@ -28,6 +29,11 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
+    /** Access-token lifetime in seconds, returned to the frontend. */
+    public long getExpirationSeconds() {
+        return expirationMs / 1000;
+    }
+
     public String generateToken(User user) {
         Instant now = Instant.now();
 
@@ -39,6 +45,7 @@ public class JwtService {
                 .claims(claimMap -> {
                     claimMap.put("userId", user.getId().toString());
                     claimMap.put("role", user.getRole().getCode());
+                    claimMap.put("permissions", RolePermissions.of(user.getRole()));
                     claimMap.put("kycStatus", kycStatus(user));
                     claimMap.put("billingStatus", billingStatus(user));
                     if (user.getTenant() != null) {

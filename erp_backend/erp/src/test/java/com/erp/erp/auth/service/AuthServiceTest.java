@@ -12,9 +12,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.erp.erp.auth.dto.LoginRequest;
-import com.erp.erp.auth.dto.LoginResponse;
+import com.erp.erp.auth.dto.RefreshTokenRequest;
 import com.erp.erp.auth.dto.SignupRequest;
 import com.erp.erp.auth.dto.SignupResponse;
+import com.erp.erp.auth.dto.TokenPairResponse;
 import com.erp.erp.auth.exception.AuthException;
 import com.erp.erp.billing.dto.BillingUrlResponse;
 import com.erp.erp.billing.service.BillingService;
@@ -45,28 +46,50 @@ class AuthServiceTest {
     private final SignupDocumentRepository documents = mock(SignupDocumentRepository.class);
     private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
     private final JwtService jwtService = mock(JwtService.class);
+    private final RefreshTokenService refreshTokens = mock(RefreshTokenService.class);
     private final KycStorageService storage = mock(KycStorageService.class);
     private final BillingService billing = mock(BillingService.class);
 
     private final AuthService service = new AuthService(
-            users, tenants, documents, passwordEncoder, jwtService, storage, billing);
+            users, tenants, documents, passwordEncoder, jwtService, refreshTokens, storage, billing);
 
     @Test
-    void loginReturnsOnlyTheAccessToken() {
-        User user = new User();
-        user.setId(UUID.randomUUID());
-        user.setEmail("owner@acme.com");
-        user.setPasswordHash("hash");
-        user.setRole(Role.ADMIN_ENTREPRISE);
-        user.setActive(true);
+    void loginReturnsAccessAndRefreshTokens() {
+        User user = activeUser();
 
         when(users.findByEmail("owner@acme.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("secret123", "hash")).thenReturn(true);
         when(jwtService.generateToken(user)).thenReturn("jwt-token");
+        when(jwtService.getExpirationSeconds()).thenReturn(900L);
+        when(refreshTokens.create(user)).thenReturn("refresh-token");
 
-        LoginResponse response = service.login(new LoginRequest("owner@acme.com", "secret123"));
+        TokenPairResponse response = service.login(new LoginRequest("owner@acme.com", "secret123"));
 
         assertEquals("jwt-token", response.accessToken());
+        assertEquals("refresh-token", response.refreshToken());
+        assertEquals("Bearer", response.tokenType());
+        assertEquals(900, response.expiresIn());
+    }
+
+    @Test
+    void refreshRotatesTheTokenAndReturnsANewPair() {
+        User user = activeUser();
+        when(refreshTokens.rotate("old-refresh"))
+                .thenReturn(new RefreshTokenService.Rotation(user, "new-refresh"));
+        when(jwtService.generateToken(user)).thenReturn("new-access");
+        when(jwtService.getExpirationSeconds()).thenReturn(900L);
+
+        TokenPairResponse response = service.refresh(new RefreshTokenRequest("old-refresh"));
+
+        assertEquals("new-access", response.accessToken());
+        assertEquals("new-refresh", response.refreshToken());
+    }
+
+    @Test
+    void logoutRevokesTheRefreshToken() {
+        service.logout(new RefreshTokenRequest("refresh-token"));
+
+        verify(refreshTokens).revoke("refresh-token");
     }
 
     @Test
@@ -117,6 +140,16 @@ class AuthServiceTest {
         assertThrows(RuntimeException.class, () -> service.signup(starterRequest(), documents()));
 
         verify(storage, times(4)).deleteQuietly(anyString());
+    }
+
+    private User activeUser() {
+        User user = new User();
+        user.setId(UUID.randomUUID());
+        user.setEmail("owner@acme.com");
+        user.setPasswordHash("hash");
+        user.setRole(Role.ADMIN_ENTREPRISE);
+        user.setActive(true);
+        return user;
     }
 
     private void stubSignupPersistence(UUID tenantId, UUID userId) {
