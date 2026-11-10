@@ -1,0 +1,233 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        {{ isEdit
+          ? t('marketing.promotionForm.editTitle')
+          : t('marketing.promotionForm.newTitle') }}
+      </h1>
+      <p class="page-subtitle">
+        {{ isEdit
+          ? t('marketing.promotionForm.editSubtitle')
+          : t('marketing.promotionForm.newSubtitle') }}
+      </p>
+    </div>
+    <a routerLink="/marketing/promotions" class="btn btn-secondary">
+      {{ t('common.back') }}
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="card">
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    </div>
+  } @else if (notFound()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.promotionForm.notFound') }}</p>
+        <p class="state-text">{{ t('marketing.promotionForm.notFoundHint') }}</p>
+        <a routerLink="/marketing/promotions" class="btn btn-secondary">
+          {{ t('common.back') }}
+        </a>
+      </div>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.promotions.loadError') }}</p>
+        <p class="state-text">{{ t('marketing.promotions.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="loadOptions()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()">
+      @if (saveFailed()) {
+        <div class="alert alert-danger" role="alert">
+          {{ t('marketing.promotionForm.saveError') }}
+        </div>
+      }
+
+      @if (segments().length === 0) {
+        <div class="alert alert-warning" role="alert">
+          {{ t('marketing.promotionForm.noSegments') }}
+          <a routerLink="/marketing/segments/new">{{ t('marketing.segments.newSegment') }}</a>
+        </div>
+      }
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label" for="promotion-name">
+            {{ t('marketing.promotionForm.name') }}
+          </label>
+          <input
+            id="promotion-name"
+            type="text"
+            class="form-control"
+            formControlName="name"
+            [class.is-invalid]="isInvalid('name')"
+          />
+          @if (isInvalid('name')) {
+            <span class="field-error">{{ t('marketing.promotionForm.required') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="promotion-segment">
+            {{ t('marketing.promotionForm.segment') }}
+          </label>
+          <select
+            id="promotion-segment"
+            class="form-control"
+            formControlName="segmentId"
+            [class.is-invalid]="isInvalid('segmentId')"
+          >
+            <option value="">{{ t('marketing.promotionForm.required') }}</option>
+            @for (segment of segments(); track segment.id) {
+              <option [value]="segment.id">{{ segment.name }}</option>
+            }
+          </select>
+          @if (isInvalid('segmentId')) {
+            <span class="field-error">{{ t('marketing.promotionForm.required') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="promotion-campaign">
+            {{ t('marketing.promotionForm.campaign') }}
+          </label>
+          <select id="promotion-campaign" class="form-control" formControlName="campaignId">
+            <option value="">{{ t('marketing.promotionForm.noCampaign') }}</option>
+            @for (campaign of campaigns(); track campaign.id) {
+              <option [value]="campaign.id">{{ campaign.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field form-field-wide">
+          <label class="form-label" for="promotion-description">
+            {{ t('marketing.promotionForm.description') }}
+          </label>
+          <textarea
+            id="promotion-description"
+            class="form-control"
+            rows="3"
+            formControlName="description"
+          ></textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="promotion-type">
+            {{ t('marketing.promotionForm.discountType') }}
+          </label>
+          <select id="promotion-type" class="form-control" formControlName="discountType">
+            <option value="percentage">
+              {{ t('marketing.promotions.types.percentage') }}
+            </option>
+            <option value="fixed_amount">
+              {{ t('marketing.promotions.types.fixed_amount') }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="promotion-value">
+            {{ t('marketing.promotionForm.discountValue') }}
+          </label>
+          <input
+            id="promotion-value"
+            type="number"
+            min="0.01"
+            step="0.01"
+            class="form-control"
+            formControlName="discountValue"
+            [class.is-invalid]="
+              isInvalid('discountValue') || (submitted() && percentageProblem())
+            "
+          />
+          @if (isInvalid('discountValue')) {
+            <span class="field-error">{{ t('marketing.promotionForm.discountError') }}</span>
+          } @else if (submitted() && percentageProblem()) {
+            <span class="field-error">
+              {{ t('marketing.promotionForm.percentageError') }}
+            </span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="promotion-min-order">
+            {{ t('marketing.promotionForm.minOrderAmount') }}
+          </label>
+          <input
+            id="promotion-min-order"
+            type="number"
+            min="0"
+            step="0.01"
+            class="form-control"
+            formControlName="minOrderAmount"
+            [class.is-invalid]="isInvalid('minOrderAmount')"
+          />
+          @if (isInvalid('minOrderAmount')) {
+            <span class="field-error">{{ t('marketing.promotionForm.minOrderError') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="promotion-start">
+            {{ t('marketing.promotionForm.startDate') }}
+          </label>
+          <input
+            id="promotion-start"
+            type="date"
+            class="form-control"
+            formControlName="startDate"
+            [class.is-invalid]="isInvalid('startDate')"
+          />
+          @if (isInvalid('startDate')) {
+            <span class="field-error">{{ t('marketing.promotionForm.required') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="promotion-end">
+            {{ t('marketing.promotionForm.endDate') }}
+          </label>
+          <input
+            id="promotion-end"
+            type="date"
+            class="form-control"
+            formControlName="endDate"
+            [class.is-invalid]="isInvalid('endDate') || (submitted() && dateProblem())"
+          />
+          @if (isInvalid('endDate')) {
+            <span class="field-error">{{ t('marketing.promotionForm.required') }}</span>
+          } @else if (submitted() && dateProblem()) {
+            <span class="field-error">{{ t('marketing.promotionForm.dateError') }}</span>
+          }
+        </div>
+
+        <label class="form-check form-field-wide">
+          <input type="checkbox" formControlName="active" />
+          <span>{{ t('marketing.promotionForm.active') }}</span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/marketing/promotions" class="btn btn-secondary">
+          {{ t('common.cancel') }}
+        </a>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="saving() || segments().length === 0"
+        >
+          {{ saving() ? t('common.saving') : t('marketing.promotionForm.save') }}
+        </button>
+      </div>
+    </form>
+  }
+</ng-container>

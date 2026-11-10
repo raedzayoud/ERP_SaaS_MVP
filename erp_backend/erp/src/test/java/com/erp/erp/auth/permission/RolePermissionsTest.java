@@ -15,7 +15,7 @@ class RolePermissionsTest {
     void adminHasEveryActionOnEveryModule() {
         Map<String, List<String>> permissions = RolePermissions.of(Role.ADMIN_ENTREPRISE);
 
-        assertEquals(17, permissions.size());
+        assertEquals(18, permissions.size());
         assertEquals(List.of("view", "create", "update", "delete", "validate", "export"),
                 permissions.get("settings"));
     }
@@ -29,6 +29,9 @@ class RolePermissionsTest {
         assertTrue(permissions.containsKey("collab"));
         assertFalse(permissions.containsKey("accounting"));
         assertEquals(List.of("view"), permissions.get("support"));
+        assertEquals(
+                List.of("view", "create", "update", "delete", "validate", "export"),
+                permissions.get("marketing"));
     }
 
     @Test
@@ -40,6 +43,7 @@ class RolePermissionsTest {
         assertFalse(permissions.get("invoices").contains("delete"));
         assertEquals(List.of("view", "validate", "export"), permissions.get("hr"));
         assertEquals(List.of("view", "validate", "export"), permissions.get("support"));
+        assertEquals(List.of("view", "export"), permissions.get("marketing"));
     }
 
     @Test

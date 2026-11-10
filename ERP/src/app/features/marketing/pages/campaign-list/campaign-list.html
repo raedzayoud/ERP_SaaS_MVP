@@ -1,0 +1,123 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('marketing.campaigns.title') }}</h1>
+      <p class="page-subtitle">{{ t('marketing.campaigns.subtitle') }}</p>
+    </div>
+    @if (permissions.can('marketing', 'create')) {
+      <a routerLink="/marketing/campaigns/new" class="btn btn-primary">
+        + {{ t('marketing.campaigns.newCampaign') }}
+      </a>
+    }
+  </div>
+
+  @if (notice()) {
+    <div [class]="noticeError() ? 'alert alert-danger' : 'alert alert-success'" role="status">
+      {{ t(notice()) }}
+    </div>
+  }
+
+  <div class="card">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="form-control search-input"
+        [placeholder]="t('marketing.campaigns.searchPlaceholder')"
+        [attr.aria-label]="t('marketing.campaigns.searchPlaceholder')"
+        [formControl]="searchControl"
+      />
+
+      <select
+        class="form-control filter-select"
+        [value]="activeFilter()"
+        [attr.aria-label]="t('common.status')"
+        (change)="onActiveFilter($event)"
+      >
+        <option value="">{{ t('common.all') }}</option>
+        <option value="active">{{ t('marketing.campaigns.status.active') }}</option>
+        <option value="inactive">{{ t('marketing.campaigns.status.inactive') }}</option>
+      </select>
+    </div>
+
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.campaigns.loadError') }}</p>
+        <p class="state-text">{{ t('marketing.campaigns.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    } @else if (campaigns().length === 0) {
+      <div class="state-block">
+        <p class="state-title">
+          {{ search() || activeFilter()
+            ? t('marketing.campaigns.noMatch')
+            : t('marketing.campaigns.emptyTitle') }}
+        </p>
+        <p class="state-text">
+          {{ search() || activeFilter()
+            ? t('marketing.campaigns.noMatchHint')
+            : t('marketing.campaigns.emptyHint') }}
+        </p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ t('marketing.campaigns.columns.name') }}</th>
+              <th>{{ t('marketing.campaigns.columns.channel') }}</th>
+              <th>{{ t('marketing.campaigns.columns.period') }}</th>
+              <th>{{ t('marketing.campaigns.columns.budget') }}</th>
+              <th>{{ t('marketing.campaigns.columns.status') }}</th>
+              <th>{{ t('marketing.campaigns.columns.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (campaign of campaigns(); track campaign.id) {
+              <tr>
+                <td class="cell-strong">{{ campaign.name }}</td>
+                <td>{{ t('marketing.campaigns.channels.' + campaign.channel) }}</td>
+                <td>{{ campaign.startDate }} → {{ campaign.endDate }}</td>
+                <td>
+                  {{ campaign.budget | currency: campaign.currency : 'symbol' : '1.2-2' }}
+                </td>
+                <td>
+                  <span [class]="statusClass(campaign.active)">
+                    {{ campaign.active
+                      ? t('marketing.campaigns.status.active')
+                      : t('marketing.campaigns.status.inactive') }}
+                  </span>
+                </td>
+                <td class="col-actions">
+                  @if (permissions.can('marketing', 'update')) {
+                    <a
+                      [routerLink]="['/marketing/campaigns', campaign.id]"
+                      class="btn btn-secondary btn-sm"
+                    >
+                      {{ t('common.edit') }}
+                    </a>
+                  }
+                  @if (permissions.can('marketing', 'delete')) {
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-sm"
+                      (click)="delete(campaign)"
+                    >
+                      {{ t('common.delete') }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

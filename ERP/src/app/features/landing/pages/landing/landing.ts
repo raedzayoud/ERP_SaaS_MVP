@@ -27,6 +27,9 @@ export class Landing {
     { icon: '🏬', key: 'stock' },
     { icon: '📒', key: 'accounting' },
     { icon: '📈', key: 'reports' },
+    { icon: '👔', key: 'hr' },
+    { icon: '🎧', key: 'support' },
+    { icon: '📣', key: 'marketing' },
     { icon: '🤖', key: 'ai' },
   ];
 

@@ -1,0 +1,138 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('marketing.evaluator.title') }}</h1>
+      <p class="page-subtitle">{{ t('marketing.evaluator.subtitle') }}</p>
+    </div>
+  </div>
+
+  <div class="evaluator-grid">
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="evaluate()">
+      @if (evaluateFailed()) {
+        <div class="alert alert-danger" role="alert">
+          {{ t('marketing.evaluator.error') }}
+        </div>
+      }
+
+      <div class="form-field">
+        <label class="form-label" for="evaluator-customer">
+          {{ t('marketing.evaluator.customer') }}
+        </label>
+        @if (customersLoading()) {
+          <p class="state-text">{{ t('common.loading') }}</p>
+        } @else if (customersFailed()) {
+          <div class="alert alert-danger" role="alert">
+            {{ t('marketing.evaluator.loadCustomersError') }}
+            <button type="button" class="btn btn-secondary btn-sm" (click)="loadCustomers()">
+              {{ t('common.retry') }}
+            </button>
+          </div>
+        } @else {
+          <select
+            id="evaluator-customer"
+            class="form-control"
+            formControlName="customerId"
+            [class.is-invalid]="isInvalid('customerId')"
+          >
+            <option value="">{{ t('marketing.evaluator.selectCustomer') }}</option>
+            @for (customer of customers(); track customer.id) {
+              <option [value]="customer.id">{{ customer.name }}</option>
+            }
+          </select>
+          @if (isInvalid('customerId')) {
+            <span class="field-error">{{ t('marketing.evaluator.selectCustomer') }}</span>
+          }
+        }
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label" for="evaluator-subtotal">
+            {{ t('marketing.evaluator.subtotal') }}
+          </label>
+          <input
+            id="evaluator-subtotal"
+            type="number"
+            min="0"
+            step="0.01"
+            class="form-control"
+            formControlName="subtotal"
+            [class.is-invalid]="isInvalid('subtotal')"
+          />
+          @if (isInvalid('subtotal')) {
+            <span class="field-error">{{ t('marketing.evaluator.subtotalError') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="evaluator-currency">
+            {{ t('marketing.evaluator.currency') }}
+          </label>
+          <input
+            id="evaluator-currency"
+            type="text"
+            class="form-control"
+            [value]="currency"
+            readonly
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="evaluator-date">
+            {{ t('marketing.evaluator.date') }}
+          </label>
+          <input id="evaluator-date" type="date" class="form-control" formControlName="date" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="evaluating()">
+          {{ evaluating() ? t('marketing.evaluator.evaluating') : t('marketing.evaluator.evaluate') }}
+        </button>
+      </div>
+    </form>
+
+    <div class="card result-card">
+      <h2 class="section-title">{{ t('marketing.evaluator.eligible') }}</h2>
+
+      @if (eligibleLoading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (!form.controls.customerId.value) {
+        <p class="state-text">{{ t('marketing.evaluator.selectCustomer') }}</p>
+      } @else if (eligible().length === 0) {
+        <p class="state-text">{{ t('marketing.evaluator.noEligible') }}</p>
+      } @else {
+        <ul class="eligible-list">
+          @for (promotion of eligible(); track promotion.id) {
+            <li class="eligible-item">
+              <span class="eligible-name">{{ promotion.name }}</span>
+              <span class="badge badge-success">{{ discountLabel(promotion) }}</span>
+            </li>
+          }
+        </ul>
+      }
+
+      @if (result(); as evaluation) {
+        <div class="result-block">
+          <h2 class="section-title">{{ t('marketing.evaluator.applied') }}</h2>
+          @if (evaluation.promotionName) {
+            <p class="result-name">{{ evaluation.promotionName }}</p>
+            <div class="result-row">
+              <span>{{ t('marketing.evaluator.discountAmount') }}</span>
+              <strong>{{ money(evaluation.discountAmount) }}</strong>
+            </div>
+          } @else {
+            <p class="state-text">{{ t('marketing.evaluator.noPromotion') }}</p>
+          }
+          <div class="result-row result-total">
+            <span>{{ t('marketing.evaluator.finalTotal') }}</span>
+            <strong>{{ money(evaluation.finalTotal) }}</strong>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

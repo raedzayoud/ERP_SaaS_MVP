@@ -1,0 +1,136 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        {{ isEdit
+          ? t('marketing.segmentForm.editTitle')
+          : t('marketing.segmentForm.newTitle') }}
+      </h1>
+      <p class="page-subtitle">
+        {{ isEdit
+          ? t('marketing.segmentForm.editSubtitle')
+          : t('marketing.segmentForm.newSubtitle') }}
+      </p>
+    </div>
+    <a routerLink="/marketing/segments" class="btn btn-secondary">
+      {{ t('common.back') }}
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="card">
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    </div>
+  } @else if (notFound()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.segmentForm.notFound') }}</p>
+        <p class="state-text">{{ t('marketing.segmentForm.notFoundHint') }}</p>
+        <a routerLink="/marketing/segments" class="btn btn-secondary">
+          {{ t('common.back') }}
+        </a>
+      </div>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.segments.loadError') }}</p>
+        <p class="state-text">{{ t('marketing.segments.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()">
+      @if (saveFailed()) {
+        <div class="alert alert-danger" role="alert">
+          {{ t('marketing.segmentForm.saveError') }}
+        </div>
+      }
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label" for="segment-name">
+            {{ t('marketing.segmentForm.name') }}
+          </label>
+          <input
+            id="segment-name"
+            type="text"
+            class="form-control"
+            formControlName="name"
+            [class.is-invalid]="isNameInvalid()"
+          />
+          @if (isNameInvalid()) {
+            <span class="field-error">{{ t('marketing.segmentForm.required') }}</span>
+          }
+        </div>
+
+        <div class="form-field form-field-wide">
+          <label class="form-label" for="segment-description">
+            {{ t('marketing.segmentForm.description') }}
+          </label>
+          <textarea
+            id="segment-description"
+            class="form-control"
+            rows="2"
+            formControlName="description"
+          ></textarea>
+        </div>
+
+        <div class="form-field form-field-wide">
+          <span class="form-label">{{ t('marketing.segmentForm.customers') }}</span>
+          <p class="form-hint">{{ t('marketing.segmentForm.customersHint') }}</p>
+
+          @if (unknownIds().length > 0) {
+            <div class="unknown-list">
+              @for (id of unknownIds(); track id) {
+                <span class="chip">
+                  {{ t('marketing.segmentForm.unknownCustomer') }} {{ id }}
+                  <button
+                    type="button"
+                    class="chip-remove"
+                    [attr.aria-label]="t('common.delete')"
+                    (click)="remove(id)"
+                  >
+                    ×
+                  </button>
+                </span>
+              }
+            </div>
+          }
+
+          <div class="customer-list">
+            @for (customer of customers(); track customer.id) {
+              <label class="customer-option">
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(customer.id)"
+                  (change)="toggle(customer.id, $event)"
+                />
+                <span class="customer-name">{{ customer.name }}</span>
+                @if (customer.email) {
+                  <span class="customer-email">{{ customer.email }}</span>
+                }
+              </label>
+            } @empty {
+              <p class="state-text">{{ t('marketing.segmentForm.noCustomers') }}</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/marketing/segments" class="btn btn-secondary">
+          {{ t('common.cancel') }}
+        </a>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ saving() ? t('common.saving') : t('marketing.segmentForm.save') }}
+        </button>
+      </div>
+    </form>
+  }
+</ng-container>

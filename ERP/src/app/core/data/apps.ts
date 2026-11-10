@@ -113,6 +113,14 @@ export const ERP_APPS: ErpApp[] = [
     dependencies: [],
   },
   {
+    id: 'marketing',
+    label: 'Marketing',
+    icon: '📣',
+    description: 'Campaigns, promotions, customer segments and a promotion simulator',
+    category: 'Marketing',
+    dependencies: [],
+  },
+  {
     id: 'ai-assistant',
     label: 'AI Assistant',
     icon: '🤖',
@@ -147,6 +155,7 @@ export const ERP_SUITES: ErpSuite[] = [
   { id: 'finance', apps: ['accounting', 'reports'] },
   { id: 'people', apps: ['hr'] },
   { id: 'service', apps: ['support'] },
+  { id: 'marketing', apps: ['marketing'] },
   { id: 'standalone', apps: ['contacts', 'ai-assistant', 'room-live'] },
 ];
 

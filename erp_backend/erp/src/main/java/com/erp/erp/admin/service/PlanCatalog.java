@@ -54,7 +54,8 @@ public class PlanCatalog {
                             "reports",
                             "collab",
                             "hr",
-                            "support"),
+                            "support",
+                            "marketing"),
                     List.of(
                             "Up to 15 users",
                             "10 GB storage",
@@ -62,6 +63,7 @@ public class PlanCatalog {
                             "Purchases & Stock",
                             "Accounting & Reports",
                             "HR & Support",
+                            "Marketing & promotions",
                             "100 AI queries/month",
                             "Rooms live included",
                             "Priority support"),
@@ -90,7 +92,8 @@ public class PlanCatalog {
                             "room-live",
                             "collab",
                             "hr",
-                            "support"),
+                            "support",
+                            "marketing"),
                     List.of(
                             "Unlimited users",
                             "100 GB storage",

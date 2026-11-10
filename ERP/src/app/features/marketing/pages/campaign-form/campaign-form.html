@@ -1,0 +1,170 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        {{ isEdit
+          ? t('marketing.campaignForm.editTitle')
+          : t('marketing.campaignForm.newTitle') }}
+      </h1>
+      <p class="page-subtitle">
+        {{ isEdit
+          ? t('marketing.campaignForm.editSubtitle')
+          : t('marketing.campaignForm.newSubtitle') }}
+      </p>
+    </div>
+    <a routerLink="/marketing/campaigns" class="btn btn-secondary">
+      {{ t('common.back') }}
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="card">
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    </div>
+  } @else if (notFound()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.campaignForm.notFound') }}</p>
+        <p class="state-text">{{ t('marketing.campaignForm.notFoundHint') }}</p>
+        <a routerLink="/marketing/campaigns" class="btn btn-secondary">
+          {{ t('common.back') }}
+        </a>
+      </div>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.campaigns.loadError') }}</p>
+        <p class="state-text">{{ t('marketing.campaigns.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()">
+      @if (saveFailed()) {
+        <div class="alert alert-danger" role="alert">
+          {{ t('marketing.campaignForm.saveError') }}
+        </div>
+      }
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label" for="campaign-name">
+            {{ t('marketing.campaignForm.name') }}
+          </label>
+          <input
+            id="campaign-name"
+            type="text"
+            class="form-control"
+            formControlName="name"
+            [class.is-invalid]="isInvalid('name')"
+          />
+          @if (isInvalid('name')) {
+            <span class="field-error">{{ t('marketing.campaignForm.required') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="campaign-channel">
+            {{ t('marketing.campaignForm.channel') }}
+          </label>
+          <select id="campaign-channel" class="form-control" formControlName="channel">
+            <option value="email">{{ t('marketing.campaigns.channels.email') }}</option>
+            <option value="social">{{ t('marketing.campaigns.channels.social') }}</option>
+            <option value="ads">{{ t('marketing.campaigns.channels.ads') }}</option>
+            <option value="event">{{ t('marketing.campaigns.channels.event') }}</option>
+            <option value="other">{{ t('marketing.campaigns.channels.other') }}</option>
+          </select>
+        </div>
+
+        <div class="form-field form-field-wide">
+          <label class="form-label" for="campaign-description">
+            {{ t('marketing.campaignForm.description') }}
+          </label>
+          <textarea
+            id="campaign-description"
+            class="form-control"
+            rows="3"
+            formControlName="description"
+          ></textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="campaign-start">
+            {{ t('marketing.campaignForm.startDate') }}
+          </label>
+          <input
+            id="campaign-start"
+            type="date"
+            class="form-control"
+            formControlName="startDate"
+            [class.is-invalid]="isInvalid('startDate')"
+          />
+          @if (isInvalid('startDate')) {
+            <span class="field-error">{{ t('marketing.campaignForm.required') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="campaign-end">
+            {{ t('marketing.campaignForm.endDate') }}
+          </label>
+          <input
+            id="campaign-end"
+            type="date"
+            class="form-control"
+            formControlName="endDate"
+            [class.is-invalid]="isInvalid('endDate') || (submitted() && dateProblem())"
+          />
+          @if (isInvalid('endDate')) {
+            <span class="field-error">{{ t('marketing.campaignForm.required') }}</span>
+          } @else if (submitted() && dateProblem()) {
+            <span class="field-error">{{ t('marketing.campaignForm.dateError') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="campaign-budget">
+            {{ t('marketing.campaignForm.budget') }}
+          </label>
+          <input
+            id="campaign-budget"
+            type="number"
+            min="0"
+            step="0.01"
+            class="form-control"
+            formControlName="budget"
+            [class.is-invalid]="isInvalid('budget')"
+          />
+          @if (isInvalid('budget')) {
+            <span class="field-error">{{ t('marketing.campaignForm.budgetError') }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <span class="form-label">{{ t('marketing.campaignForm.currency') }}</span>
+          <input type="text" class="form-control" [value]="currency" readonly />
+        </div>
+
+        <label class="form-check form-field-wide">
+          <input type="checkbox" formControlName="active" />
+          <span>{{ t('marketing.campaignForm.active') }}</span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/marketing/campaigns" class="btn btn-secondary">
+          {{ t('common.cancel') }}
+        </a>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ saving() ? t('common.saving') : t('marketing.campaignForm.save') }}
+        </button>
+      </div>
+    </form>
+  }
+</ng-container>

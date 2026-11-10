@@ -1,0 +1,98 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('marketing.segments.title') }}</h1>
+      <p class="page-subtitle">{{ t('marketing.segments.subtitle') }}</p>
+    </div>
+    @if (permissions.can('marketing', 'create')) {
+      <a routerLink="/marketing/segments/new" class="btn btn-primary">
+        + {{ t('marketing.segments.newSegment') }}
+      </a>
+    }
+  </div>
+
+  @if (notice()) {
+    <div [class]="noticeError() ? 'alert alert-danger' : 'alert alert-success'" role="status">
+      {{ t(notice()) }}
+    </div>
+  }
+
+  <div class="card">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="form-control search-input"
+        [placeholder]="t('marketing.segments.searchPlaceholder')"
+        [attr.aria-label]="t('marketing.segments.searchPlaceholder')"
+        [formControl]="searchControl"
+      />
+    </div>
+
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.segments.loadError') }}</p>
+        <p class="state-text">{{ t('marketing.segments.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    } @else if (segments().length === 0) {
+      <div class="state-block">
+        <p class="state-title">
+          {{ search() ? t('marketing.segments.noMatch') : t('marketing.segments.emptyTitle') }}
+        </p>
+        <p class="state-text">
+          {{ search() ? t('marketing.segments.noMatchHint') : t('marketing.segments.emptyHint') }}
+        </p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ t('marketing.segments.columns.name') }}</th>
+              <th>{{ t('marketing.segments.columns.description') }}</th>
+              <th>{{ t('marketing.segments.columns.members') }}</th>
+              <th>{{ t('marketing.segments.columns.created') }}</th>
+              <th>{{ t('marketing.segments.columns.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (segment of segments(); track segment.id) {
+              <tr>
+                <td class="cell-strong">{{ segment.name }}</td>
+                <td>{{ segment.description || '—' }}</td>
+                <td>{{ segment.memberCount }}</td>
+                <td>{{ segment.createdAt | date: 'mediumDate' }}</td>
+                <td class="col-actions">
+                  @if (permissions.can('marketing', 'update')) {
+                    <a
+                      [routerLink]="['/marketing/segments', segment.id]"
+                      class="btn btn-secondary btn-sm"
+                    >
+                      {{ t('common.edit') }}
+                    </a>
+                  }
+                  @if (permissions.can('marketing', 'delete')) {
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-sm"
+                      (click)="delete(segment)"
+                    >
+                      {{ t('common.delete') }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

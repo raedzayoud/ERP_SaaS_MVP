@@ -1,0 +1,65 @@
+.form-card {
+  max-width: 900px;
+}
+
+.form-hint {
+  margin: 0 0 10px;
+  color: var(--gray-500);
+  font-size: 13px;
+}
+
+.customer-list {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 8px;
+}
+
+.customer-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.customer-option:hover {
+  background: var(--gray-50);
+}
+
+.customer-name {
+  font-weight: 600;
+}
+
+.customer-email {
+  color: var(--gray-500);
+  font-size: 13px;
+}
+
+.unknown-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--gray-100);
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.chip-remove {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--gray-600);
+}

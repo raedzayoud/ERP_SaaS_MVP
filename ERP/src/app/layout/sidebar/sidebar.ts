@@ -204,6 +204,41 @@ export class Sidebar {
       ],
     },
     {
+      titleKey: 'sidebar.sections.marketing',
+      items: [
+        {
+          labelKey: 'sidebar.items.marketingDashboard',
+          icon: '📣',
+          route: '/marketing',
+          moduleId: 'marketing',
+        },
+        {
+          labelKey: 'sidebar.items.campaigns',
+          icon: '📢',
+          route: '/marketing/campaigns',
+          moduleId: 'marketing',
+        },
+        {
+          labelKey: 'sidebar.items.promotions',
+          icon: '🏷️',
+          route: '/marketing/promotions',
+          moduleId: 'marketing',
+        },
+        {
+          labelKey: 'sidebar.items.segments',
+          icon: '👥',
+          route: '/marketing/segments',
+          moduleId: 'marketing',
+        },
+        {
+          labelKey: 'sidebar.items.promotionSimulator',
+          icon: '🧮',
+          route: '/marketing/evaluate',
+          moduleId: 'marketing',
+        },
+      ],
+    },
+    {
       titleKey: 'sidebar.sections.tools',
       items: [
         {

@@ -1,0 +1,59 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('marketing.dashboard.title') }}</h1>
+      <p class="page-subtitle">{{ t('marketing.dashboard.subtitle') }}</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="card">
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.dashboard.loadError') }}</p>
+        <p class="state-text">{{ t('marketing.dashboard.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    </div>
+  } @else if (dashboard(); as data) {
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-label">{{ t('marketing.dashboard.activeCampaigns') }}</span>
+        <span class="stat-value">{{ data.activeCampaigns }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">{{ t('marketing.dashboard.activePromotions') }}</span>
+        <span class="stat-value">{{ data.activePromotions }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">{{ t('marketing.dashboard.budget') }}</span>
+        <span class="stat-value">
+          {{ data.marketingBudget | currency: data.currency : 'symbol' : '1.2-2' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="quick-links">
+      <a routerLink="/marketing/campaigns" class="btn btn-primary">
+        {{ t('marketing.dashboard.campaignsLink') }}
+      </a>
+      <a routerLink="/marketing/promotions" class="btn btn-secondary">
+        {{ t('marketing.dashboard.promotionsLink') }}
+      </a>
+      <a routerLink="/marketing/segments" class="btn btn-secondary">
+        {{ t('marketing.dashboard.segmentsLink') }}
+      </a>
+      <a routerLink="/marketing/evaluate" class="btn btn-secondary">
+        {{ t('marketing.dashboard.evaluatorLink') }}
+      </a>
+    </div>
+  }
+</ng-container>

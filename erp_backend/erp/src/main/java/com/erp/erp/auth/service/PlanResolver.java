@@ -18,17 +18,18 @@ public final class PlanResolver {
     private static final Set<String> KNOWN_MODULES = Set.of(
             "dashboard", "contacts", "products", "sales", "invoices", "payments",
             "purchases", "stock", "accounting", "invoicing", "reports",
-            "ai-assistant", "room-live", "collab", "hr", "support");
+            "ai-assistant", "room-live", "collab", "hr", "support", "marketing");
 
     private static final Map<String, Set<String>> PLANS = Map.of(
             "starter", Set.of("dashboard", "contacts", "products", "sales", "invoices", "payments"),
             "business", Set.of(
                     "dashboard", "contacts", "products", "sales", "invoices", "payments",
-                    "purchases", "stock", "accounting", "reports", "hr", "support"),
+                    "purchases", "stock", "accounting", "reports", "hr", "support",
+                    "marketing"),
             "enterprise", Set.of(
                     "dashboard", "contacts", "products", "sales", "invoices", "payments",
                     "purchases", "stock", "accounting", "reports", "ai-assistant", "room-live",
-                    "hr", "support"));
+                    "hr", "support", "marketing"));
 
     private static final List<String> ORDERED_PLANS = List.of("starter", "business", "enterprise");
 

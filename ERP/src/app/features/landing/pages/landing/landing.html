@@ -26,37 +26,104 @@
     </header>
 
     <section class="hero">
+      <span class="hero-grid" aria-hidden="true"></span>
+
       <div class="hero-inner">
-        <div class="hero-pill">
-          <span class="pill-dot" aria-hidden="true"></span>
-          {{ t('landing.hero.pill') }}
+        <div class="hero-copy">
+          <div class="hero-pill">
+            <span class="pill-dot" aria-hidden="true"></span>
+            {{ t('landing.hero.pill') }}
+          </div>
+
+          <h1 class="hero-title">{{ t('landing.hero.title') }}</h1>
+          <p class="hero-subtitle">{{ t('landing.hero.subtitle') }}</p>
+
+          <div class="hero-actions">
+            @if (loggedIn) {
+              <a routerLink="/dashboard" class="btn btn-primary btn-lg hero-btn-primary">
+                {{ t('landing.nav.dashboard') }}
+              </a>
+            } @else {
+              <a routerLink="/signup" class="btn btn-lg hero-btn-primary">
+                {{ t('landing.hero.ctaPrimary') }}
+              </a>
+              <a href="#pricing" class="btn btn-lg hero-btn-secondary">
+                {{ t('landing.hero.ctaSecondary') }}
+              </a>
+            }
+          </div>
+
+          <p class="hero-note">{{ t('landing.hero.note') }}</p>
+
+          <div class="hero-stats">
+            <span class="hero-stat">{{ t('landing.hero.stats.modules') }}</span>
+            <span class="hero-stat">{{ t('landing.hero.stats.plans') }}</span>
+            <span class="hero-stat">{{ t('landing.hero.stats.multi') }}</span>
+            <span class="hero-stat">{{ t('landing.hero.stats.langs') }}</span>
+          </div>
         </div>
 
-        <h1 class="hero-title">{{ t('landing.hero.title') }}</h1>
-        <p class="hero-subtitle">{{ t('landing.hero.subtitle') }}</p>
+        <div class="hero-preview" aria-hidden="true">
+          <div class="preview-window">
+            <div class="preview-topbar">
+              <span class="preview-dot"></span>
+              <span class="preview-dot"></span>
+              <span class="preview-dot"></span>
+              <span class="preview-address"></span>
+            </div>
 
-        <div class="hero-actions">
-          @if (loggedIn) {
-            <a routerLink="/dashboard" class="btn btn-primary btn-lg hero-btn-primary">
-              {{ t('landing.nav.dashboard') }}
-            </a>
-          } @else {
-            <a routerLink="/signup" class="btn btn-lg hero-btn-primary">
-              {{ t('landing.hero.ctaPrimary') }}
-            </a>
-            <a href="#pricing" class="btn btn-lg hero-btn-secondary">
-              {{ t('landing.hero.ctaSecondary') }}
-            </a>
-          }
-        </div>
+            <div class="preview-body">
+              <div class="preview-sidebar">
+                <span class="preview-nav active"></span>
+                <span class="preview-nav"></span>
+                <span class="preview-nav"></span>
+                <span class="preview-nav"></span>
+                <span class="preview-nav"></span>
+              </div>
 
-        <p class="hero-note">{{ t('landing.hero.note') }}</p>
+              <div class="preview-main">
+                <div class="preview-kpis">
+                  <div class="preview-kpi">
+                    <span class="preview-kpi-label"></span>
+                    <span class="preview-kpi-value">24</span>
+                  </div>
+                  <div class="preview-kpi">
+                    <span class="preview-kpi-label"></span>
+                    <span class="preview-kpi-value">98%</span>
+                  </div>
+                  <div class="preview-kpi">
+                    <span class="preview-kpi-label"></span>
+                    <span class="preview-kpi-value">12</span>
+                  </div>
+                </div>
 
-        <div class="hero-stats">
-          <span class="hero-stat">{{ t('landing.hero.stats.modules') }}</span>
-          <span class="hero-stat">{{ t('landing.hero.stats.plans') }}</span>
-          <span class="hero-stat">{{ t('landing.hero.stats.multi') }}</span>
-          <span class="hero-stat">{{ t('landing.hero.stats.langs') }}</span>
+                <div class="preview-chart">
+                  <span class="preview-bar"></span>
+                  <span class="preview-bar"></span>
+                  <span class="preview-bar"></span>
+                  <span class="preview-bar"></span>
+                  <span class="preview-bar"></span>
+                  <span class="preview-bar"></span>
+                  <span class="preview-bar"></span>
+                </div>
+
+                <div class="preview-rows">
+                  <span class="preview-row"></span>
+                  <span class="preview-row"></span>
+                  <span class="preview-row"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="floating-card floating-card-one">
+            <span class="floating-icon">↑</span>
+            <span>+24%</span>
+          </div>
+          <div class="floating-card floating-card-two">
+            <span class="floating-icon">✓</span>
+            <span>98%</span>
+          </div>
         </div>
       </div>
     </section>

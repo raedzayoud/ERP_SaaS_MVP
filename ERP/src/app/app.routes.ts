@@ -816,6 +816,130 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'marketing/campaigns/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/campaign-form/campaign-form').then(
+            (m) => m.CampaignForm,
+          ),
+        data: { title: 'titles.newCampaign', moduleId: 'marketing' },
+      },
+      {
+        path: 'marketing/campaigns/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/campaign-form/campaign-form').then(
+            (m) => m.CampaignForm,
+          ),
+        data: { title: 'titles.editCampaign', moduleId: 'marketing' },
+      },
+      {
+        path: 'marketing/campaigns',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/campaign-list/campaign-list').then(
+            (m) => m.CampaignList,
+          ),
+        data: {
+          title: 'titles.campaigns',
+          description: 'descriptions.campaigns',
+          icon: '📢',
+          moduleId: 'marketing',
+        },
+      },
+      {
+        path: 'marketing/promotions/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/promotion-form/promotion-form').then(
+            (m) => m.PromotionForm,
+          ),
+        data: { title: 'titles.newPromotion', moduleId: 'marketing' },
+      },
+      {
+        path: 'marketing/promotions/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/promotion-form/promotion-form').then(
+            (m) => m.PromotionForm,
+          ),
+        data: { title: 'titles.editPromotion', moduleId: 'marketing' },
+      },
+      {
+        path: 'marketing/promotions',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/promotion-list/promotion-list').then(
+            (m) => m.PromotionList,
+          ),
+        data: {
+          title: 'titles.promotions',
+          description: 'descriptions.promotions',
+          icon: '🏷️',
+          moduleId: 'marketing',
+        },
+      },
+      {
+        path: 'marketing/segments/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/segment-form/segment-form').then(
+            (m) => m.SegmentForm,
+          ),
+        data: { title: 'titles.newSegment', moduleId: 'marketing' },
+      },
+      {
+        path: 'marketing/segments/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/segment-form/segment-form').then(
+            (m) => m.SegmentForm,
+          ),
+        data: { title: 'titles.editSegment', moduleId: 'marketing' },
+      },
+      {
+        path: 'marketing/segments',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/segment-list/segment-list').then(
+            (m) => m.SegmentList,
+          ),
+        data: {
+          title: 'titles.segments',
+          description: 'descriptions.segments',
+          icon: '👥',
+          moduleId: 'marketing',
+        },
+      },
+      {
+        path: 'marketing/evaluate',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/promotion-evaluator/promotion-evaluator').then(
+            (m) => m.PromotionEvaluator,
+          ),
+        data: {
+          title: 'titles.promotionSimulator',
+          description: 'descriptions.promotionSimulator',
+          icon: '🧮',
+          moduleId: 'marketing',
+        },
+      },
+      {
+        path: 'marketing',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/marketing/pages/marketing-dashboard/marketing-dashboard').then(
+            (m) => m.MarketingDashboardPage,
+          ),
+        data: {
+          title: 'titles.marketing',
+          description: 'descriptions.marketing',
+          icon: '📣',
+          moduleId: 'marketing',
+        },
+      },
+      {
         path: 'support/tickets/new',
         canActivate: [moduleGuard],
         loadComponent: () =>

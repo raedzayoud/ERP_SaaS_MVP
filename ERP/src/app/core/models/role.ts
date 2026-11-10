@@ -59,6 +59,7 @@ export const ALL_MODULES = [
   'collab',
   'hr',
   'support',
+  'marketing',
   'settings',
 ];
 
@@ -81,6 +82,7 @@ export const ROLE_MODULE_ACCESS: Record<Role, string[]> = {
     'ai-assistant',
     'collab',
     'support',
+    'marketing',
   ],
   acheteur: ['apps', 'contacts', 'products', 'purchases', 'reports', 'collab'],
   magasinier: ['apps', 'products', 'stock', 'collab'],
@@ -107,6 +109,7 @@ export const ROLE_MODULE_ACCESS: Record<Role, string[]> = {
     'collab',
     'hr',
     'support',
+    'marketing',
   ],
   'client-externe': [],
 };

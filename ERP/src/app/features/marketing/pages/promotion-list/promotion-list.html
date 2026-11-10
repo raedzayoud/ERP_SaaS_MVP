@@ -1,0 +1,125 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('marketing.promotions.title') }}</h1>
+      <p class="page-subtitle">{{ t('marketing.promotions.subtitle') }}</p>
+    </div>
+    @if (permissions.can('marketing', 'create')) {
+      <a routerLink="/marketing/promotions/new" class="btn btn-primary">
+        + {{ t('marketing.promotions.newPromotion') }}
+      </a>
+    }
+  </div>
+
+  @if (notice()) {
+    <div [class]="noticeError() ? 'alert alert-danger' : 'alert alert-success'" role="status">
+      {{ t(notice()) }}
+    </div>
+  }
+
+  <div class="card">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="form-control search-input"
+        [placeholder]="t('marketing.promotions.searchPlaceholder')"
+        [attr.aria-label]="t('marketing.promotions.searchPlaceholder')"
+        [formControl]="searchControl"
+      />
+
+      <select
+        class="form-control filter-select"
+        [value]="activeFilter()"
+        [attr.aria-label]="t('common.status')"
+        (change)="onActiveFilter($event)"
+      >
+        <option value="">{{ t('common.all') }}</option>
+        <option value="active">{{ t('marketing.promotions.status.active') }}</option>
+        <option value="inactive">{{ t('marketing.promotions.status.inactive') }}</option>
+      </select>
+    </div>
+
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('marketing.promotions.loadError') }}</p>
+        <p class="state-text">{{ t('marketing.promotions.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    } @else if (promotions().length === 0) {
+      <div class="state-block">
+        <p class="state-title">
+          {{ search() || activeFilter()
+            ? t('marketing.promotions.noMatch')
+            : t('marketing.promotions.emptyTitle') }}
+        </p>
+        <p class="state-text">
+          {{ search() || activeFilter()
+            ? t('marketing.promotions.noMatchHint')
+            : t('marketing.promotions.emptyHint') }}
+        </p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ t('marketing.promotions.columns.name') }}</th>
+              <th>{{ t('marketing.promotions.columns.campaign') }}</th>
+              <th>{{ t('marketing.promotions.columns.segment') }}</th>
+              <th>{{ t('marketing.promotions.columns.discount') }}</th>
+              <th>{{ t('marketing.promotions.columns.minOrder') }}</th>
+              <th>{{ t('marketing.promotions.columns.period') }}</th>
+              <th>{{ t('marketing.promotions.columns.status') }}</th>
+              <th>{{ t('marketing.promotions.columns.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (promotion of promotions(); track promotion.id) {
+              <tr>
+                <td class="cell-strong">{{ promotion.name }}</td>
+                <td>{{ promotion.campaignName || '—' }}</td>
+                <td>{{ promotion.segmentName }}</td>
+                <td>{{ discountLabel(promotion) }}</td>
+                <td>{{ money(promotion.minOrderAmount) }}</td>
+                <td>{{ promotion.startDate }} → {{ promotion.endDate }}</td>
+                <td>
+                  <span [class]="statusClass(promotion.active)">
+                    {{ promotion.active
+                      ? t('marketing.promotions.status.active')
+                      : t('marketing.promotions.status.inactive') }}
+                  </span>
+                </td>
+                <td class="col-actions">
+                  @if (permissions.can('marketing', 'update')) {
+                    <a
+                      [routerLink]="['/marketing/promotions', promotion.id]"
+                      class="btn btn-secondary btn-sm"
+                    >
+                      {{ t('common.edit') }}
+                    </a>
+                  }
+                  @if (permissions.can('marketing', 'delete')) {
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-sm"
+                      (click)="delete(promotion)"
+                    >
+                      {{ t('common.delete') }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

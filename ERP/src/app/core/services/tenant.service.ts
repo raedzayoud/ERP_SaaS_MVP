@@ -217,6 +217,15 @@ export class TenantService {
           tenant.enabledModules = [...tenant.enabledModules, 'collab'];
           this.saveTenant(tenant);
         }
+        // Migration: plans that include Marketing now unlock it for local demo tenants.
+        const plan = getPlanById(tenant.planId);
+        if (
+          plan.modules.includes('marketing') &&
+          !tenant.enabledModules.includes('marketing')
+        ) {
+          tenant.enabledModules = [...tenant.enabledModules, 'marketing'];
+          this.saveTenant(tenant);
+        }
         return tenant;
       } catch {
         return null;

@@ -1,0 +1,11 @@
+.search-input {
+  max-width: 320px;
+}
+
+.filter-select {
+  max-width: 180px;
+}
+
+.cell-strong {
+  font-weight: 600;
+}

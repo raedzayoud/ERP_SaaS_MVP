@@ -47,6 +47,7 @@ export const PLANS: Plan[] = [
       'collab',
       'hr',
       'support',
+      'marketing',
     ],
     features: [
       'Up to 15 users',
@@ -55,6 +56,7 @@ export const PLANS: Plan[] = [
       'Purchases & Stock',
       'Accounting & Reports',
       'HR & Support',
+      'Marketing & promotions',
       '100 AI queries/month',
       'Rooms live included',
       'Priority support',
@@ -86,6 +88,7 @@ export const PLANS: Plan[] = [
       'collab',
       'hr',
       'support',
+      'marketing',
     ],
     features: [
       'Unlimited users',

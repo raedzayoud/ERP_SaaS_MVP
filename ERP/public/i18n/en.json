@@ -98,7 +98,18 @@
     "newTicket": "New ticket",
     "editTicket": "Edit ticket",
     "ticketDetail": "Ticket detail",
-    "knowledgeBase": "Knowledge base"
+    "knowledgeBase": "Knowledge base",
+    "marketing": "Marketing",
+    "campaigns": "Campaigns",
+    "newCampaign": "New campaign",
+    "editCampaign": "Edit campaign",
+    "promotions": "Promotions",
+    "newPromotion": "New promotion",
+    "editPromotion": "Edit promotion",
+    "segments": "Customer segments",
+    "newSegment": "New segment",
+    "editSegment": "Edit segment",
+    "promotionSimulator": "Promotion simulator"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -125,7 +136,12 @@
     "leave": "Review and manage employee leave requests.",
     "support": "Internal support tickets, interactions and FAQ.",
     "tickets": "Track and resolve customer support tickets.",
-    "knowledgeBase": "Reusable answers and internal procedures."
+    "knowledgeBase": "Reusable answers and internal procedures.",
+    "marketing": "Campaigns, promotions and customer segments.",
+    "campaigns": "Plan and track your marketing campaigns.",
+    "promotions": "Discount rules applied to customer segments.",
+    "segments": "Groups of customers used by promotions.",
+    "promotionSimulator": "Check which promotion applies to an order."
   },
   "navbar": {
     "toggleSidebar": "Toggle sidebar",
@@ -146,7 +162,8 @@
       "workspace": "Workspace",
       "collaboration": "Collaboration",
       "hr": "Human Resources",
-      "support": "Support"
+      "support": "Support",
+      "marketing": "Marketing"
     },
     "items": {
       "dashboard": "Dashboard",
@@ -175,7 +192,12 @@
       "leave": "Leave",
       "supportDashboard": "Support dashboard",
       "tickets": "Tickets",
-      "knowledgeBase": "Knowledge base"
+      "knowledgeBase": "Knowledge base",
+      "marketingDashboard": "Marketing dashboard",
+      "campaigns": "Campaigns",
+      "promotions": "Promotions",
+      "segments": "Segments",
+      "promotionSimulator": "Promotion simulator"
     }
   },
   "placeholder": {
@@ -1248,7 +1270,7 @@
       "pill": "Cloud multi-company ERP",
       "note": "No credit card required",
       "stats": {
-        "modules": "10 modules included",
+        "modules": "13 modules included",
         "plans": "3 plans",
         "multi": "Multi-company",
         "langs": "FR / EN"
@@ -1268,6 +1290,9 @@
       "stock": "Stock",
       "accounting": "Accounting",
       "reports": "Reports",
+      "hr": "HR & Leave",
+      "support": "Customer Support",
+      "marketing": "Marketing & Promotions",
       "ai": "AI Assistant"
     },
     "pricing": {
@@ -1324,6 +1349,9 @@
       "stock": "Multi-warehouse inventory management.",
       "accounting": "Journals, chart of accounts and trial balance.",
       "reports": "Exportable business reports.",
+      "hr": "Employees, leave requests and HR records.",
+      "support": "Customer tickets, interactions and knowledge base.",
+      "marketing": "Campaigns, promotions and customer segments.",
       "ai": "Ask questions, get answers from your data."
     },
     "cta": {
@@ -1905,6 +1933,10 @@
         "label": "Support",
         "description": "Tickets, interactions, and knowledge base"
       },
+      "marketing": {
+        "label": "Marketing",
+        "description": "Campaigns, promotions, customer segments and a promotion simulator"
+      },
       "ai-assistant": {
         "label": "AI Assistant",
         "description": "RAG chatbot and invoice extraction"
@@ -2142,6 +2174,195 @@
       "required": "This field is required."
     }
   },
+  "marketing": {
+    "dashboard": {
+      "title": "Marketing dashboard",
+      "subtitle": "A quick view of your campaigns, promotions and budget.",
+      "activeCampaigns": "Active campaigns",
+      "activePromotions": "Active promotions",
+      "budget": "Marketing budget",
+      "campaignsLink": "Manage campaigns",
+      "promotionsLink": "Manage promotions",
+      "segmentsLink": "Manage segments",
+      "evaluatorLink": "Promotion simulator",
+      "loadError": "Marketing dashboard could not be loaded",
+      "loadErrorHint": "Please try again."
+    },
+    "campaigns": {
+      "title": "Campaigns",
+      "subtitle": "Plan and track your marketing campaigns.",
+      "newCampaign": "New campaign",
+      "searchPlaceholder": "Search campaigns…",
+      "loadError": "Campaigns could not be loaded",
+      "loadErrorHint": "Please try again.",
+      "emptyTitle": "No campaigns yet",
+      "emptyHint": "Create your first marketing campaign.",
+      "noMatch": "No campaigns match your search",
+      "noMatchHint": "Try another keyword or clear the filters.",
+      "columns": {
+        "name": "Campaign",
+        "channel": "Channel",
+        "period": "Period",
+        "budget": "Budget",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "channels": {
+        "email": "Email",
+        "social": "Social",
+        "ads": "Ads",
+        "event": "Event",
+        "other": "Other"
+      },
+      "deleteConfirm": "Delete this campaign?",
+      "deleted": "Campaign deleted",
+      "deleteBlocked": "This campaign has promotions and cannot be deleted."
+    },
+    "campaignForm": {
+      "newTitle": "New campaign",
+      "editTitle": "Edit campaign",
+      "newSubtitle": "Create a campaign to group your promotions.",
+      "editSubtitle": "Update this campaign.",
+      "notFound": "Campaign not found",
+      "notFoundHint": "It may have been deleted.",
+      "saveError": "The campaign could not be saved.",
+      "name": "Name",
+      "description": "Description",
+      "channel": "Channel",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "budget": "Budget",
+      "currency": "Currency",
+      "active": "Active",
+      "required": "This field is required.",
+      "dateError": "The end date must be on or after the start date.",
+      "budgetError": "The budget cannot be negative.",
+      "save": "Save campaign"
+    },
+    "promotions": {
+      "title": "Promotions",
+      "subtitle": "Discount rules applied to customer segments.",
+      "newPromotion": "New promotion",
+      "searchPlaceholder": "Search promotions…",
+      "loadError": "Promotions could not be loaded",
+      "loadErrorHint": "Please try again.",
+      "emptyTitle": "No promotions yet",
+      "emptyHint": "Create your first promotion.",
+      "noMatch": "No promotions match your search",
+      "noMatchHint": "Try another keyword or clear the filters.",
+      "columns": {
+        "name": "Promotion",
+        "campaign": "Campaign",
+        "segment": "Segment",
+        "discount": "Discount",
+        "minOrder": "Minimum order",
+        "period": "Period",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "types": {
+        "percentage": "Percentage",
+        "fixed_amount": "Fixed amount"
+      },
+      "deleteConfirm": "Delete this promotion?",
+      "deleted": "Promotion deleted"
+    },
+    "promotionForm": {
+      "newTitle": "New promotion",
+      "editTitle": "Edit promotion",
+      "newSubtitle": "Create a discount rule for a customer segment.",
+      "editSubtitle": "Update this promotion.",
+      "notFound": "Promotion not found",
+      "notFoundHint": "It may have been deleted.",
+      "saveError": "The promotion could not be saved.",
+      "name": "Name",
+      "description": "Description",
+      "campaign": "Campaign",
+      "noCampaign": "No campaign",
+      "segment": "Customer segment",
+      "discountType": "Discount type",
+      "discountValue": "Discount value",
+      "minOrderAmount": "Minimum order",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "active": "Active",
+      "required": "This field is required.",
+      "dateError": "The end date must be on or after the start date.",
+      "percentageError": "Percentage must be between 0.01 and 100.",
+      "discountError": "The discount value must be greater than zero.",
+      "minOrderError": "The minimum order cannot be negative.",
+      "noSegments": "Create a customer segment before adding a promotion.",
+      "save": "Save promotion"
+    },
+    "segments": {
+      "title": "Customer segments",
+      "subtitle": "Groups of customers used by promotions.",
+      "newSegment": "New segment",
+      "searchPlaceholder": "Search segments…",
+      "loadError": "Segments could not be loaded",
+      "loadErrorHint": "Please try again.",
+      "emptyTitle": "No segments yet",
+      "emptyHint": "Create your first customer segment.",
+      "noMatch": "No segments match your search",
+      "noMatchHint": "Try another keyword.",
+      "columns": {
+        "name": "Segment",
+        "description": "Description",
+        "members": "Customers",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "deleteConfirm": "Delete this segment?",
+      "deleted": "Segment deleted",
+      "deleteBlocked": "This segment is used by a promotion and cannot be deleted."
+    },
+    "segmentForm": {
+      "newTitle": "New segment",
+      "editTitle": "Edit segment",
+      "newSubtitle": "Choose the customers who receive this segment's promotions.",
+      "editSubtitle": "Update this customer segment.",
+      "notFound": "Segment not found",
+      "notFoundHint": "It may have been deleted.",
+      "saveError": "The segment could not be saved.",
+      "name": "Name",
+      "description": "Description",
+      "customers": "Customers",
+      "customersHint": "Select the customers in this segment.",
+      "unknownCustomer": "Unknown customer",
+      "noCustomers": "No customers available.",
+      "loadCustomersError": "Customers could not be loaded.",
+      "required": "This field is required.",
+      "save": "Save segment"
+    },
+    "evaluator": {
+      "title": "Promotion simulator",
+      "subtitle": "Check which promotion applies to an order.",
+      "customer": "Customer",
+      "subtotal": "Order subtotal",
+      "currency": "Currency",
+      "date": "Date",
+      "evaluate": "Evaluate promotion",
+      "evaluating": "Evaluating…",
+      "eligible": "Eligible promotions",
+      "noEligible": "No eligible promotions for this customer.",
+      "applied": "Applied promotion",
+      "noPromotion": "No promotion applies to this order.",
+      "discountAmount": "Discount",
+      "finalTotal": "Final total",
+      "selectCustomer": "Select a customer.",
+      "subtotalError": "Enter a valid subtotal.",
+      "error": "The promotion could not be evaluated.",
+      "loadCustomersError": "Customers could not be loaded."
+    }
+  },
   "contactOverview": {
     "notFound": "Contact not found.",
     "invoices": "Invoices",
@@ -2321,7 +2542,8 @@
         "standalone": "Standalone",
         "inventory": "Inventory",
         "people": "People",
-        "service": "Service"
+        "service": "Service",
+        "marketing": "Marketing"
       },
       "requires": "Requires: {{list}}",
       "masterAll": "Select or clear every app in this group",

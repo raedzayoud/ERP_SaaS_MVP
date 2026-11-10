@@ -21,7 +21,7 @@ const EN = {
       pill: 'Cloud multi-company ERP',
       note: 'No credit card required',
       stats: {
-        modules: '10 modules included',
+        modules: '13 modules included',
         plans: '3 plans',
         multi: 'Multi-company',
         langs: 'FR / EN',
@@ -38,6 +38,9 @@ const EN = {
       stock: 'Stock',
       accounting: 'Accounting',
       reports: 'Reports',
+      hr: 'HR & Leave',
+      support: 'Customer Support',
+      marketing: 'Marketing & Promotions',
       ai: 'AI Assistant',
     },
     modulesDesc: {
@@ -50,6 +53,9 @@ const EN = {
       stock: 'Multi-warehouse inventory management.',
       accounting: 'Journals, chart of accounts and trial balance.',
       reports: 'Exportable business reports.',
+      hr: 'Employees, leave requests and HR records.',
+      support: 'Customer tickets, interactions and knowledge base.',
+      marketing: 'Campaigns, promotions and customer segments.',
       ai: 'Ask questions, get answers from your data.',
     },
     pricing: {
@@ -180,5 +186,7 @@ describe('Landing', () => {
     expect(text).toContain('Catalog, prices and stock levels.');
     expect(text).toContain('Multi-warehouse inventory management.');
     expect(text).toContain('Journals, chart of accounts and trial balance.');
+    expect(text).toContain('Campaigns, promotions and customer segments.');
+    expect(text).toContain('Customer tickets, interactions and knowledge base.');
   });
 });
