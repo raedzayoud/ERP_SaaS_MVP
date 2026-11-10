@@ -16,6 +16,24 @@
   margin-left: var(--sidebar-collapsed-width);
 }
 
+.trial-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #fff7ed;
+  border-bottom: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 0.875rem;
+}
+
+.trial-banner a {
+  color: #c2410c;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 .app-content {
   flex: 1;
   padding: 24px;

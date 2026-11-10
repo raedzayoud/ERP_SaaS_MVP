@@ -1,0 +1,171 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('hr.leave.title') }}</h1>
+      <p class="page-subtitle">{{ t('hr.leave.subtitle') }}</p>
+    </div>
+  </div>
+
+  @if (notice()) {
+    <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+  }
+
+  @if (permissions.can('hr', 'create')) {
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="create()" novalidate>
+      <h2 class="section-title">{{ t('hr.leave.newRequest') }}</h2>
+
+      @if (employees().length === 0) {
+        <p class="text-muted">{{ t('hr.leave.noEmployees') }}</p>
+      }
+
+      @if (submitFailed()) {
+        <div class="alert alert-danger" role="alert">
+          {{ form.invalid ? t('hr.leave.selectEmployee') : t('hr.leave.dateError') }}
+        </div>
+      }
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="employeeId">{{ t('hr.leave.employee') }}</label>
+          <select
+            id="employeeId"
+            class="form-control"
+            formControlName="employeeId"
+            [attr.aria-invalid]="isInvalid('employeeId')"
+          >
+            <option value="">{{ t('hr.leave.employee') }}</option>
+            @for (employee of employees(); track employee.id) {
+              <option [value]="employee.id">{{ employee.fullName }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="type">{{ t('hr.leave.type') }}</label>
+          <select id="type" class="form-control" formControlName="type">
+            <option value="annual">{{ t('hr.leave.types.annual') }}</option>
+            <option value="sick">{{ t('hr.leave.types.sick') }}</option>
+            <option value="unpaid">{{ t('hr.leave.types.unpaid') }}</option>
+            <option value="other">{{ t('hr.leave.types.other') }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="startDate">{{ t('hr.leave.startDate') }}</label>
+          <input
+            id="startDate"
+            type="date"
+            class="form-control"
+            formControlName="startDate"
+            [attr.aria-invalid]="isInvalid('startDate')"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="endDate">{{ t('hr.leave.endDate') }}</label>
+          <input
+            id="endDate"
+            type="date"
+            class="form-control"
+            formControlName="endDate"
+            [attr.aria-invalid]="isInvalid('endDate')"
+          />
+        </div>
+
+        <div class="form-group form-grid-full">
+          <label class="form-label" for="reason">{{ t('hr.leave.reason') }}</label>
+          <input
+            id="reason"
+            type="text"
+            class="form-control"
+            [placeholder]="t('hr.leave.reasonPlaceholder')"
+            formControlName="reason"
+          />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="saving() || employees().length === 0"
+        >
+          {{ saving() ? t('common.saving') : t('hr.leave.create') }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <div class="card">
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('hr.leave.loadError') }}</p>
+        <p class="state-text">{{ t('hr.leave.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    } @else if (leaveRequests().length === 0) {
+      <div class="state-block">
+        <p class="state-title">{{ t('hr.leave.emptyTitle') }}</p>
+        <p class="state-text">{{ t('hr.leave.emptyHint') }}</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ t('hr.leave.columns.employee') }}</th>
+              <th>{{ t('hr.leave.columns.type') }}</th>
+              <th>{{ t('hr.leave.columns.period') }}</th>
+              <th>{{ t('hr.leave.columns.status') }}</th>
+              <th>{{ t('hr.leave.columns.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (request of leaveRequests(); track request.id) {
+              <tr>
+                <td class="cell-strong">{{ request.employeeName }}</td>
+                <td>{{ t('hr.leave.types.' + request.type) }}</td>
+                <td>{{ request.startDate }} → {{ request.endDate }}</td>
+                <td>
+                  <span [class]="statusClass(request.status)">
+                    {{ t('hr.leave.status.' + request.status) }}
+                  </span>
+                </td>
+                <td class="col-actions">
+                  @if (permissions.can('hr', 'validate') && request.status === 'pending') {
+                    <button
+                      type="button"
+                      class="btn btn-success btn-sm"
+                      (click)="updateStatus(request, 'approved')"
+                    >
+                      {{ t('hr.leave.approve') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-sm"
+                      (click)="updateStatus(request, 'rejected')"
+                    >
+                      {{ t('hr.leave.reject') }}
+                    </button>
+                  }
+                  @if (permissions.can('hr', 'delete')) {
+                    <button type="button" class="btn btn-secondary btn-sm" (click)="delete(request)">
+                      {{ t('hr.leave.delete') }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

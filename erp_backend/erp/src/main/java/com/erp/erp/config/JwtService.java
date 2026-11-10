@@ -3,6 +3,7 @@ package com.erp.erp.config;
 import com.erp.erp.auth.permission.RolePermissions;
 import com.erp.erp.billing.model.BillingStatus;
 import com.erp.erp.tenant.model.KycStatus;
+import com.erp.erp.tenant.model.TenantStatus;
 import com.erp.erp.user.model.User;
 import java.time.Instant;
 import java.util.Map;
@@ -48,8 +49,11 @@ public class JwtService {
                     claimMap.put("permissions", RolePermissions.of(user.getRole()));
                     claimMap.put("kycStatus", kycStatus(user));
                     claimMap.put("billingStatus", billingStatus(user));
+                    claimMap.put("tenantStatus", tenantStatus(user));
                     if (user.getTenant() != null) {
                         claimMap.put("tenantId", user.getTenant().getId().toString());
+                        claimMap.put("trialUsed", user.getTenant().getTrialUsed());
+                        claimMap.put("trialLimit", user.getTenant().getTrialLimit());
                     }
                 });
 
@@ -71,6 +75,14 @@ public class JwtService {
             return BillingStatus.EXEMPT.name();
         }
         return user.getTenant().getBillingStatus().name();
+    }
+
+    /** Missing status means a legacy token or the tenant-less super-admin. */
+    private String tenantStatus(User user) {
+        if (user.getTenant() == null || user.getTenant().getTenantStatus() == null) {
+            return TenantStatus.ACTIVE.name();
+        }
+        return user.getTenant().getTenantStatus().name();
     }
 
     /** Small debug helper that exposes only a short prefix of the token. */

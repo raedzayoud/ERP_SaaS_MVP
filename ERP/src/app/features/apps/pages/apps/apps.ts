@@ -25,6 +25,8 @@ const APP_ROUTES: Record<string, string> = {
   accounting: '/accounting',
   invoicing: '/invoicing',
   reports: '/reports',
+  hr: '/hr',
+  support: '/support',
   'ai-assistant': '/ai-assistant',
   'room-live': '/rooms',
 };

@@ -1,0 +1,153 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        {{ ticket()?.subject || t('support.detail.notFound') }}
+      </h1>
+      <p class="page-subtitle">
+        @if (ticket(); as current) {
+          {{ t('support.tickets.types.' + current.type) }}
+          · {{ t('support.detail.created') }} {{ current.createdAt | date: 'short' }}
+        }
+      </p>
+    </div>
+    <a routerLink="/support/tickets" class="btn btn-secondary">
+      ← {{ t('support.detail.back') }}
+    </a>
+  </div>
+
+  @if (notice()) {
+    <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+  }
+
+  @if (loading()) {
+    <div class="card">
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    </div>
+  } @else if (loadFailed() || !ticket()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('support.detail.notFound') }}</p>
+        <p class="state-text">{{ t('support.detail.notFoundHint') }}</p>
+        <a routerLink="/support/tickets" class="btn btn-primary">{{ t('support.detail.back') }}</a>
+      </div>
+    </div>
+  } @else {
+    @if (ticket(); as current) {
+      <div class="card detail-card">
+        <div class="detail-badges">
+          <span [class]="statusClass(current.status)">
+            {{ t('support.tickets.status.' + current.status) }}
+          </span>
+          <span [class]="priorityClass(current.priority)">
+            {{ t('support.tickets.priority.' + current.priority) }}
+          </span>
+        </div>
+
+        <p class="ticket-description">{{ current.description }}</p>
+
+        <dl class="detail-grid">
+          <div>
+            <dt>{{ t('support.detail.requester') }}</dt>
+            <dd>{{ current.requesterName }} · {{ current.requesterEmail }}</dd>
+          </div>
+          <div>
+            <dt>{{ t('support.detail.assignee') }}</dt>
+            <dd>{{ current.assignee || t('support.detail.unassigned') }}</dd>
+          </div>
+        </dl>
+
+        <div class="detail-actions">
+          @if (permissions.can('support', 'update')) {
+            <a [routerLink]="['/support/tickets', current.id, 'edit']" class="btn btn-secondary">
+              {{ t('support.detail.edit') }}
+            </a>
+          }
+          @if (permissions.can('support', 'delete')) {
+            <button type="button" class="btn btn-danger" (click)="deleteTicket()">
+              {{ t('support.detail.delete') }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="card interactions-card">
+        <h2 class="section-title">{{ t('support.detail.interactions') }}</h2>
+
+        @if (interactions().length === 0) {
+          <p class="text-muted">{{ t('support.detail.noInteractions') }}</p>
+        } @else {
+          <ul class="interaction-list">
+            @for (interaction of interactions(); track interaction.id) {
+              <li class="interaction-item">
+                <div class="interaction-head">
+                  <strong>{{ interaction.author }}</strong>
+                  <span class="badge badge-info">
+                    {{ t('support.detail.channels.' + interaction.channel) }}
+                  </span>
+                  <span class="text-muted">{{ interaction.createdAt | date: 'short' }}</span>
+                </div>
+                <p>{{ interaction.message }}</p>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (permissions.can('support', 'create')) {
+          <form class="interaction-form" [formGroup]="form" (ngSubmit)="addInteraction()" novalidate>
+            <h3 class="form-subtitle">{{ t('support.detail.addInteraction') }}</h3>
+
+            @if (submitFailed()) {
+              <div class="alert alert-danger" role="alert">
+                {{ t('support.form.required') }}
+              </div>
+            }
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" for="author">{{ t('support.detail.author') }}</label>
+                <input
+                  id="author"
+                  type="text"
+                  class="form-control"
+                  formControlName="author"
+                  [attr.aria-invalid]="isInvalid('author')"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="channel">{{ t('support.detail.channel') }}</label>
+                <select id="channel" class="form-control" formControlName="channel">
+                  <option value="note">{{ t('support.detail.channels.note') }}</option>
+                  <option value="email">{{ t('support.detail.channels.email') }}</option>
+                  <option value="phone">{{ t('support.detail.channels.phone') }}</option>
+                  <option value="meeting">{{ t('support.detail.channels.meeting') }}</option>
+                </select>
+              </div>
+
+              <div class="form-group form-grid-full">
+                <label class="form-label" for="message">{{ t('support.detail.message') }}</label>
+                <textarea
+                  id="message"
+                  class="form-control"
+                  rows="3"
+                  formControlName="message"
+                  [attr.aria-invalid]="isInvalid('message')"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                {{ saving() ? t('common.saving') : t('support.detail.addInteraction') }}
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    }
+  }
+</ng-container>

@@ -1,18 +1,8 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { safeStorage } from '../utils/safe-storage';
 import { Tenant, TenantUser } from '../models/tenant';
-import { getPlanById, getPlanForModules } from '../data/plans';
-
-export interface RegisterTenantData {
-  fullName: string;
-  companyName: string;
-  subdomain: string;
-  email: string;
-  country: string;
-  language: string;
-  companySize: string;
-  modules: string[];
-}
+import { AuthTenantResponse } from '../models/auth';
+import { getPlanById } from '../data/plans';
 
 @Injectable({ providedIn: 'root' })
 export class TenantService {
@@ -40,43 +30,36 @@ export class TenantService {
     return this.currentTenant()?.currency ?? 'USD';
   }
 
-  isSubdomainAvailable(subdomain: string): boolean {
-    if (!subdomain) return false;
-    const reserved = ['admin', 'api', 'www', 'app', 'login', 'signup', 'dashboard'];
-    if (reserved.includes(subdomain)) return false;
-    const taken = this.loadSubdomains();
-    return !taken.includes(subdomain);
-  }
-
-  registerTenant(data: RegisterTenantData): Tenant {
-    const plan = getPlanForModules(data.modules);
-
+  /** Stores the tenant returned by GET /auth/me. */
+  setFromAuthTenant(data: AuthTenantResponse): Tenant {
     const tenant: Tenant = {
-      id: Date.now(),
-      companyName: data.companyName,
-      email: data.email,
-      subdomain: data.subdomain,
-      country: data.country,
-      language: data.language,
-      companySize: data.companySize,
-      planId: plan.id,
-      enabledModules: [...data.modules],
-      users: [
-        {
-          id: 1,
-          name: data.fullName,
-          email: data.email,
-          role: 'admin-entreprise',
-        },
-      ],
-      currency: 'USD',
-      taxId: '',
-      address: '',
-      createdAt: new Date().toISOString(),
+      id: data.id,
+      companyName: data.companyName ?? '',
+      email: data.email ?? '',
+      subdomain: data.subdomain ?? '',
+      country: data.country ?? '',
+      language: data.language || 'en',
+      companySize: data.companySize ?? '',
+      planId: data.planId || 'starter',
+      enabledModules: Array.isArray(data.enabledModules) ? [...data.enabledModules] : [],
+      users: [],
+      currency: data.currency || 'USD',
+      taxId: data.taxId ?? '',
+      address: data.address ?? '',
+      createdAt: data.createdAt ?? '',
+      tenantStatus: data.tenantStatus ?? undefined,
+      kycStatus: data.kycStatus ?? undefined,
+      billingStatus: data.billingStatus ?? undefined,
+      billingInterval: data.billingInterval ?? undefined,
+      currentPeriodEnd: data.currentPeriodEnd ?? undefined,
+      cancelAtPeriodEnd: data.cancelAtPeriodEnd ?? false,
+      trialLimit: data.trialLimit ?? 30,
+      trialUsed: data.trialUsed ?? 0,
+      trialStartedAt: data.trialStartedAt ?? undefined,
+      trialEndedAt: data.trialEndedAt ?? undefined,
     };
 
     this.saveTenant(tenant);
-    this.saveSubdomain(data.subdomain);
     this.currentTenant.set(tenant);
     return tenant;
   }

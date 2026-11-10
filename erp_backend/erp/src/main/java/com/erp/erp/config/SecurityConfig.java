@@ -53,6 +53,9 @@ public class SecurityConfig {
         "/api/v1/auth/refresh",
         "/api/v1/auth/logout",
         "/api/v1/auth/signup",
+        "/api/v1/auth/signup/availability",
+        "/api/v1/auth/signup/otp/send",
+        "/api/v1/auth/signup/otp/verify",
         "/api/v1/auth/forgot-password",
         "/api/v1/auth/reset-password",
         "/api/v1/webhooks/stripe",
@@ -104,15 +107,27 @@ public class SecurityConfig {
             String normalizedBilling =
                     billingStatus == null || billingStatus.isBlank() ? "EXEMPT" : billingStatus;
 
+            String tenantStatus = jwt.getClaimAsString("tenantStatus");
+            boolean tenantActive =
+                    tenantStatus == null || !"suspended".equalsIgnoreCase(tenantStatus);
+
             boolean kycApproved = "approved".equalsIgnoreCase(normalized);
             boolean billingOk = "active".equalsIgnoreCase(normalizedBilling)
                     || "exempt".equalsIgnoreCase(normalizedBilling);
-            if (kycApproved && billingOk) {
+            boolean trialActive = "trial".equalsIgnoreCase(tenantStatus)
+                    && intClaim(jwt, "trialLimit") > 0
+                    && intClaim(jwt, "trialUsed") < intClaim(jwt, "trialLimit");
+            if ((kycApproved && billingOk && tenantActive) || trialActive) {
                 authorities.add(new SimpleGrantedAuthority("access:full"));
             }
 
             return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
         };
+    }
+
+    private static int intClaim(Jwt jwt, String name) {
+        Object value = jwt.getClaim(name);
+        return value instanceof Number number ? number.intValue() : 0;
     }
 
     /** Returns an explicit 403 message so the client can show the KYC state. */
@@ -121,6 +136,10 @@ public class SecurityConfig {
         String message = "access denied";
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
+            boolean trialExhausted = authentication instanceof JwtAuthenticationToken token
+                    && "trial".equalsIgnoreCase(token.getToken().getClaimAsString("tenantStatus"))
+                    && intClaim(token.getToken(), "trialUsed")
+                            >= intClaim(token.getToken(), "trialLimit");
             boolean pending = authentication.getAuthorities().stream()
                     .anyMatch(authority -> "kyc:pending".equals(authority.getAuthority()));
             boolean rejected = authentication.getAuthorities().stream()
@@ -137,6 +156,9 @@ public class SecurityConfig {
                 if (approved && !fullAccess) {
                     message = "payment required";
                 }
+            }
+            if (trialExhausted) {
+                message = "trial limit reached";
             }
         }
 

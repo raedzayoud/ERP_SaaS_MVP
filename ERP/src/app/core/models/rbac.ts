@@ -61,6 +61,7 @@ export const BUILTIN_PERMISSIONS: Record<Role, ModulePermissions> = {
     invoices: FULL_CYCLE,
     payments: [...FULL_EDIT, 'validate'],
     reports: VIEW_EXPORT,
+    support: VIEW,
   },
   acheteur: {
     dashboard: VIEW,
@@ -98,6 +99,8 @@ export const BUILTIN_PERMISSIONS: Record<Role, ModulePermissions> = {
     stock: VIEW_EXPORT,
     accounting: VIEW_EXPORT,
     reports: VIEW_EXPORT,
+    hr: [...VIEW, 'validate', 'export'],
+    support: [...VIEW, 'validate', 'export'],
   },
   'client-externe': {},
   'super-admin': {},

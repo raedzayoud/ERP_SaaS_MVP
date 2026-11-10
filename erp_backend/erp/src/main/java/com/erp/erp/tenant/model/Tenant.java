@@ -56,6 +56,11 @@ public class Tenant {
     @Column(nullable = false)
     private String planId;
 
+    /** Platform lifecycle state; new signups start in trial until KYC approval. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'ACTIVE'")
+    private TenantStatus tenantStatus = TenantStatus.ACTIVE;
+
     /** Comma-separated module ids, e.g. "dashboard,contacts,products". */
     @Column(length = 2000)
     private String enabledModules;
@@ -67,6 +72,19 @@ public class Tenant {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'APPROVED'")
     private KycStatus kycStatus = KycStatus.APPROVED;
+
+    /** Free connections included in trial mode. */
+    @Column(nullable = false, columnDefinition = "integer default 30")
+    private int trialLimit = 30;
+
+    /** Successful logins consumed during the trial. */
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int trialUsed = 0;
+
+    private Instant trialStartedAt;
+
+    /** Set when the last trial connection is consumed. */
+    private Instant trialEndedAt;
 
     /** Super-admin note written when the signup is rejected. */
     @Column(length = 500)

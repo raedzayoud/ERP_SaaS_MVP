@@ -29,6 +29,8 @@ public final class RolePermissions {
             "reports",
             "ai-assistant",
             "collab",
+            "hr",
+            "support",
             "settings");
 
     private static final List<String> VIEW = List.of("view");
@@ -78,6 +80,7 @@ public final class RolePermissions {
         permissions.put("invoices", FULL_CYCLE);
         permissions.put("payments", List.of("view", "create", "update", "export", "validate"));
         permissions.put("reports", VIEW_EXPORT);
+        permissions.put("support", VIEW);
         return Collections.unmodifiableMap(permissions);
     }
 
@@ -131,6 +134,8 @@ public final class RolePermissions {
         permissions.put("stock", VIEW_EXPORT);
         permissions.put("accounting", VIEW_EXPORT);
         permissions.put("reports", VIEW_EXPORT);
+        permissions.put("hr", List.of("view", "validate", "export"));
+        permissions.put("support", List.of("view", "validate", "export"));
         return Collections.unmodifiableMap(permissions);
     }
 }

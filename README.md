@@ -1,13 +1,14 @@
-# ERP SaaS MVP — Angular Frontend Demo
+# ERP SaaS
 
-A multi-tenant ERP SaaS **front-end MVP** built with **Angular 21** (standalone components + signals).
-The whole application runs on a fully functional **in-memory mock data layer** that simulates the
-future **Spring Boot REST API** (simulated latency, pagination, error codes) — so every feature below
-is demo-able end to end in the browser, with no backend to install.
+A multi-tenant ERP SaaS built with **Angular 21** (standalone components + signals) and a
+**Spring Boot REST API** backed by PostgreSQL.
 
-> This is a demo / MVP. Authentication is mocked, and all data lives in memory: a page refresh
-> resets the demo dataset. In production the Spring Boot backend must enforce authentication,
-> authorization and tenant isolation.
+Authentication, signup, KYC review, billing and the HR/Support modules use the real backend.
+Other business modules still use an in-memory mock data layer for the demo.
+
+> This is an MVP. The Spring Boot backend enforces authentication, authorization and tenant
+> isolation. Business modules that still use mock data must be connected to the API before
+> production use.
 
 ---
 
@@ -15,7 +16,9 @@ is demo-able end to end in the browser, with no backend to install.
 
 | Area | Features |
 | --- | --- |
-| **Auth & onboarding** | Landing page, signup wizard with plan selection, demo login (8 one-click accounts), role-based redirects, 404 page |
+| **Auth & onboarding** | Landing page, signup wizard with email OTP, KYC documents, 30-connection free trial, account status page, role-based redirects, 404 page |
+| **HR** | Employee directory, leave requests and approval workflow (Business/Enterprise plans) |
+| **Support** | Customer tickets, ticket detail and knowledge base (view-only for commercial role) |
 | **CRM** | Contacts & companies (archive/restore), Leads (convert to contact / mark lost), Opportunities (5-stage kanban pipeline with KPI stats), Interaction history & reminders per contact, global Reminders page |
 | **Products** | Product & service catalogue, supplier links, archive/restore |
 | **Sales** | Sales orders, delivery notes (order → delivery → invoice chain enforcement), quotes, invoices (stamp duty, credit notes with cap, credit-limit check), PDF/PDF-table export |
@@ -49,7 +52,17 @@ Open `http://localhost:4200/login` — every account uses the password **`demo`*
 
 ## 🚀 Getting started
 
-Prerequisites: **Node.js 20+** and npm.
+Prerequisites: **Node.js 20+**, npm, **Java 21+**, Maven wrapper, and PostgreSQL on port `5433`.
+
+Start the database and backend:
+
+```bash
+cd erp_backend/erp
+docker compose up -d
+.\mvnw.cmd spring-boot:run
+```
+
+Start the frontend in another terminal:
 
 ```bash
 cd ERP
@@ -61,9 +74,9 @@ Other useful scripts:
 
 ```bash
 npm run build          # production build into dist/
-npm run watch          # incremental dev build
 npm test               # vitest (watch mode)
 npx ng test --watch=false   # CI-style single run
+.\mvnw.cmd -q "-Dtest=!ErpApplicationTests" test   # backend tests
 ```
 
 ## 🌍 Internationalization
@@ -116,6 +129,7 @@ Conventions:
 | **Rooms (R5)** | Rooms Live moderation: the room owner manages participants inline (invite a workspace member from a dropdown, change role participant/observer/host from a per-row select, kick ✕, block 🚫, host transfer — the creator loses the moderator rights automatically); blocked users are listed in the panel and cannot be invited or re-join; service gains `transferHost()` (7 new i18n keys, page moderation spec) | ✅ Done |
 | **Rooms (R7)** | Rooms Live private chats: the mock-AI summary was removed on request; each room member gets a ✉ Private chat button next to every other member, opening a 1-to-1 thread panel inside the room page (own bubble side, header "with {name}", empty state, small composer); threads persist per room pair (`roomlive_dms` storage, `RoomDm`/`RoomDmMessage` models, `sendDm`/`dmWith`/`listDms` service API, both users must be participants of an active room and a DM refuses empty text) (EN/FR, 4 new keys, service + page specs) | ✅ Done |
 | **AI Assistant** | Replaces the /ai-assistant placeholder with a real chat interface: welcome state with 4 clickable suggestion chips, message feed with typing indicator and auto-scroll, pill composer (Enter or Send), monthly quota badge + banner (1,000 queries, persisted in `safeStorage`); `AssistantService` mock returns deterministic EN/FR keyword answers (unpaid invoices, stock, revenue, clients, payments), invoice extraction when an `FA-YYYY-NNN` number is detected, generic fallback and quota-exceeded replies; answers are i18n keys (never raw text) under the new `assistant.*` subtree (EN/FR parity, 5 service + 2 page specs) | ✅ Done |
+| **Trial mode** | Signup starts a 30-connection free trial without Stripe, automatic email OTP, trial banner, per-login usage tracking, trial-ended login block, subscribe from account status, Super Admin usage column; trial refresh tokens use `sessionStorage` so closing the browser logs out | ✅ Done |
 | **W9–W10** | Payments console steps, cross-cutting UX, Arabic RTL | ⏳ Planned |
 
 ## 🛠️ Tech stack
@@ -125,5 +139,6 @@ Conventions:
 - [@jsverse/transloco](https://github.com/jsverse/transloco) (EN/FR i18n)
 - [Chart.js](https://www.chartjs.org/) via ng2-charts, [PrimeIcons](https://primeng.org/icons)
 - [jsPDF](https://github.com/parallax/jsPDF) + autotable (client-side PDF export)
-- Vitest for unit tests, Playwright for scripted smoke checks
-- Next milestone: Spring Boot REST API + PostgreSQL to replace the mock layer
+- Spring Boot REST API + PostgreSQL (auth, signup, KYC, billing, HR, Support)
+- Vitest for frontend unit tests, JUnit/Mockito for backend tests
+- Next milestone: connect the remaining mock business modules to the REST API

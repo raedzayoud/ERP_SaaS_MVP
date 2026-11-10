@@ -1,6 +1,7 @@
 package com.erp.erp.kyc.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -58,6 +59,19 @@ class SignupReviewServiceTest {
 
         assertEquals("APPROVED", response.status());
         assertEquals(KycStatus.APPROVED, tenant.getKycStatus());
+    }
+
+    @Test
+    void rejectStoresTheNoteAndChangesTheStatus() {
+        Tenant tenant = pendingTenant(BillingStatus.PENDING);
+        SignupReviewService service = serviceFor(tenant);
+
+        var response = service.reject(tenant.getId(), "  blurry documents  ");
+
+        assertEquals("REJECTED", response.status());
+        assertEquals("blurry documents", response.note());
+        assertEquals(KycStatus.REJECTED, tenant.getKycStatus());
+        assertNotNull(tenant.getDecidedAt());
     }
 
     private Tenant pendingTenant(BillingStatus billingStatus) {

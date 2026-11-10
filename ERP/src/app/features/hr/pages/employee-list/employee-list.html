@@ -1,0 +1,95 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('hr.employees.title') }}</h1>
+      <p class="page-subtitle">{{ t('hr.employees.subtitle') }}</p>
+    </div>
+    @if (permissions.can('hr', 'create')) {
+      <a routerLink="/hr/employees/new" class="btn btn-primary">
+        + {{ t('hr.employees.newEmployee') }}
+      </a>
+    }
+  </div>
+
+  @if (notice()) {
+    <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+  }
+
+  <div class="card">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="form-control search-input"
+        [placeholder]="t('hr.employees.searchPlaceholder')"
+        [attr.aria-label]="t('hr.employees.searchPlaceholder')"
+        [formControl]="searchControl"
+      />
+    </div>
+
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('hr.employees.loadError') }}</p>
+        <p class="state-text">{{ t('hr.employees.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    } @else if (employees().length === 0) {
+      <div class="state-block">
+        <p class="state-title">
+          {{ search() ? t('hr.employees.noMatch') : t('hr.employees.emptyTitle') }}
+        </p>
+        <p class="state-text">
+          {{ search() ? t('hr.employees.noMatchHint') : t('hr.employees.emptyHint') }}
+        </p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ t('hr.employees.columns.name') }}</th>
+              <th>{{ t('hr.employees.columns.email') }}</th>
+              <th>{{ t('hr.employees.columns.department') }}</th>
+              <th>{{ t('hr.employees.columns.position') }}</th>
+              <th>{{ t('hr.employees.columns.status') }}</th>
+              <th>{{ t('hr.employees.columns.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (employee of employees(); track employee.id) {
+              <tr>
+                <td class="cell-strong">{{ employee.fullName }}</td>
+                <td>{{ employee.email }}</td>
+                <td>{{ employee.department }}</td>
+                <td>{{ employee.position }}</td>
+                <td>
+                  <span [class]="statusClass(employee.status)">
+                    {{ t('hr.employees.status.' + employee.status) }}
+                  </span>
+                </td>
+                <td class="col-actions">
+                  @if (permissions.can('hr', 'update')) {
+                    <a [routerLink]="['/hr/employees', employee.id]" class="btn btn-secondary btn-sm">
+                      {{ t('common.edit') }}
+                    </a>
+                  }
+                  @if (permissions.can('hr', 'delete')) {
+                    <button type="button" class="btn btn-danger btn-sm" (click)="delete(employee)">
+                      {{ t('common.delete') }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

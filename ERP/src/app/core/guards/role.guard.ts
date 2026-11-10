@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { Role, homeRouteForRole } from '../models/role';
+import { Role } from '../models/role';
 
 /**
  * Blocks a route when the logged-in user's role is not in route.data.roles.
@@ -21,7 +21,24 @@ export const roleGuard: CanActivateFn = (route) => {
     return true;
   }
 
-  return router.createUrlTree([homeRouteForRole(user.role)]);
+  return router.createUrlTree([authService.homeRouteForCurrentUser()]);
+};
+
+/** Redirects signed-in users whose KYC or billing is not ready yet. */
+export const accountAccessGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  const user = authService.currentUser();
+  if (!user) {
+    return router.createUrlTree(['/login']);
+  }
+
+  if (authService.hasAccountAccess()) {
+    return true;
+  }
+
+  return router.createUrlTree(['/account-status']);
 };
 
 /** Keeps already signed-in users away from /login and /signup. */
@@ -34,5 +51,5 @@ export const guestGuard: CanActivateFn = () => {
     return true;
   }
 
-  return router.createUrlTree([homeRouteForRole(user.role)]);
+  return router.createUrlTree([authService.homeRouteForCurrentUser()]);
 };

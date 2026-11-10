@@ -30,7 +30,7 @@ export class RenewPassword {
   constructor() {
     // Safety net: visitors without a session go back to the generic login.
     if (!this.authService.currentUser()) {
-      this.router.navigate(['/login/email']);
+      void this.router.navigate(['/login']);
     }
   }
 

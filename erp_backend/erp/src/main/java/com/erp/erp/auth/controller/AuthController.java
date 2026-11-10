@@ -7,11 +7,17 @@ import com.erp.erp.auth.dto.ForgotPasswordResponse;
 import com.erp.erp.auth.dto.LoginRequest;
 import com.erp.erp.auth.dto.RefreshTokenRequest;
 import com.erp.erp.auth.dto.ResetPasswordRequest;
+import com.erp.erp.auth.dto.SignupAvailabilityResponse;
+import com.erp.erp.auth.dto.SignupOtpSendRequest;
+import com.erp.erp.auth.dto.SignupOtpSendResponse;
+import com.erp.erp.auth.dto.SignupOtpVerifyRequest;
+import com.erp.erp.auth.dto.SignupOtpVerifyResponse;
 import com.erp.erp.auth.dto.SignupRequest;
 import com.erp.erp.auth.dto.SignupResponse;
 import com.erp.erp.auth.dto.TokenPairResponse;
 import com.erp.erp.auth.service.AuthService;
 import com.erp.erp.auth.service.PasswordResetService;
+import com.erp.erp.auth.service.SignupOtpService;
 import com.erp.erp.kyc.model.DocumentSlot;
 import jakarta.validation.Valid;
 import java.util.EnumMap;
@@ -25,6 +31,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,10 +42,15 @@ public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
+    private final SignupOtpService signupOtpService;
 
-    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
+    public AuthController(
+            AuthService authService,
+            PasswordResetService passwordResetService,
+            SignupOtpService signupOtpService) {
         this.authService = authService;
         this.passwordResetService = passwordResetService;
+        this.signupOtpService = signupOtpService;
     }
 
     @PostMapping("/login")
@@ -56,6 +68,25 @@ public class AuthController {
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
         authService.logout(request);
         return ResponseEntity.noContent().build();
+    }
+
+    /** Public check used before the signup form is submitted. */
+    @GetMapping("/signup/availability")
+    public ResponseEntity<SignupAvailabilityResponse> signupAvailability(
+            @RequestParam("subdomain") String subdomain) {
+        return ResponseEntity.ok(authService.signupAvailability(subdomain));
+    }
+
+    @PostMapping("/signup/otp/send")
+    public ResponseEntity<SignupOtpSendResponse> sendSignupOtp(
+            @Valid @RequestBody SignupOtpSendRequest request) {
+        return ResponseEntity.ok(signupOtpService.send(request));
+    }
+
+    @PostMapping("/signup/otp/verify")
+    public ResponseEntity<SignupOtpVerifyResponse> verifySignupOtp(
+            @Valid @RequestBody SignupOtpVerifyRequest request) {
+        return ResponseEntity.ok(signupOtpService.verify(request));
     }
 
     /**

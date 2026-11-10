@@ -4,7 +4,12 @@
  * in-memory implementation (same idea as the guard in language.service).
  */
 export function withFreshStorage(): void {
-  const existing = globalThis.localStorage as unknown as Partial<Storage> | undefined;
+  installFreshStorage('localStorage');
+  installFreshStorage('sessionStorage');
+}
+
+function installFreshStorage(name: 'localStorage' | 'sessionStorage'): void {
+  const existing = globalThis[name] as unknown as Partial<Storage> | undefined;
 
   if (existing && typeof existing.setItem === 'function' && typeof existing.clear === 'function') {
     existing.clear();
@@ -12,7 +17,7 @@ export function withFreshStorage(): void {
   }
 
   const store = new Map<string, string>();
-  Object.defineProperty(globalThis, 'localStorage', {
+  Object.defineProperty(globalThis, name, {
     value: {
       getItem: (key: string): string | null => store.get(key) ?? null,
       setItem: (key: string, value: string): void => {

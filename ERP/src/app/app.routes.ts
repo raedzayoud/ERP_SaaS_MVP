@@ -1,25 +1,20 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { moduleGuard } from './core/guards/module.guard';
-import { guestGuard, roleGuard } from './core/guards/role.guard';
+import { accountAccessGuard, guestGuard, roleGuard } from './core/guards/role.guard';
 import { TENANT_ROLES } from './core/models/role';
 
 export const routes: Routes = [
   {
     path: 'login',
-    canActivate: [guestGuard],
-    loadComponent: () => import('./features/auth/pages/login/login').then((m) => m.LoginComponent),
-  },
-  {
-    path: 'login/:role',
+    pathMatch: 'full',
     canActivate: [guestGuard],
     loadComponent: () =>
-      import('./features/auth/pages/login-credentials/login-credentials').then(
-        (m) => m.LoginCredentials,
-      ),
+      import('./features/auth/pages/login-generic/login-generic').then((m) => m.LoginGeneric),
   },
   {
     path: 'login/email',
+    pathMatch: 'full',
     canActivate: [guestGuard],
     loadComponent: () =>
       import('./features/auth/pages/login-generic/login-generic').then((m) => m.LoginGeneric),
@@ -54,6 +49,31 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/auth/pages/signup/signup').then((m) => m.SignupComponent),
     data: { title: 'titles.signup' },
+  },
+  {
+    path: 'signup/success',
+    loadComponent: () =>
+      import('./features/auth/pages/signup-result/signup-result').then(
+        (m) => m.SignupResultComponent,
+      ),
+    data: { title: 'signup.result.success.title', mode: 'success' },
+  },
+  {
+    path: 'signup/payment-cancelled',
+    loadComponent: () =>
+      import('./features/auth/pages/signup-result/signup-result').then(
+        (m) => m.SignupResultComponent,
+      ),
+    data: { title: 'signup.result.cancelled.title', mode: 'cancelled' },
+  },
+  {
+    path: 'account-status',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/auth/pages/account-status/account-status').then(
+        (m) => m.AccountStatusComponent,
+      ),
+    data: { title: 'accountStatus.title' },
   },
   {
     path: '',
@@ -157,7 +177,7 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./layout/main-layout/main-layout').then((m) => m.MainLayout),
-    canActivate: [authGuard, roleGuard],
+    canActivate: [authGuard, roleGuard, accountAccessGuard],
     data: { roles: TENANT_ROLES },
     children: [
       {
@@ -746,10 +766,128 @@ export const routes: Routes = [
         },
       },
       {
+        path: 'hr/employees/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/hr/pages/employee-form/employee-form').then((m) => m.EmployeeForm),
+        data: { title: 'titles.newEmployee', moduleId: 'hr' },
+      },
+      {
+        path: 'hr/employees/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/hr/pages/employee-form/employee-form').then((m) => m.EmployeeForm),
+        data: { title: 'titles.editEmployee', moduleId: 'hr' },
+      },
+      {
+        path: 'hr/employees',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/hr/pages/employee-list/employee-list').then((m) => m.EmployeeList),
+        data: {
+          title: 'titles.employees',
+          description: 'descriptions.employees',
+          icon: '👤',
+          moduleId: 'hr',
+        },
+      },
+      {
+        path: 'hr/leave',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/hr/pages/leave-list/leave-list').then((m) => m.LeaveList),
+        data: {
+          title: 'titles.leave',
+          description: 'descriptions.leave',
+          icon: '🌴',
+          moduleId: 'hr',
+        },
+      },
+      {
+        path: 'hr',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/hr/pages/hr-dashboard/hr-dashboard').then((m) => m.HrDashboard),
+        data: {
+          title: 'titles.hr',
+          description: 'descriptions.hr',
+          icon: '🧑‍💼',
+          moduleId: 'hr',
+        },
+      },
+      {
+        path: 'support/tickets/new',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/support/pages/ticket-form/ticket-form').then((m) => m.TicketForm),
+        data: { title: 'titles.newTicket', moduleId: 'support' },
+      },
+      {
+        path: 'support/tickets/:id/edit',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/support/pages/ticket-form/ticket-form').then((m) => m.TicketForm),
+        data: { title: 'titles.editTicket', moduleId: 'support' },
+      },
+      {
+        path: 'support/tickets/:id',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/support/pages/ticket-detail/ticket-detail').then(
+            (m) => m.TicketDetail,
+          ),
+        data: { title: 'titles.ticketDetail', moduleId: 'support' },
+      },
+      {
+        path: 'support/tickets',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/support/pages/ticket-list/ticket-list').then((m) => m.TicketList),
+        data: {
+          title: 'titles.tickets',
+          description: 'descriptions.tickets',
+          icon: '🎫',
+          moduleId: 'support',
+        },
+      },
+      {
+        path: 'support/knowledge-base',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/support/pages/knowledge-base/knowledge-base').then(
+            (m) => m.KnowledgeBase,
+          ),
+        data: {
+          title: 'titles.knowledgeBase',
+          description: 'descriptions.knowledgeBase',
+          icon: '📚',
+          moduleId: 'support',
+        },
+      },
+      {
+        path: 'support',
+        canActivate: [moduleGuard],
+        loadComponent: () =>
+          import('./features/support/pages/support-dashboard/support-dashboard').then(
+            (m) => m.SupportDashboard,
+          ),
+        data: {
+          title: 'titles.support',
+          description: 'descriptions.support',
+          icon: '🎧',
+          moduleId: 'support',
+        },
+      },
+      {
         path: 'module-inactive',
         loadComponent: () =>
           import('./shared/pages/module-inactive/module-inactive').then((m) => m.ModuleInactive),
         data: { title: 'titles.moduleInactive' },
+      },
+      {
+        path: 'settings/billing',
+        pathMatch: 'full',
+        redirectTo: 'settings',
       },
       {
         path: 'settings',

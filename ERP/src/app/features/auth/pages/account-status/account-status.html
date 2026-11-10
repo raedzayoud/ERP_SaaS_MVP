@@ -1,0 +1,147 @@
+<ng-container *transloco="let t">
+  <div class="status-page">
+    <div class="status-card">
+      <div class="status-header">
+        <div class="status-logo">E</div>
+        <h1 class="status-title">{{ t('accountStatus.title') }}</h1>
+        <p class="status-subtitle">{{ t('accountStatus.subtitle') }}</p>
+      </div>
+
+      @if (loading()) {
+        <div class="status-loading" role="status">
+          <span class="status-spinner" aria-hidden="true"></span>
+          {{ t('accountStatus.loading') }}
+        </div>
+      } @else {
+        @if (errorKey()) {
+          <div class="status-error">{{ t(errorKey()) }}</div>
+        }
+
+        <div class="status-rows">
+          <div class="status-row">
+            <span class="status-label">{{ t('accountStatus.kycLabel') }}</span>
+            <span
+              class="status-badge"
+              [class.ok]="kycStatus() === 'APPROVED'"
+              [class.warn]="kycStatus() === 'PENDING'"
+              [class.bad]="kycStatus() === 'REJECTED'"
+            >
+              {{ t('accountStatus.kyc.' + kycStatus()) }}
+            </span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">{{ t('accountStatus.tenantLabel') }}</span>
+            <span
+              class="status-badge"
+              [class.ok]="tenantStatus() === 'ACTIVE'"
+              [class.warn]="tenantStatus() === 'TRIAL'"
+              [class.bad]="tenantStatus() === 'SUSPENDED'"
+            >
+              {{ t('accountStatus.tenant.' + tenantStatus()) }}
+            </span>
+          </div>
+          @if (tenantStatus() === 'TRIAL') {
+            <div class="status-row">
+              <span class="status-label">{{ t('accountStatus.trialLabel') }}</span>
+              <span class="status-value">
+                {{ t('accountStatus.trialUsage', { used: trialUsed(), limit: trialLimit() }) }}
+              </span>
+            </div>
+          }
+          <div class="status-row">
+            <span class="status-label">{{ t('accountStatus.billingLabel') }}</span>
+            <span
+              class="status-badge"
+              [class.ok]="billingStatus() === 'ACTIVE' || billingStatus() === 'EXEMPT'"
+              [class.warn]="billingStatus() === 'PENDING' || billingStatus() === 'PAST_DUE'"
+              [class.bad]="billingStatus() === 'CANCELED'"
+            >
+              {{ t('accountStatus.billing.' + billingStatus()) }}
+            </span>
+          </div>
+          @if (tenant(); as current) {
+            <div class="status-row">
+              <span class="status-label">{{ t('accountStatus.workspaceLabel') }}</span>
+              <span class="status-value">{{ current.companyName }}</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">{{ t('accountStatus.planLabel') }}</span>
+              <span class="status-value">{{ current.planId }}</span>
+            </div>
+          }
+        </div>
+
+        @if (suspended()) {
+          <div class="status-message bad">{{ t('accountStatus.suspendedText') }}</div>
+        } @else if (rejected()) {
+          <div class="status-message bad">{{ t('accountStatus.rejectedText') }}</div>
+        } @else if (trialEnded() && !paid()) {
+          <div class="status-message warn">{{ t('accountStatus.trialEndedText') }}</div>
+        } @else if (trialActive()) {
+          <div class="status-message ok">
+            {{ t('accountStatus.trialText', { remaining: trialRemaining(), limit: trialLimit() }) }}
+          </div>
+        } @else if (pastDue()) {
+          <div class="status-message warn">{{ t('accountStatus.pastDueText') }}</div>
+        } @else if (paymentRequired()) {
+          <div class="status-message warn">{{ t('accountStatus.paymentText') }}</div>
+        } @else if (paymentPending()) {
+          <div class="status-message warn">{{ t('accountStatus.paymentPendingText') }}</div>
+        } @else if (awaitingApproval()) {
+          <div class="status-message ok">{{ t('accountStatus.paymentConfirmedText') }}</div>
+        } @else if (kycStatus() === 'PENDING') {
+          <div class="status-message">{{ t('accountStatus.pendingText') }}</div>
+        } @else {
+          <div class="status-message ok">{{ t('accountStatus.readyText') }}</div>
+        }
+
+        @if (actionErrorKey()) {
+          <div class="status-error">{{ t(actionErrorKey()) }}</div>
+        }
+
+        <div class="status-actions">
+          @if (suspended() || rejected()) {
+            <button class="btn btn-secondary" (click)="signOut()">
+              {{ t('accountStatus.signOut') }}
+            </button>
+          } @else {
+            @if (ready()) {
+              <button class="btn btn-primary" (click)="goToDashboard()">
+                {{ t('accountStatus.goToDashboard') }}
+              </button>
+            } @else if (pastDue()) {
+              <button
+                class="btn btn-primary"
+                (click)="openBillingPortal()"
+                [disabled]="actionLoading()"
+              >
+                {{ actionLoading() ? t('accountStatus.working') : t('accountStatus.manageBilling') }}
+              </button>
+            } @else if (paymentRequired()) {
+              <button
+                class="btn btn-primary"
+                (click)="retryPayment()"
+                [disabled]="actionLoading()"
+              >
+                {{
+                  actionLoading()
+                    ? t('accountStatus.working')
+                    : trialEnded()
+                      ? t('accountStatus.subscribe')
+                      : t('accountStatus.retryPayment')
+                }}
+              </button>
+            }
+
+            <button class="btn btn-secondary" (click)="reload()" [disabled]="loading()">
+              {{ t('accountStatus.refresh') }}
+            </button>
+            <button class="btn btn-secondary" (click)="signOut()">
+              {{ t('accountStatus.signOut') }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</ng-container>

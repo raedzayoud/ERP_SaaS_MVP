@@ -2,7 +2,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { PlatformService } from '../../services/platform.service';
+import { AdminApiService } from '../../services/admin-api.service';
 import { PlatformStats, PlatformTenant } from '../../models/platform';
 import { getPlanById } from '../../../../core/data/plans';
 
@@ -13,7 +13,7 @@ import { getPlanById } from '../../../../core/data/plans';
   styleUrl: './admin-home.css',
 })
 export class AdminHome {
-  private readonly platformService = inject(PlatformService);
+  private readonly adminApi = inject(AdminApiService);
 
   stats = signal<PlatformStats | null>(null);
   recentTenants = signal<PlatformTenant[]>([]);
@@ -26,12 +26,15 @@ export class AdminHome {
   load(): void {
     this.loading.set(true);
 
-    this.platformService.getStats().subscribe((stats) => {
-      this.stats.set(stats);
-      this.loading.set(false);
+    this.adminApi.getStats().subscribe({
+      next: (stats) => {
+        this.stats.set(stats);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
     });
 
-    this.platformService.getTenants().subscribe((tenants) => {
+    this.adminApi.getTenants().subscribe((tenants) => {
       this.recentTenants.set(
         [...tenants].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5),
       );

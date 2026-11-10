@@ -22,22 +22,17 @@
         <div class="step-line" [class.done]="state.step() > 2"></div>
         <div class="step" [class.active]="state.step() >= 3" [class.done]="state.step() > 3">
           <div class="step-circle">3</div>
-          <div class="step-label">{{ t('signup.steps.documents') }}</div>
+          <div class="step-label">{{ t('signup.steps.verify') }}</div>
         </div>
         <div class="step-line" [class.done]="state.step() > 3"></div>
         <div class="step" [class.active]="state.step() >= 4" [class.done]="state.step() > 4">
           <div class="step-circle">4</div>
-          <div class="step-label">{{ t('signup.steps.verify') }}</div>
+          <div class="step-label">{{ t('signup.steps.documents') }}</div>
         </div>
         <div class="step-line" [class.done]="state.step() > 4"></div>
-        <div class="step" [class.active]="state.step() >= 5" [class.done]="state.step() > 5">
+        <div class="step" [class.active]="state.step() >= 5">
           <div class="step-circle">5</div>
-          <div class="step-label">{{ t('signup.steps.payment') }}</div>
-        </div>
-        <div class="step-line" [class.done]="state.step() > 5"></div>
-        <div class="step" [class.active]="state.step() >= 6">
-          <div class="step-circle">6</div>
-          <div class="step-label">{{ t('signup.steps.setup') }}</div>
+          <div class="step-label">{{ t('signup.steps.review') }}</div>
         </div>
       </div>
 
@@ -171,6 +166,7 @@
                 id="fullName"
                 type="text"
                 class="form-control"
+                autocomplete="name"
                 [placeholder]="t('signup.detailsStep.fullNameHolder')"
                 [value]="state.fullName()"
                 (input)="state.onFormInput('fullName', $event)"
@@ -182,6 +178,7 @@
                 id="email"
                 type="email"
                 class="form-control"
+                autocomplete="email"
                 [placeholder]="t('signup.detailsStep.emailHolder')"
                 [value]="state.email()"
                 (input)="state.onFormInput('email', $event)"
@@ -195,6 +192,7 @@
               id="companyName"
               type="text"
               class="form-control"
+              autocomplete="organization"
               [placeholder]="t('signup.detailsStep.companyHolder')"
               [value]="state.companyName()"
               (input)="state.onFormInput('companyName', $event)"
@@ -208,17 +206,45 @@
                 id="subdomain"
                 type="text"
                 class="form-control subdomain-field"
+                autocomplete="off"
                 [placeholder]="t('signup.detailsStep.subdomainHolder')"
                 [value]="state.subdomain()"
                 (input)="state.onSubdomainInput($event)"
               />
               <span class="subdomain-suffix">.erpcloud.com</span>
             </div>
-            @if (state.subdomainChecked() === true) {
+            @if (state.subdomainChecking()) {
+              <div class="field-hint">{{ t('signup.detailsStep.hintChecking') }}</div>
+            } @else if (state.subdomainCheckFailed()) {
+              <div class="field-hint error">{{ t('signup.detailsStep.hintCheckFailed') }}</div>
+            } @else if (state.subdomainChecked() === true) {
               <div class="field-hint ok">✓ {{ t('signup.detailsStep.hintAvailable', { url: state.fullSubdomain }) }}</div>
             } @else if (state.subdomainChecked() === false) {
               <div class="field-hint error">✗ {{ t('signup.detailsStep.hintTaken') }}</div>
             }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">{{ t('signup.detailsStep.password') }}</label>
+            <div class="password-input">
+              <input
+                id="password"
+                [type]="state.showPassword() ? 'text' : 'password'"
+                class="form-control"
+                autocomplete="new-password"
+                [placeholder]="t('signup.detailsStep.passwordHolder')"
+                [value]="state.password()"
+                (input)="state.onPasswordInput($event)"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="state.togglePasswordVisibility()"
+              >
+                {{ state.showPassword() ? t('signup.detailsStep.hidePassword') : t('signup.detailsStep.showPassword') }}
+              </button>
+            </div>
+            <div class="field-hint">{{ t('signup.detailsStep.passwordHint') }}</div>
           </div>
 
           <div class="form-row form-row-3">
@@ -265,8 +291,110 @@
         </div>
       }
 
-      <!-- ═══ STEP 3: KYC Documents ═══ -->
+      <!-- ═══ STEP 3: Verify Email ═══ -->
       @if (state.step() === 3) {
+        <div class="step-content">
+          <p class="step-intro">{{ t('signup.verifyStep.intro') }}</p>
+
+          @if (state.email()) {
+            <div class="otp-panel" [class.verified]="state.emailVerified()">
+              <div class="otp-head">
+                <span class="otp-icon" aria-hidden="true">✉️</span>
+                <div class="otp-copy">
+                  <div class="otp-title">
+                    {{
+                      state.emailVerified()
+                        ? t('signup.verifyStep.verifiedTitle')
+                        : t('signup.verifyStep.title')
+                    }}
+                  </div>
+                  <p class="otp-text">
+                    @if (state.emailVerified()) {
+                      {{ t('signup.verifyStep.verifiedText') }}
+                    } @else if (state.otpSent()) {
+                      {{ t('signup.verifyStep.sent') }}
+                      <strong>{{ state.email() }}</strong>
+                    } @else {
+                      {{ t('signup.verifyStep.intro') }}
+                    }
+                  </p>
+                </div>
+                @if (state.emailVerified()) {
+                  <span class="otp-badge">✓ {{ t('signup.verifyStep.verifiedBadge') }}</span>
+                }
+              </div>
+
+              @if (!state.emailVerified()) {
+                @if (state.otpSent()) {
+                  <div class="otp-row">
+                    <input
+                      type="text"
+                      class="form-control otp-input"
+                      inputmode="numeric"
+                      autocomplete="one-time-code"
+                      maxlength="6"
+                      [placeholder]="t('signup.verifyStep.codePlaceholder')"
+                      [attr.aria-label]="t('signup.verifyStep.codeLabel')"
+                      [value]="state.otpCode()"
+                      (input)="state.onOtpCodeInput($event)"
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-primary otp-verify-btn"
+                      (click)="state.verifyOtp()"
+                      [disabled]="state.otpVerifying() || state.otpCode().length !== 6"
+                    >
+                      {{
+                        state.otpVerifying()
+                          ? t('signup.actions.processing')
+                          : t('signup.actions.verify')
+                      }}
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    class="otp-resend"
+                    (click)="state.sendOtp()"
+                    [disabled]="state.otpSending() || state.otpResendAfter() > 0"
+                  >
+                    @if (state.otpResendAfter() > 0) {
+                      {{ t('signup.verifyStep.resendIn', { seconds: state.otpResendAfter() }) }}
+                    } @else {
+                      {{
+                        state.otpSending()
+                          ? t('signup.actions.processing')
+                          : t('signup.verifyStep.resend')
+                      }}
+                    }
+                  </button>
+                } @else {
+                  @if (state.otpSending()) {
+                    <p class="field-hint">{{ t('signup.actions.processing') }}</p>
+                  } @else if (state.otpError()) {
+                    <button
+                      type="button"
+                      class="btn btn-secondary otp-send-btn"
+                      (click)="state.sendOtp()"
+                      [disabled]="!state.email().includes('@')"
+                    >
+                      {{ t('signup.actions.sendCode') }}
+                    </button>
+                  }
+                }
+              }
+
+              @if (state.otpError()) {
+                <div class="field-hint error">{{ state.otpError() }}</div>
+              } @else if (state.otpInfo() && !state.emailVerified()) {
+                <div class="field-hint ok">{{ state.otpInfo() }}</div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ═══ STEP 4: KYC Documents ═══ -->
+      @if (state.step() === 4) {
         <div class="step-content">
           <p class="step-intro">{{ t('signup.docStep.intro') }}</p>
 
@@ -295,9 +423,9 @@
                   <div class="doc-upload-name">{{ t('signup.docStep.docs.' + slot + '.label') }}</div>
                   @if (state.uploadedDocs()[slot]; as uploaded) {
                     <div class="doc-upload-file">
-                      📄 {{ uploaded.fileName }}
+                      📄 {{ uploaded.name }}
                       <span class="doc-upload-size">
-                        {{ t('signup.docStep.sizeKb', { size: uploaded.sizeKb }) }}
+                        {{ t('signup.docStep.sizeKb', { size: state.docSizeKb(uploaded) }) }}
                       </span>
                     </div>
                   } @else {
@@ -310,12 +438,12 @@
                     <input
                       type="file"
                       class="doc-upload-input"
-                      accept=".png,.jpg,.jpeg,.pdf,image/*,application/pdf"
+                      accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"
                       [attr.aria-label]="t('signup.docStep.docs.' + slot + '.label')"
                       (change)="state.onDocPick(slot, $event)"
                     />
                   </label>
-                  @if (state.uploadedDocs()[slot]; as uploaded) {
+                  @if (state.uploadedDocs()[slot]) {
                     <button
                       type="button"
                       class="doc-upload-remove"
@@ -340,220 +468,127 @@
         </div>
       }
 
-      <!-- ═══ STEP 4: Email Verification ═══ -->
-      @if (state.step() === 4) {
-        <div class="step-content verify-content">
-          <div class="verify-icon" aria-hidden="true">📧</div>
-          <h3 class="verify-title">{{ t('signup.verifyStep.title') }}</h3>
-          <p class="verify-text">
-            {{ t('signup.verifyStep.sent') }}<br />
-            <strong>{{ state.email() }}</strong>
-          </p>
-
-          <div class="demo-banner">
-            {{ t('signup.verifyStep.demoPrefix') }}
-            <strong class="demo-code">{{ state.verificationCode() }}</strong>
-          </div>
-
-          @if (state.verifyError()) {
-            <div class="signup-error">{{ state.verifyError() }}</div>
-          }
-
-          <input
-            type="text"
-            class="code-input"
-            inputmode="numeric"
-            placeholder="000000"
-            maxlength="6"
-            [value]="state.codeInput()"
-            (input)="state.onCodeInput($event)"
-          />
-
-          <div class="verify-actions">
-            <button
-              class="btn btn-secondary btn-sm"
-              (click)="state.resendCode()"
-              [disabled]="state.resendCooldown() > 0"
-            >
-              @if (state.resendCooldown() > 0) {
-                {{ t('signup.verifyStep.resendIn', { seconds: state.resendCooldown() }) }}
-              } @else {
-                {{ t('signup.verifyStep.resend') }}
-              }
-            </button>
-            <span class="code-expiry">
-              @if (state.codeExpired) {
-                {{ t('signup.verifyStep.state.codeExpired') }}
-              } @else {
-                {{ t('signup.verifyStep.codeValid') }}
-              }
-            </span>
-          </div>
-        </div>
-      }
-
-      <!-- ═══ STEP 5: Payment ═══ -->
+      <!-- ═══ STEP 5: Review and Payment ═══ -->
       @if (state.step() === 5) {
         <div class="step-content">
+          <p class="step-intro">{{ t('signup.reviewStep.intro') }}</p>
+
           <div class="plan-summary">
             <div class="plan-summary-info">
-              <p class="plan-summary-name">{{ t('signup.paymentStep.planTitle', { plan: state.selectedPlan().name }) }}</p>
-              <p class="plan-summary-meta">{{ t('signup.paymentStep.planMeta', { count: state.selectableCount() }) }}</p>
+              <p class="plan-summary-name">
+                {{ t('signup.reviewStep.planTitle', { plan: state.selectedPlan().name }) }}
+              </p>
+              <p class="plan-summary-meta">
+                {{ t('signup.reviewStep.planMeta', { count: state.selectableCount() }) }}
+              </p>
             </div>
             <p class="plan-summary-price">
-              <strong>${{ state.selectedPlan().priceMonthly }}</strong>/mo
+              <strong>${{ state.selectedPrice() }}</strong>
+              {{ state.billingInterval() === 'ANNUAL' ? t('signup.reviewStep.perYear') : t('signup.reviewStep.perMonth') }}
             </p>
           </div>
 
-          <div class="demo-banner">
-            {{ t('signup.paymentStep.demoPrefix') }}
-            <strong class="demo-code">4242 4242 4242 4242</strong>
+          <div class="billing-toggle" role="group" [attr.aria-label]="t('signup.reviewStep.intervalLabel')">
+            <button
+              type="button"
+              class="billing-option"
+              [class.active]="state.billingInterval() === 'MONTHLY'"
+              (click)="state.setBillingInterval('MONTHLY')"
+            >
+              <span class="billing-option-title">{{ t('signup.reviewStep.monthly') }}</span>
+              <span class="billing-option-price">
+                ${{ state.selectedPlan().priceMonthly }}{{ t('signup.reviewStep.perMonth') }}
+              </span>
+            </button>
+            <button
+              type="button"
+              class="billing-option"
+              [class.active]="state.billingInterval() === 'ANNUAL'"
+              (click)="state.setBillingInterval('ANNUAL')"
+            >
+              <span class="billing-option-title">{{ t('signup.reviewStep.annual') }}</span>
+              <span class="billing-option-price">
+                ${{ state.selectedPlan().priceAnnual }}{{ t('signup.reviewStep.perYear') }}
+              </span>
+              <span class="billing-option-badge">{{ t('signup.reviewStep.annualBadge') }}</span>
+            </button>
           </div>
 
-          @if (state.paymentError()) {
-            <div class="signup-error">{{ state.paymentError() }}</div>
-          }
-
-          <div class="stripe-card">
-            <div class="stripe-field">
-              <label class="stripe-label" for="cardNumber">{{ t('signup.paymentStep.cardNumber') }}</label>
-              <div class="stripe-input-row">
-                <input
-                  id="cardNumber"
-                  type="text"
-                  inputmode="numeric"
-                  class="stripe-input"
-                  autocomplete="cc-number"
-                  [placeholder]="t('signup.paymentStep.cardNumberHolder')"
-                  [value]="state.cardNumber()"
-                  (input)="state.onCardNumberInput($event)"
-                />
-                @if (state.cardBrand !== 'CARD') {
-                  <span class="card-brand">{{ state.cardBrand }}</span>
-                }
-              </div>
+          <div class="review-grid">
+            <div class="review-item">
+              <span class="review-label">{{ t('signup.reviewStep.company') }}</span>
+              <span class="review-value">{{ state.companyName() }}</span>
             </div>
-
-            <div class="stripe-field-row">
-              <div class="stripe-field">
-                <label class="stripe-label" for="cardExpiry">{{ t('signup.paymentStep.expiry') }}</label>
-                <input
-                  id="cardExpiry"
-                  type="text"
-                  inputmode="numeric"
-                  class="stripe-input"
-                  autocomplete="cc-exp"
-                  [placeholder]="t('signup.paymentStep.expiryHolder')"
-                  [value]="state.cardExpiry()"
-                  (input)="state.onCardExpiryInput($event)"
-                />
-              </div>
-              <div class="stripe-field">
-                <label class="stripe-label" for="cardCvc">{{ t('signup.paymentStep.cvc') }}</label>
-                <input
-                  id="cardCvc"
-                  type="text"
-                  inputmode="numeric"
-                  class="stripe-input"
-                  autocomplete="cc-csc"
-                  [placeholder]="t('signup.paymentStep.cvcHolder')"
-                  [value]="state.cardCvc()"
-                  (input)="state.onCardCvcInput($event)"
-                />
-              </div>
+            <div class="review-item">
+              <span class="review-label">{{ t('signup.reviewStep.contact') }}</span>
+              <span class="review-value">{{ state.fullName() }} · {{ state.email() }}</span>
             </div>
-
-            <div class="stripe-field">
-              <label class="stripe-label" for="cardName">{{ t('signup.paymentStep.cardName') }}</label>
-              <input
-                id="cardName"
-                type="text"
-                class="stripe-input"
-                autocomplete="cc-name"
-                [placeholder]="t('signup.paymentStep.cardNameHolder')"
-                [value]="state.cardName()"
-                (input)="state.onCardNameInput($event)"
-              />
+            <div class="review-item">
+              <span class="review-label">{{ t('signup.reviewStep.workspace') }}</span>
+              <span class="review-value">{{ state.fullSubdomain }}</span>
+            </div>
+            <div class="review-item">
+              <span class="review-label">{{ t('signup.reviewStep.taxId') }}</span>
+              <span class="review-value">{{ state.taxId() }}</span>
+            </div>
+            <div class="review-item">
+              <span class="review-label">{{ t('signup.reviewStep.documents') }}</span>
+              <span class="review-value">
+                {{ t('signup.reviewStep.documentsReady', { count: state.docSlots.length }) }}
+              </span>
+            </div>
+            <div class="review-item">
+              <span class="review-label">{{ t('signup.reviewStep.country') }}</span>
+              <span class="review-value">{{ state.country() }}</span>
             </div>
           </div>
 
-          <p class="stripe-footer">🔒 {{ t('signup.paymentStep.stripeFooter') }}</p>
-        </div>
-      }
-
-      <!-- ═══ STEP 6: Provisioning ═══ -->
-      @if (state.step() === 6) {
-        <div class="step-content provision-content">
-          <div class="provision-spinner" aria-hidden="true"></div>
-          <h3 class="provision-title">{{ t('signup.setupStep.title') }}</h3>
-
-          <ul class="provision-list">
-            @for (item of state.provisionItems(); track item.key) {
-              <li
-                class="provision-item"
-                [class.done]="state.provisioningStep() > $index"
-                [class.active]="state.provisioningStep() === $index"
-              >
-                <span class="provision-mark" aria-hidden="true">
-                  @if (state.provisioningStep() > $index) {
-                    ✓
-                  } @else if (state.provisioningStep() === $index) {
-                    <span class="mini-spinner"></span>
-                  }
-                </span>
-                {{ t(item.key, item.params) }}
-              </li>
-            }
-          </ul>
-
-          <p class="provision-plan">
-            {{ t('signup.setupStep.planNote', { plan: state.selectedPlan().name, price: state.selectedPlan().priceMonthly }) }}
-          </p>
+          <p class="stripe-footer">🔒 {{ t('signup.reviewStep.trialNote') }}</p>
         </div>
       }
 
       <!-- Actions -->
-      @if (state.step() < 6) {
-        <div class="step-actions">
-          @if (state.step() > 1) {
-            <button class="btn btn-secondary" (click)="state.back()">{{ t('signup.actions.back') }}</button>
-          } @else {
-            <a routerLink="/login" class="btn btn-secondary">{{ t('signup.actions.signIn') }}</a>
-          }
+      <div class="step-actions">
+        @if (state.step() > 1) {
+          <button class="btn btn-secondary" (click)="state.back()" [disabled]="state.submitting()">
+            {{ t('signup.actions.back') }}
+          </button>
+        } @else {
+          <a routerLink="/login" class="btn btn-secondary">{{ t('signup.actions.signIn') }}</a>
+        }
 
-          @if (state.step() === 1) {
-            <button class="btn btn-primary" (click)="state.next()" [disabled]="state.selectableCount() < 1">
-              {{ t('signup.actions.continue') }}
-            </button>
-          } @else if (state.step() === 2) {
-            <button class="btn btn-primary" (click)="state.next()">{{ t('signup.actions.continue') }}</button>
-          } @else if (state.step() === 3) {
-            <button
-              class="btn btn-primary"
-              (click)="state.next()"
-              [disabled]="!state.step3Complete()"
-            >
-              {{ t('signup.actions.sendCode') }}
-            </button>
-          } @else if (state.step() === 4) {
-            <button
-              class="btn btn-primary"
-              (click)="state.verifyCode()"
-              [disabled]="state.codeInput().length !== 6"
-            >
-              {{ t('signup.actions.verify') }}
-            </button>
-          } @else if (state.step() === 5) {
-            <button class="btn stripe-pay-btn" (click)="state.pay()" [disabled]="state.paying()">
-              @if (state.paying()) {
-                <span class="mini-spinner" aria-hidden="true"></span> {{ t('signup.actions.processing') }}
-              } @else {
-                {{ t('signup.actions.pay', { price: state.selectedPlan().priceMonthly }) }}
-              }
-            </button>
-          }
-        </div>
-      }
+        @if (state.step() === 1) {
+          <button class="btn btn-primary" (click)="state.next()" [disabled]="state.selectableCount() < 1">
+            {{ t('signup.actions.continue') }}
+          </button>
+        } @else if (state.step() === 2) {
+          <button class="btn btn-primary" (click)="state.next()">{{ t('signup.actions.continue') }}</button>
+        } @else if (state.step() === 3) {
+          <button
+            class="btn btn-primary"
+            (click)="state.next()"
+            [disabled]="!state.emailVerified()"
+          >
+            {{ t('signup.actions.continue') }}
+          </button>
+        } @else if (state.step() === 4) {
+          <button
+            class="btn btn-primary"
+            (click)="state.next()"
+            [disabled]="!state.documentsStepComplete()"
+          >
+            {{ t('signup.actions.continue') }}
+          </button>
+        } @else {
+          <button class="btn stripe-pay-btn" (click)="state.submit()" [disabled]="state.submitting()">
+            @if (state.submitting()) {
+              <span class="mini-spinner" aria-hidden="true"></span> {{ t('signup.actions.processing') }}
+            } @else {
+              {{ t('signup.actions.startTrial') }}
+            }
+          </button>
+        }
+      </div>
 
       <div class="signup-footer">
         <p>{{ t('signup.footer.terms') }}</p>

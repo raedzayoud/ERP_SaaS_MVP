@@ -1,7 +1,7 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { TranslocoService, TranslocoDirective } from '@jsverse/transloco';
-import { PlatformService } from '../../services/platform.service';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { AdminApiService } from '../../services/admin-api.service';
 import { PlatformTenant, SubscriptionPayment } from '../../models/platform';
 import { getPlanById } from '../../../../core/data/plans';
 
@@ -17,17 +17,15 @@ const STATUS_ORDER: Record<string, number> = { overdue: 0, pending: 1, paid: 2 }
   styleUrl: './admin-payments.css',
 })
 export class AdminPayments {
-  private readonly platformService = inject(PlatformService);
-  private readonly transloco = inject(TranslocoService);
+  private readonly adminApi = inject(AdminApiService);
 
   readonly paymentFilters: PaymentFilter[] = ['all', 'overdue', 'pending', 'paid'];
 
   payments = signal<SubscriptionPayment[]>([]);
   tenants = signal<PlatformTenant[]>([]);
   loading = signal(true);
-  payingId = signal<number | null>(null);
+  loadFailed = signal(false);
   filter = signal<PaymentFilter>('all');
-  message = signal('');
 
   filtered = computed(() =>
     [...this.payments()
@@ -63,30 +61,21 @@ export class AdminPayments {
 
   load(): void {
     this.loading.set(true);
-    this.platformService.getPayments().subscribe((payments) => {
-      this.payments.set(payments);
-      this.platformService.getTenants().subscribe((tenants) => {
-        this.tenants.set(tenants);
-        this.loading.set(false);
-      });
-    });
-  }
+    this.loadFailed.set(false);
 
-  markPaid(payment: SubscriptionPayment): void {
-    this.payingId.set(payment.id);
-    this.platformService.markPaymentPaid(payment.id).subscribe((updated) => {
-      this.payingId.set(null);
-      if (updated) {
-        this.payments.update((list) =>
-          list.map((p) => (p.id === updated.id ? updated : p)),
-        );
-        this.message.set(
-          this.transloco.translate('admin.payments.paidMsg', {
-            period: updated.period,
-          }),
-        );
-        setTimeout(() => this.message.set(''), 3000);
-      }
+    this.adminApi.getPayments().subscribe({
+      next: (payments) => {
+        this.payments.set(payments);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.loadFailed.set(true);
+      },
+    });
+
+    this.adminApi.getTenants().subscribe({
+      next: (tenants) => this.tenants.set(tenants),
     });
   }
 
@@ -94,19 +83,19 @@ export class AdminPayments {
     this.filter.set(filter);
   }
 
-  tenantOf(tenantId: number): PlatformTenant | undefined {
+  tenantOf(tenantId: string): PlatformTenant | undefined {
     return this.tenants().find((t) => t.id === tenantId);
   }
 
-  tenantName(tenantId: number): string {
+  tenantName(tenantId: string): string {
     return this.tenantOf(tenantId)?.companyName ?? '—';
   }
 
-  tenantSubdomain(tenantId: number): string {
+  tenantSubdomain(tenantId: string): string {
     return this.tenantOf(tenantId)?.subdomain ?? '';
   }
 
-  planName(tenantId: number): string {
+  planName(tenantId: string): string {
     const planId = this.tenantOf(tenantId)?.planId ?? 'starter';
     return getPlanById(planId).name;
   }

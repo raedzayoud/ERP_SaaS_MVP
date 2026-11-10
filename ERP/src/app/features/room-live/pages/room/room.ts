@@ -33,7 +33,10 @@ export class RoomPage {
   readonly draft = signal('');
 
   readonly workspaceUsers = this.service.workspaceUsers;
-  readonly currentUserId = computed(() => this.authService.currentUser()?.id ?? 0);
+  readonly currentUserId = computed(() => {
+    const id = this.authService.currentUser()?.id;
+    return typeof id === 'number' ? id : 0;
+  });
 
   /** R5 moderation: the owner manages roles, kicks, blocks and host transfer. */
   readonly ROLE_OPTIONS: RoomParticipantRole[] = ['host', 'participant', 'viewer'];

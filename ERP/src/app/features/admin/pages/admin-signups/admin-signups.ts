@@ -1,9 +1,15 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { PlatformService } from '../../services/platform.service';
-import { KycDocument, SignupRequest } from '../../models/platform';
+import { forkJoin } from 'rxjs';
 import { getPlanById } from '../../../../core/data/plans';
+import {
+  SignupReview,
+  SignupReviewDocument,
+} from '../../models/kyc-review';
+import { KycAdminApiService } from '../../services/kyc-admin-api.service';
 
 const FLAGS: Record<string, string> = {
   TN: '🇹🇳',
@@ -18,7 +24,7 @@ const FLAGS: Record<string, string> = {
   CA: '🇨🇦',
 };
 
-/** Icon displayed on the simulated scan of each KYC document type. */
+/** Icon displayed on the preview of each KYC document type. */
 const DOC_ICONS: Record<string, string> = {
   idCardRecto: '🪪',
   idCardVerso: '🪪',
@@ -32,9 +38,10 @@ const DOC_ICONS: Record<string, string> = {
   templateUrl: './admin-signups.html',
   styleUrl: './admin-signups.css',
 })
-export class AdminSignups {
-  private readonly platformService = inject(PlatformService);
+export class AdminSignups implements OnDestroy {
+  private readonly api = inject(KycAdminApiService);
   private readonly transloco = inject(TranslocoService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   /** KYC documents expected from the registration form. */
   readonly documentKeys = [
@@ -44,119 +51,202 @@ export class AdminSignups {
     'taxRegistration',
   ] as const;
 
-  signups = signal<SignupRequest[]>([]);
+  pending = signal<SignupReview[]>([]);
+  approved = signal<SignupReview[]>([]);
+  rejected = signal<SignupReview[]>([]);
+  signups = computed(() => [...this.pending(), ...this.approved(), ...this.rejected()]);
+
   loading = signal(true);
-  decidingId = signal<number | null>(null);
-  rejectFor = signal<number | null>(null);
+  loadErrorKey = signal('');
+  decidingId = signal<string | null>(null);
+  rejectFor = signal<string | null>(null);
   note = signal('');
   message = signal('');
+  decisionErrorKey = signal('');
 
-  /** Open KYC document viewer: the clicked badge of the clicked request. */
-  viewer = signal<{ signup: SignupRequest; doc: string } | null>(null);
+  /** Open KYC document viewer: the clicked document of the clicked request. */
+  viewer = signal<{ signup: SignupReview; doc: SignupReviewDocument } | null>(null);
+  docUrl = signal<SafeResourceUrl | null>(null);
+  docLoading = signal(false);
+  docErrorKey = signal('');
+  private docObjectUrl: string | null = null;
 
-  pendingCount = computed(
-    () => this.signups().filter((s) => s.status === 'pending').length,
-  );
-  approvedCount = computed(
-    () => this.signups().filter((s) => s.status === 'approved').length,
-  );
-  rejectedCount = computed(
-    () => this.signups().filter((s) => s.status === 'rejected').length,
-  );
+  pendingCount = computed(() => this.pending().length);
+  approvedCount = computed(() => this.approved().length);
+  rejectedCount = computed(() => this.rejected().length);
 
   constructor() {
     this.load();
   }
 
+  ngOnDestroy(): void {
+    this.revokeDocUrl();
+  }
+
   load(): void {
     this.loading.set(true);
-    this.platformService.getSignups().subscribe((signups) => {
-      this.signups.set(signups);
-      this.loading.set(false);
+    this.loadErrorKey.set('');
+
+    forkJoin({
+      pending: this.api.list('PENDING'),
+      approved: this.api.list('APPROVED'),
+      rejected: this.api.list('REJECTED'),
+    }).subscribe({
+      next: ({ pending, approved, rejected }) => {
+        this.pending.set(pending);
+        this.approved.set(approved);
+        this.rejected.set(rejected);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.loadErrorKey.set('admin.signups.loadError');
+      },
     });
   }
 
-  approve(signup: SignupRequest): void {
-    this.decidingId.set(signup.id);
-    this.platformService.approveSignup(signup.id).subscribe((approved) => {
-      this.decidingId.set(null);
-      if (approved) {
-        this.signups.update((list) =>
-          list.map((s) => (s.id === approved.id ? approved : s)),
-        );
+  approve(signup: SignupReview): void {
+    if (this.decidingId()) return;
+    this.decidingId.set(signup.tenant.id);
+    this.decisionErrorKey.set('');
+
+    this.api.approve(signup.tenant.id).subscribe({
+      next: () => {
+        this.decidingId.set(null);
         this.message.set(
-          this.t('admin.signups.approvedMsg', { company: approved.companyName }),
+          this.t('admin.signups.approvedMsg', { company: signup.tenant.companyName }),
         );
         this.clearLater();
-      }
+        this.load();
+      },
+      error: (error: unknown) => {
+        this.decidingId.set(null);
+        this.decisionErrorKey.set(this.decisionError(error));
+      },
     });
   }
 
-  askReject(signup: SignupRequest): void {
-    this.rejectFor.set(signup.id);
+  askReject(signup: SignupReview): void {
+    this.rejectFor.set(signup.tenant.id);
     this.note.set('');
     this.message.set('');
+    this.decisionErrorKey.set('');
   }
 
   reject(): void {
     const id = this.rejectFor();
-    if (id === null) return;
+    if (id === null || this.decidingId() || this.note().trim().length === 0) return;
+
+    const signup = this.signups().find((item) => item.tenant.id === id);
     this.decidingId.set(id);
-    this.platformService.rejectSignup(id, this.note()).subscribe((rejected) => {
-      this.decidingId.set(null);
-      this.rejectFor.set(null);
-      if (rejected) {
-        this.signups.update((list) =>
-          list.map((s) => (s.id === rejected.id ? rejected : s)),
-        );
+    this.decisionErrorKey.set('');
+
+    this.api.reject(id, this.note().trim()).subscribe({
+      next: () => {
+        this.decidingId.set(null);
+        this.rejectFor.set(null);
         this.message.set(
-          this.t('admin.signups.rejectedMsg', { company: rejected.companyName }),
+          this.t('admin.signups.rejectedMsg', {
+            company: signup?.tenant.companyName ?? '',
+          }),
         );
         this.clearLater();
-      }
+        this.load();
+      },
+      error: (error: unknown) => {
+        this.decidingId.set(null);
+        this.decisionErrorKey.set(this.decisionError(error));
+      },
     });
   }
 
   cancelReject(): void {
     this.rejectFor.set(null);
     this.note.set('');
+    this.decisionErrorKey.set('');
   }
 
   onNoteInput(event: Event): void {
-    this.note.set((event.target as HTMLInputElement).value);
+    this.note.set((event.target as HTMLTextAreaElement).value.slice(0, 500));
   }
 
-  planName(signup: SignupRequest): string {
-    return getPlanById(signup.planId).name;
+  planName(planId: string): string {
+    return getPlanById(planId).name;
   }
 
   flagOf(country: string): string {
     return FLAGS[country] ?? '🌐';
   }
 
-  openDocViewer(signup: SignupRequest, doc: string): void {
+  docFor(signup: SignupReview, slot: string): SignupReviewDocument | undefined {
+    return signup.documents.find((document) => document.slot === slot);
+  }
+
+  docIcon(slot: string): string {
+    return DOC_ICONS[slot] ?? '📄';
+  }
+
+  openDocViewer(signup: SignupReview, slot: string): void {
+    const doc = this.docFor(signup, slot);
+    if (!doc) return;
+
+    this.revokeDocUrl();
     this.viewer.set({ signup, doc });
+    this.docLoading.set(true);
+    this.docErrorKey.set('');
+
+    this.api.download(signup.tenant.id, doc.id).subscribe({
+      next: (blob) => {
+        this.docObjectUrl = URL.createObjectURL(blob);
+        this.docUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(this.docObjectUrl));
+        this.docLoading.set(false);
+      },
+      error: () => {
+        this.docLoading.set(false);
+        this.docErrorKey.set('admin.signups.docViewer.error');
+      },
+    });
   }
 
   closeDocViewer(): void {
+    this.revokeDocUrl();
     this.viewer.set(null);
   }
 
-  docIcon(doc: string): string {
-    return DOC_ICONS[doc] ?? '📄';
+  isPdf(): boolean {
+    return this.viewer()?.doc.contentType === 'application/pdf';
   }
 
-  /** The document record of the open viewer slot (undefined when unknown). */
-  docEntry(view: { signup: SignupRequest; doc: string }): KycDocument | undefined {
-    return view.signup.documents[
-      view.doc as 'idCardRecto' | 'idCardVerso' | 'tradeRegister' | 'taxRegistration'
-    ];
+  statusKey(status: string): string {
+    return status.toLowerCase();
   }
 
   statusClass(status: string): string {
-    if (status === 'approved') return 'status-approved';
-    if (status === 'rejected') return 'status-rejected';
+    if (status === 'APPROVED') return 'status-approved';
+    if (status === 'REJECTED') return 'status-rejected';
     return 'status-waiting';
+  }
+
+  private revokeDocUrl(): void {
+    if (this.docObjectUrl) {
+      URL.revokeObjectURL(this.docObjectUrl);
+      this.docObjectUrl = null;
+    }
+    this.docUrl.set(null);
+    this.docErrorKey.set('');
+  }
+
+  private decisionError(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const message = String(error.error?.message ?? '').toLowerCase();
+      if (message.includes('payment required')) {
+        return 'admin.signups.errors.paymentRequired';
+      }
+      if (message.includes('not found')) {
+        return 'admin.signups.errors.notFound';
+      }
+    }
+    return 'admin.signups.errors.decision';
   }
 
   private t(key: string, params?: Record<string, string | number>): string {

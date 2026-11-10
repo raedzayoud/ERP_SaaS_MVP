@@ -13,7 +13,14 @@
     "saving": "Saving…",
     "contactFilter": "Contact: {{name}}",
     "delete": "Delete",
-    "deleteConfirm": "Delete this draft?"
+    "deleteConfirm": "Delete this draft?",
+    "create": "Create",
+    "search": "Search",
+    "status": "Status",
+    "all": "All",
+    "confirmDelete": "Delete this record?",
+    "saved": "Saved",
+    "deleted": "Deleted"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -80,7 +87,18 @@
     "warehouseDashboard": "Stock dashboard",
     "accountingDashboard": "Accounting dashboard",
     "analytics": "Analytics",
-    "rooms": "Rooms Live"
+    "rooms": "Rooms Live",
+    "hr": "Human Resources",
+    "employees": "Employees",
+    "newEmployee": "New employee",
+    "editEmployee": "Edit employee",
+    "leave": "Leave requests",
+    "support": "Support",
+    "tickets": "Tickets",
+    "newTicket": "New ticket",
+    "editTicket": "Edit ticket",
+    "ticketDetail": "Ticket detail",
+    "knowledgeBase": "Knowledge base"
   },
   "descriptions": {
     "contacts": "Companies and people your business works with.",
@@ -101,7 +119,13 @@
     "reminders": "Call-backs and follow-ups to close.",
     "supplierBills": "Receive and pay the bills your suppliers send",
     "analytics": "Business intelligence across the whole ERP.",
-    "rooms": "Chat rooms with audio/video meetings and shared documents."
+    "rooms": "Chat rooms with audio/video meetings and shared documents.",
+    "hr": "Employees, leave requests and HR records.",
+    "employees": "Your staff directory and employee records.",
+    "leave": "Review and manage employee leave requests.",
+    "support": "Internal support tickets, interactions and FAQ.",
+    "tickets": "Track and resolve customer support tickets.",
+    "knowledgeBase": "Reusable answers and internal procedures."
   },
   "navbar": {
     "toggleSidebar": "Toggle sidebar",
@@ -120,7 +144,9 @@
       "finance": "Finance",
       "tools": "Tools",
       "workspace": "Workspace",
-      "collaboration": "Collaboration"
+      "collaboration": "Collaboration",
+      "hr": "Human Resources",
+      "support": "Support"
     },
     "items": {
       "dashboard": "Dashboard",
@@ -143,7 +169,13 @@
       "reminders": "Reminders",
       "supplierBills": "Purchases by supplier",
       "analytics": "Analytics",
-      "rooms": "Rooms Live"
+      "rooms": "Rooms Live",
+      "hrDashboard": "HR dashboard",
+      "employees": "Employees",
+      "leave": "Leave",
+      "supportDashboard": "Support dashboard",
+      "tickets": "Tickets",
+      "knowledgeBase": "Knowledge base"
     }
   },
   "placeholder": {
@@ -1502,7 +1534,12 @@
     "goReset": "Enter the code",
     "resend": "Send it again",
     "changeEmail": "Use another e-mail",
-    "unknown": "No account found for this e-mail."
+    "unknown": "No account found for this e-mail.",
+    "cooldown": "Please wait before requesting another code.",
+    "mailError": "The reset email could not be sent. Try again later.",
+    "network": "Unable to reach the server. Check your connection and try again.",
+    "generic": "The reset code could not be sent. Please try again.",
+    "expiresIn": "This code expires in {{minutes}} minutes."
   },
   "reset": {
     "title": "Choose a new password",
@@ -1520,6 +1557,10 @@
     "mismatch": "The two passwords do not match.",
     "invalidCode": "Incorrect code.",
     "expired": "This code has expired. Please request a new one.",
+    "tooMany": "Too many attempts. Please request a new code.",
+    "noCode": "No reset code was requested for this e-mail.",
+    "network": "Unable to reach the server. Check your connection and try again.",
+    "generic": "The password could not be reset. Please try again.",
     "newCode": "Request a new code",
     "successTitle": "Password updated",
     "successDescription": "Your password has been updated. You can sign in now.",
@@ -1701,6 +1742,7 @@
       "email": "Email",
       "plan": "Plan",
       "status": "Status",
+      "trialUsage": "Trial usage",
       "users": "Users",
       "storage": "Storage",
       "created": "Created",
@@ -1713,13 +1755,15 @@
       }
     },
     "plans": {
-      "editPrice": "Edit prices",
-      "priceMonthly": "Monthly price",
-      "priceAnnual": "Annual price",
-      "invalidPrice": "Please enter positive prices.",
-      "priceSaved": "Plan prices updated.",
-      "pricesReset": "Prices restored to the default catalog.",
-      "resetPrices": "Restore default prices"
+      "subtitle": "Read-only catalog of the plans offered on the platform.",
+      "popular": "Most popular",
+      "month": "month",
+      "year": "year",
+      "maxUsers": "users",
+      "storage": "GB storage",
+      "aiQuota": "AI queries / month",
+      "modules": "apps included",
+      "loadError": "Could not load the plan catalog."
     },
     "signups": {
       "subtitle": "Companies waiting for a registration decision (KYC check).",
@@ -1728,6 +1772,7 @@
       "email": "Email",
       "country": "Country",
       "plan": "Wanted plan",
+      "billing": "Billing",
       "documents": "KYC documents",
       "docSubmitted": "3 documents",
       "status": "Decision",
@@ -1738,8 +1783,8 @@
       "notePlaceholder": "Reason of the rejection (visible in the history)",
       "rejectConfirm": "Confirm rejection",
       "empty": "No sign-up request.",
-      "approvedMsg": "\"{company}\" approved — the company is now in trial.",
-      "rejectedMsg": "\"{company}\" rejected.",
+      "approvedMsg": "\"{{company}}\" approved — the company is now in trial.",
+      "rejectedMsg": "\"{{company}}\" rejected.",
       "statuses": {
         "pending": "Waiting",
         "approved": "Approved",
@@ -1757,11 +1802,20 @@
         "idCardVerso": "ID card – back"
       },
       "rejectHint": "This request stays in the history with your note; no tenant is created.",
-      "approvedTenant": "Trial tenant created",
+      "approvedTenant": "Tenant approved",
+      "rejectedLabel": "Registration rejected",
+      "loadError": "Could not load the signup requests.",
+      "errors": {
+        "decision": "Could not save the decision. Please try again.",
+        "paymentRequired": "This company must complete the Stripe payment before approval.",
+        "notFound": "This signup request no longer exists."
+      },
       "docViewer": {
         "open": "View the document",
         "close": "Close",
-        "simulated": "Simulated scan (demo) — the real image comes with the file upload.",
+        "loading": "Loading document…",
+        "error": "Could not load this document.",
+        "simulated": "Simulated scan (demo) - the real image comes with the file upload.",
         "uploadedFile": "Uploaded file: {{name}} ({{size}} KB)"
       },
       "taxId": "Matricule fiscal"
@@ -1777,6 +1831,8 @@
       "due": "Due on",
       "markPaid": "Mark paid",
       "paidMsg": "Payment of {period} registered.",
+      "viewInvoice": "View invoice",
+      "loadError": "Could not load the subscription payments.",
       "empty": "No statement for this filter.",
       "filters": {
         "all": "All",
@@ -1841,6 +1897,14 @@
         "label": "Reports",
         "description": "Business analytics with PDF/Excel/CSV export"
       },
+      "hr": {
+        "label": "HR",
+        "description": "Employees, leave requests, and HR records"
+      },
+      "support": {
+        "label": "Support",
+        "description": "Tickets, interactions, and knowledge base"
+      },
       "ai-assistant": {
         "label": "AI Assistant",
         "description": "RAG chatbot and invoice extraction"
@@ -1849,6 +1913,233 @@
         "label": "Rooms Live",
         "description": "Live chat rooms, audio/video calls and file sharing"
       }
+    }
+  },
+  "hr": {
+    "dashboard": {
+      "title": "HR dashboard",
+      "subtitle": "A quick view of your people and leave requests.",
+      "totalEmployees": "Employees",
+      "onLeave": "On leave",
+      "pendingLeave": "Pending leave",
+      "departments": "Departments",
+      "employeesLink": "Manage employees",
+      "leaveLink": "Manage leave"
+    },
+    "employees": {
+      "title": "Employees",
+      "subtitle": "Your staff directory and employee records.",
+      "newEmployee": "New employee",
+      "searchPlaceholder": "Search employees…",
+      "loadError": "Employees could not be loaded",
+      "loadErrorHint": "Please try again.",
+      "emptyTitle": "No employees yet",
+      "emptyHint": "Add your first employee to get started.",
+      "noMatch": "No employees match your search",
+      "noMatchHint": "Try another keyword.",
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "department": "Department",
+        "position": "Position",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "on_leave": "On leave",
+        "inactive": "Inactive"
+      },
+      "deleteConfirm": "Delete this employee?",
+      "deleteBlocked": "This employee has leave requests and cannot be deleted.",
+      "deleted": "Employee deleted"
+    },
+    "form": {
+      "newTitle": "New employee",
+      "editTitle": "Edit employee",
+      "newSubtitle": "Add an employee to your directory.",
+      "editSubtitle": "Update this employee record.",
+      "notFound": "Employee not found",
+      "notFoundHint": "It may have been deleted.",
+      "saveError": "The employee could not be saved.",
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "department": "Department",
+      "position": "Position",
+      "hireDate": "Hire date",
+      "status": "Status",
+      "required": "This field is required.",
+      "invalidEmail": "Enter a valid email address.",
+      "save": "Save employee"
+    },
+    "leave": {
+      "title": "Leave requests",
+      "subtitle": "Create and review employee leave.",
+      "loadError": "Leave requests could not be loaded",
+      "loadErrorHint": "Please try again.",
+      "emptyTitle": "No leave requests yet",
+      "emptyHint": "Create a leave request for an employee.",
+      "columns": {
+        "employee": "Employee",
+        "type": "Type",
+        "period": "Period",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "types": {
+        "annual": "Annual",
+        "sick": "Sick",
+        "unpaid": "Unpaid",
+        "other": "Other"
+      },
+      "newRequest": "New leave request",
+      "employee": "Employee",
+      "type": "Type",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "reason": "Reason",
+      "reasonPlaceholder": "Optional note",
+      "create": "Create request",
+      "approve": "Approve",
+      "reject": "Reject",
+      "delete": "Delete",
+      "created": "Leave request created",
+      "updated": "Leave request updated",
+      "deleted": "Leave request deleted",
+      "noEmployees": "Add an employee before creating a leave request.",
+      "dateError": "The end date must be on or after the start date.",
+      "selectEmployee": "Select an employee."
+    }
+  },
+  "support": {
+    "dashboard": {
+      "title": "Support dashboard",
+      "subtitle": "A quick view of your internal support activity.",
+      "openTickets": "Open tickets",
+      "inProgress": "In progress",
+      "resolved": "Resolved",
+      "articles": "FAQ articles",
+      "ticketsLink": "Manage tickets",
+      "knowledgeLink": "Manage knowledge base"
+    },
+    "tickets": {
+      "title": "Tickets",
+      "subtitle": "Track and resolve support tickets.",
+      "newTicket": "New ticket",
+      "searchPlaceholder": "Search tickets…",
+      "loadError": "Tickets could not be loaded",
+      "loadErrorHint": "Please try again.",
+      "emptyTitle": "No tickets yet",
+      "emptyHint": "Create your first support ticket.",
+      "noMatch": "No tickets match your search",
+      "noMatchHint": "Try another keyword or clear the filters.",
+      "columns": {
+        "subject": "Subject",
+        "requester": "Requester",
+        "priority": "Priority",
+        "status": "Status",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "status": {
+        "open": "Open",
+        "in_progress": "In progress",
+        "resolved": "Resolved",
+        "closed": "Closed"
+      },
+      "types": {
+        "ticket": "Ticket",
+        "complaint": "Complaint",
+        "request": "Request"
+      },
+      "priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "urgent": "Urgent"
+      },
+      "view": "View",
+      "deleteConfirm": "Delete this ticket and its interactions?",
+      "deleted": "Ticket deleted"
+    },
+    "form": {
+      "newTitle": "New ticket",
+      "editTitle": "Edit ticket",
+      "newSubtitle": "Record a support request.",
+      "editSubtitle": "Update this support ticket.",
+      "notFound": "Ticket not found",
+      "notFoundHint": "It may have been deleted.",
+      "saveError": "The ticket could not be saved.",
+      "subject": "Subject",
+      "description": "Description",
+      "requesterName": "Requester name",
+      "requesterEmail": "Requester email",
+      "type": "Type",
+      "priority": "Priority",
+      "status": "Status",
+      "assignee": "Assignee",
+      "assigneePlaceholder": "Optional team member",
+      "required": "This field is required.",
+      "invalidEmail": "Enter a valid email address.",
+      "save": "Save ticket"
+    },
+    "detail": {
+      "notFound": "Ticket not found",
+      "notFoundHint": "It may have been deleted.",
+      "back": "Back to tickets",
+      "edit": "Edit ticket",
+      "delete": "Delete ticket",
+      "deleteConfirm": "Delete this ticket and its interactions?",
+      "deleted": "Ticket deleted",
+      "requester": "Requester",
+      "created": "Created",
+      "assignee": "Assignee",
+      "unassigned": "Unassigned",
+      "interactions": "Interactions",
+      "noInteractions": "No interactions yet.",
+      "author": "Author",
+      "channel": "Channel",
+      "message": "Message",
+      "addInteraction": "Add interaction",
+      "added": "Interaction added",
+      "channels": {
+        "note": "Note",
+        "email": "Email",
+        "phone": "Phone",
+        "meeting": "Meeting"
+      }
+    },
+    "knowledge": {
+      "title": "Knowledge base",
+      "subtitle": "Reusable answers and internal procedures.",
+      "newArticle": "New article",
+      "editArticle": "Edit article",
+      "loadError": "Articles could not be loaded",
+      "loadErrorHint": "Please try again.",
+      "emptyTitle": "No articles yet",
+      "emptyHint": "Create your first FAQ article.",
+      "columns": {
+        "title": "Title",
+        "category": "Category",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "formTitle": "Article",
+      "category": "Category",
+      "body": "Content",
+      "published": "Published",
+      "save": "Save article",
+      "cancel": "Cancel",
+      "deleteConfirm": "Delete this article?",
+      "deleted": "Article deleted",
+      "saveError": "The article could not be saved.",
+      "required": "This field is required."
     }
   },
   "contactOverview": {
@@ -2008,6 +2299,7 @@
       "apps": "Apps",
       "details": "Details",
       "verify": "Verify",
+      "review": "Review",
       "payment": "Payment",
       "setup": "Setup",
       "documents": "Documents"
@@ -2027,7 +2319,9 @@
         "purchases": "Purchases",
         "finance": "Finance",
         "standalone": "Standalone",
-        "inventory": "Inventory"
+        "inventory": "Inventory",
+        "people": "People",
+        "service": "Service"
       },
       "requires": "Requires: {{list}}",
       "masterAll": "Select or clear every app in this group",
@@ -2048,6 +2342,13 @@
       "subdomainHolder": "yourcompany",
       "hintAvailable": "{{url}} is available",
       "hintTaken": "This address is taken or invalid",
+      "hintChecking": "Checking availability…",
+      "hintCheckFailed": "Could not check availability. Please change the address or try again.",
+      "password": "Password",
+      "passwordHolder": "At least 6 characters",
+      "passwordHint": "Use at least 6 characters. Never share this password.",
+      "showPassword": "Show",
+      "hidePassword": "Hide",
       "country": "Country",
       "language": "Language",
       "companySize": "Company size",
@@ -2060,18 +2361,47 @@
       },
       "invalid": "Please fill in all fields correctly."
     },
+    "reviewStep": {
+      "intro": "Check your workspace details, choose your future billing cycle, then start your free trial.",
+      "planTitle": "{{plan}} plan",
+      "planMeta": "{{count}} apps · KYC review required",
+      "perMonth": "/mo",
+      "perYear": "/yr",
+      "monthly": "Monthly",
+      "annual": "Annual",
+      "annualBadge": "Save",
+      "intervalLabel": "Billing interval",
+      "company": "Company",
+      "contact": "Main contact",
+      "workspace": "Workspace",
+      "taxId": "Tax ID",
+      "documents": "KYC documents",
+      "documentsReady": "{{count}} files ready",
+      "country": "Country",
+      "trialNote": "No payment now. You get 30 free connections; subscribe later from your account status page."
+    },
     "verifyStep": {
-      "title": "Check your email",
-      "sent": "We sent a 6-digit verification code to",
-      "demoPrefix": "Demo mode — no real email is sent. Your code is",
+      "title": "Verify your email",
+      "intro": "Confirm this address before uploading your documents.",
+      "sent": "We sent a 6-digit code to",
+      "verifiedTitle": "Email verified",
+      "verifiedText": "This email address is confirmed.",
+      "verifiedBadge": "Verified",
+      "codeLabel": "Verification code",
+      "codePlaceholder": "000000",
+      "codeSent": "Code sent. It expires in {{minutes}} minutes.",
       "resend": "Resend code",
       "resendIn": "Resend in {{seconds}}s",
-      "codeValid": "Code valid for 5 minutes",
-      "codeExpired": "Code expired",
       "errors": {
-        "expired": "Code expired. Please resend a new code.",
+        "email": "Enter a valid email address first.",
+        "code": "Enter the 6-digit code.",
+        "required": "Verify your email address to continue.",
+        "expired": "This verification has expired. Please verify your email again.",
         "wrong": "Incorrect code. Please try again.",
-        "tooMany": "Too many attempts. Please resend a new code."
+        "tooMany": "Too many attempts. Request a new code.",
+        "cooldown": "Please wait before requesting another code.",
+        "mail": "Could not send the verification email. Please try again.",
+        "send": "Could not send the verification code. Please try again."
       }
     },
     "paymentStep": {
@@ -2111,7 +2441,8 @@
       "sendCode": "Send code →",
       "verify": "Verify & continue →",
       "processing": "Processing…",
-      "pay": "Pay ${{price}} & create workspace →"
+      "pay": "Pay ${{price}} & create workspace →",
+      "startTrial": "Start free trial →"
     },
     "footer": {
       "terms": "By creating an account you agree to our Terms of Service and Privacy Policy."
@@ -2119,13 +2450,22 @@
     "error": {
       "generic": "Something went wrong. Please try again."
     },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "network": "Could not reach the server. Check your connection and try again.",
+      "invalid": "Some information is invalid. Check your details and documents.",
+      "emailUsed": "This email address is already used by another account.",
+      "subdomainTaken": "This workspace address is no longer available.",
+      "payment": "Could not start the Stripe payment. Please try again.",
+      "billingNotConfigured": "Payments are not configured on the server yet. Please contact support."
+    },
     "docStep": {
       "intro": "Attach your usual business documents to finish registration.",
       "choose": "Choose file",
       "change": "Replace",
       "remove": "Remove document",
       "sizeKb": "{{size}} KB",
-      "hint": "PNG, JPG or PDF · up to {{size}} KB per document. Small images show a real preview in the super-admin console.",
+      "hint": "PNG, JPG or PDF · up to {{size}} KB per document.",
       "errors": {
         "missing": "Add all the documents to continue.",
         "tooLarge": "File too large (max {{size}} KB).",
@@ -2159,7 +2499,81 @@
     },
     "request": {
       "autoApprovedNote": "Paid subscription · documents provided"
+    },
+    "result": {
+      "signIn": "Sign in",
+      "home": "Back to home",
+      "success": {
+        "title": "Payment received",
+        "text": "Your payment was successful. Sign in and wait for an administrator to approve your account.",
+        "hint": "Your payment is confirmed. The ERP opens automatically once the administrator approves your documents."
+      },
+      "trial": {
+        "title": "Your free trial is ready",
+        "text": "Your workspace was created with 30 free connections. Sign in to start using the ERP.",
+        "hint": "Each successful login uses one connection. Subscribe from the account status page to continue after the trial."
+      },
+      "cancelled": {
+        "title": "Payment cancelled",
+        "text": "Your workspace was created but the payment was not completed.",
+        "hint": "Sign in and use the Retry payment button to open Stripe Checkout again."
+      }
     }
+  },
+  "accountStatus": {
+    "title": "Your workspace is being activated",
+    "subtitle": "Payment and identity checks are required before opening the ERP.",
+    "loading": "Checking your account status…",
+    "kycLabel": "Identity review",
+    "tenantLabel": "Workspace access",
+    "trialLabel": "Trial connections",
+    "trialUsage": "{{used}} of {{limit}} used",
+    "billingLabel": "Subscription",
+    "workspaceLabel": "Workspace",
+    "planLabel": "Plan",
+    "kyc": {
+      "PENDING": "Pending review",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "tenant": {
+      "TRIAL": "Trial",
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended"
+    },
+    "billing": {
+      "NONE": "Payment required",
+      "PENDING": "Payment processing",
+      "ACTIVE": "Active",
+      "PAST_DUE": "Past due",
+      "CANCELED": "Canceled",
+      "EXEMPT": "Exempt"
+    },
+    "trialText": "Trial mode: {{remaining}} of {{limit}} free connections left. Subscribe anytime to keep your workspace open.",
+    "trialEndedText": "Your 30 free connections are used. Subscribe to continue using the ERP.",
+    "subscribe": "Subscribe",
+    "suspendedText": "This workspace has been suspended by the platform administrator. Contact support if you believe this is a mistake.",
+    "rejectedText": "Your registration was rejected. Contact support if you believe this is a mistake.",
+    "pastDueText": "Your last payment failed. Update your payment method in the Stripe billing portal.",
+    "paymentText": "Your workspace is created. Complete the Stripe payment to start the identity review.",
+    "paymentPendingText": "Your payment is being processed by Stripe. Refresh the status in a moment; no new payment is needed.",
+    "paymentConfirmedText": "Your payment was successful. Please wait while an administrator approves your account.",
+    "pendingText": "Your documents are being reviewed by an administrator. This page refreshes the latest status.",
+    "readyText": "Your account is active. You can open your dashboard.",
+    "retryPayment": "Retry payment",
+    "manageBilling": "Manage billing",
+    "refresh": "Refresh status",
+    "goToDashboard": "Go to dashboard",
+    "signOut": "Sign out",
+    "working": "Opening Stripe…",
+    "errors": {
+      "network": "Could not reach the server. Check your connection and try again.",
+      "action": "Could not open the billing page. Please try again or contact support."
+    }
+  },
+  "trial": {
+    "banner": "Trial: {{remaining}} of {{limit}} connections left",
+    "subscribe": "Subscribe"
   },
   "settings": {
     "messages": {
@@ -2432,7 +2846,9 @@
     "reports": "Reports",
     "ai-assistant": "AI assistant",
     "settings": "Settings",
-    "collab": "Rooms Live"
+    "collab": "Rooms Live",
+    "hr": "Human Resources",
+    "support": "Support"
   },
   "rbac": {
     "actions": {
@@ -2458,8 +2874,12 @@
       "genericTitle": "Sign in to your workspace",
       "genericHint": "Use the email created by your company administrator. Demo accounts also work here.",
       "email": "Email",
-      "invalid": "This email does not belong to any active member.",
+      "invalid": "Invalid email or password.",
       "activate": "Your account was deactivated; contact your administrator.",
+      "suspended": "This workspace is suspended. Contact the platform administrator.",
+      "trialEnded": "Your free trial is over. Subscribe to continue using the ERP.",
+      "network": "Unable to reach the server. Check your connection and try again.",
+      "generic": "Sign in failed. Please try again.",
       "mustRenew": "You must choose a new password before continuing."
     },
     "renewal": {

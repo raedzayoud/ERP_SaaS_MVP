@@ -22,14 +22,19 @@ export class RbacService {
 
   // ── Permission resolution ────────────────────────────────────
 
-  /** Effective permissions of a user, from its built-in role. */
+  /** Effective permissions of a user: token claims first, role defaults otherwise. */
   permissionsOf(user: User | null): ModulePermissions {
     if (!user) return {};
 
-    const permissions: ModulePermissions =
-      user.role === 'admin-entreprise'
-        ? BUILTIN_PERMISSIONS['admin-entreprise']
-        : (BUILTIN_PERMISSIONS[user.role] ?? {});
+    if (this.auth.accessToken()) {
+      return this.auth.permissions();
+    }
+
+    const builtin = BUILTIN_PERMISSIONS[user.role] ?? {};
+    const permissions: ModulePermissions = {};
+    for (const [moduleId, actions] of Object.entries(builtin)) {
+      permissions[moduleId] = [...actions];
+    }
 
     // Workspace navigation basics: everyone inside the company can view the
     // dashboard and the application hub.

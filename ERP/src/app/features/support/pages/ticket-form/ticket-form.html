@@ -1,0 +1,157 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        {{ isEdit ? t('support.form.editTitle') : t('support.form.newTitle') }}
+      </h1>
+      <p class="page-subtitle">
+        {{ isEdit ? t('support.form.editSubtitle') : t('support.form.newSubtitle') }}
+      </p>
+    </div>
+    <a routerLink="/support/tickets" class="btn btn-secondary">← {{ t('common.back') }}</a>
+  </div>
+
+  @if (loading()) {
+    <div class="card">
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('support.form.notFound') }}</p>
+        <p class="state-text">{{ t('support.form.notFoundHint') }}</p>
+        <a routerLink="/support/tickets" class="btn btn-primary">{{ t('common.back') }}</a>
+      </div>
+    </div>
+  } @else {
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (submitFailed()) {
+        <div class="alert alert-danger" role="alert">{{ t('support.form.saveError') }}</div>
+      }
+
+      <div class="form-grid">
+        <div class="form-group form-grid-full">
+          <label class="form-label" for="subject">
+            {{ t('support.form.subject') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="subject"
+            type="text"
+            class="form-control"
+            formControlName="subject"
+            [attr.aria-invalid]="isInvalid('subject')"
+          />
+          @if (isInvalid('subject')) {
+            <p class="field-error">{{ t('support.form.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group form-grid-full">
+          <label class="form-label" for="description">
+            {{ t('support.form.description') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="description"
+            class="form-control"
+            rows="4"
+            formControlName="description"
+            [attr.aria-invalid]="isInvalid('description')"
+          ></textarea>
+          @if (isInvalid('description')) {
+            <p class="field-error">{{ t('support.form.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="requesterName">
+            {{ t('support.form.requesterName') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="requesterName"
+            type="text"
+            class="form-control"
+            formControlName="requesterName"
+            [attr.aria-invalid]="isInvalid('requesterName')"
+          />
+          @if (isInvalid('requesterName')) {
+            <p class="field-error">{{ t('support.form.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="requesterEmail">
+            {{ t('support.form.requesterEmail') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="requesterEmail"
+            type="email"
+            class="form-control"
+            formControlName="requesterEmail"
+            [attr.aria-invalid]="isInvalid('requesterEmail')"
+          />
+          @if (isInvalid('requesterEmail')) {
+            <p class="field-error">
+              {{ hasError('requesterEmail', 'email')
+                ? t('support.form.invalidEmail')
+                : t('support.form.required') }}
+            </p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="type">{{ t('support.form.type') }}</label>
+          <select id="type" class="form-control" formControlName="type">
+            <option value="ticket">{{ t('support.tickets.types.ticket') }}</option>
+            <option value="complaint">{{ t('support.tickets.types.complaint') }}</option>
+            <option value="request">{{ t('support.tickets.types.request') }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="priority">{{ t('support.form.priority') }}</label>
+          <select id="priority" class="form-control" formControlName="priority">
+            <option value="low">{{ t('support.tickets.priority.low') }}</option>
+            <option value="medium">{{ t('support.tickets.priority.medium') }}</option>
+            <option value="high">{{ t('support.tickets.priority.high') }}</option>
+            <option value="urgent">{{ t('support.tickets.priority.urgent') }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="status">{{ t('support.form.status') }}</label>
+          <select id="status" class="form-control" formControlName="status">
+            <option value="open">{{ t('support.tickets.status.open') }}</option>
+            <option value="in_progress">{{ t('support.tickets.status.in_progress') }}</option>
+            <option value="resolved">{{ t('support.tickets.status.resolved') }}</option>
+            <option value="closed">{{ t('support.tickets.status.closed') }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="assignee">{{ t('support.form.assignee') }}</label>
+          <input
+            id="assignee"
+            type="text"
+            class="form-control"
+            [placeholder]="t('support.form.assigneePlaceholder')"
+            formControlName="assignee"
+          />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/support/tickets" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ saving() ? t('common.saving') : t('support.form.save') }}
+        </button>
+      </div>
+    </form>
+  }
+</ng-container>

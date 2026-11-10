@@ -1,14 +1,24 @@
-<div class="app-shell" [class.sidebar-collapsed]="sidebarCollapsed()">
-  <app-sidebar
-    [collapsed]="sidebarCollapsed()"
-    [mobileOpen]="mobileSidebarOpen()"
-    (closeMobile)="closeMobileSidebar()"
-  />
+<ng-container *transloco="let t">
+  <div class="app-shell" [class.sidebar-collapsed]="sidebarCollapsed()">
+    <app-sidebar
+      [collapsed]="sidebarCollapsed()"
+      [mobileOpen]="mobileSidebarOpen()"
+      (closeMobile)="closeMobileSidebar()"
+    />
 
-  <div class="app-main">
-    <app-navbar [pageTitleKey]="pageTitleKey()" (toggleSidebar)="toggleMobileSidebar()" />
-    <main class="app-content">
-      <router-outlet />
-    </main>
+    <div class="app-main">
+      <app-navbar [pageTitleKey]="pageTitleKey()" (toggleSidebar)="toggleMobileSidebar()" />
+      @if (trial(); as trialState) {
+        <div class="trial-banner" role="status">
+          <span>
+            {{ t('trial.banner', { remaining: trialState.remaining, limit: trialState.limit }) }}
+          </span>
+          <a routerLink="/account-status">{{ t('trial.subscribe') }}</a>
+        </div>
+      }
+      <main class="app-content">
+        <router-outlet />
+      </main>
+    </div>
   </div>
-</div>
+</ng-container>

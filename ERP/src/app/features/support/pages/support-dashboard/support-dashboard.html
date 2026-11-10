@@ -1,0 +1,40 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('support.dashboard.title') }}</h1>
+      <p class="page-subtitle">{{ t('support.dashboard.subtitle') }}</p>
+    </div>
+  </div>
+
+  @if (loadFailed()) {
+    <div class="alert alert-danger" role="alert">{{ t('support.tickets.loadError') }}</div>
+  }
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <span class="stat-label">{{ t('support.dashboard.openTickets') }}</span>
+      <span class="stat-value">{{ openTickets() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">{{ t('support.dashboard.inProgress') }}</span>
+      <span class="stat-value">{{ inProgress() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">{{ t('support.dashboard.resolved') }}</span>
+      <span class="stat-value">{{ resolved() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">{{ t('support.dashboard.articles') }}</span>
+      <span class="stat-value">{{ articleCount() }}</span>
+    </div>
+  </div>
+
+  <div class="quick-links">
+    <a routerLink="/support/tickets" class="btn btn-primary">
+      {{ t('support.dashboard.ticketsLink') }}
+    </a>
+    <a routerLink="/support/knowledge-base" class="btn btn-secondary">
+      {{ t('support.dashboard.knowledgeLink') }}
+    </a>
+  </div>
+</ng-container>

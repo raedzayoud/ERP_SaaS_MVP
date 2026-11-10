@@ -3,15 +3,15 @@ package com.erp.erp.auth.service;
 import com.erp.erp.auth.dto.AuthResponse;
 import com.erp.erp.auth.dto.LoginRequest;
 import com.erp.erp.auth.dto.RefreshTokenRequest;
+import com.erp.erp.auth.dto.SignupAvailabilityResponse;
 import com.erp.erp.auth.dto.SignupRequest;
 import com.erp.erp.auth.dto.SignupResponse;
 import com.erp.erp.auth.dto.TenantResponse;
 import com.erp.erp.auth.dto.TokenPairResponse;
 import com.erp.erp.auth.dto.UserResponse;
 import com.erp.erp.auth.exception.AuthException;
-import com.erp.erp.billing.dto.BillingUrlResponse;
+import com.erp.erp.billing.model.BillingInterval;
 import com.erp.erp.billing.model.BillingStatus;
-import com.erp.erp.billing.service.BillingService;
 import com.erp.erp.config.JwtService;
 import com.erp.erp.kyc.model.DocumentSlot;
 import com.erp.erp.kyc.model.SignupDocument;
@@ -19,10 +19,12 @@ import com.erp.erp.kyc.repository.SignupDocumentRepository;
 import com.erp.erp.kyc.service.KycStorageService;
 import com.erp.erp.tenant.model.KycStatus;
 import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.tenant.model.TenantStatus;
 import com.erp.erp.tenant.repository.TenantRepository;
 import com.erp.erp.user.model.Role;
 import com.erp.erp.user.model.User;
 import com.erp.erp.user.repository.UserRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -41,8 +43,8 @@ public class AuthService {
     private static final Set<String> RESERVED_SUBDOMAINS =
             Set.of("admin", "api", "www", "app", "login", "signup", "dashboard");
 
-    private static final String SIGNUP_PENDING_MESSAGE =
-            "Account created. Complete the Stripe payment, then wait for administrator approval.";
+    private static final String SIGNUP_TRIAL_MESSAGE =
+            "Trial account created with 30 free connections.";
 
     private final UserRepository userRepository;
     private final TenantRepository tenantRepository;
@@ -51,7 +53,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final KycStorageService storageService;
-    private final BillingService billingService;
+    private final SignupOtpService signupOtpService;
 
     public AuthService(
             UserRepository userRepository,
@@ -61,7 +63,7 @@ public class AuthService {
             JwtService jwtService,
             RefreshTokenService refreshTokenService,
             KycStorageService storageService,
-            BillingService billingService) {
+            SignupOtpService signupOtpService) {
         this.userRepository = userRepository;
         this.tenantRepository = tenantRepository;
         this.documentRepository = documentRepository;
@@ -69,7 +71,7 @@ public class AuthService {
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
         this.storageService = storageService;
-        this.billingService = billingService;
+        this.signupOtpService = signupOtpService;
     }
 
     @Transactional
@@ -87,6 +89,12 @@ public class AuthService {
         if (!user.isActive()) {
             throw new AuthException(403, "account disabled");
         }
+        if (user.getTenant() != null
+                && user.getTenant().getTenantStatus() == TenantStatus.SUSPENDED) {
+            throw new AuthException(403, "account suspended");
+        }
+
+        consumeTrial(user);
 
         return tokenPair(user, refreshTokenService.create(user));
     }
@@ -101,6 +109,17 @@ public class AuthService {
     /** Revokes the refresh token; safe to call more than once. */
     public void logout(RefreshTokenRequest request) {
         refreshTokenService.revoke(request.refreshToken());
+    }
+
+    /** Public pre-check used by the Angular signup wizard. */
+    @Transactional(readOnly = true)
+    public SignupAvailabilityResponse signupAvailability(String subdomain) {
+        String normalized = subdomain == null ? "" : subdomain.trim().toLowerCase(Locale.ROOT);
+        boolean validFormat = normalized.matches("^[a-z0-9-]{3,}$");
+        boolean available = validFormat
+                && !RESERVED_SUBDOMAINS.contains(normalized)
+                && !tenantRepository.existsBySubdomain(normalized);
+        return new SignupAvailabilityResponse(available);
     }
 
     @Transactional
@@ -118,6 +137,7 @@ public class AuthService {
         if (tenantRepository.existsBySubdomain(subdomain)) {
             throw new AuthException(400, "subdomain not available");
         }
+        signupOtpService.requireVerified(email, request.verificationToken());
 
         // Check every document before writing anything to disk.
         for (DocumentSlot slot : DocumentSlot.values()) {
@@ -139,6 +159,12 @@ public class AuthService {
         tenant.setTaxId(request.taxId().trim());
         tenant.setKycStatus(KycStatus.PENDING);
         tenant.setBillingStatus(BillingStatus.NONE);
+        tenant.setTenantStatus(TenantStatus.TRIAL);
+        tenant.setTrialLimit(30);
+        tenant.setTrialUsed(0);
+        tenant.setTrialStartedAt(Instant.now());
+        tenant.setBillingInterval(
+                BillingInterval.valueOf(request.billingInterval().trim().toUpperCase(Locale.ROOT)));
         tenant = tenantRepository.save(tenant);
 
         User user = new User();
@@ -149,17 +175,10 @@ public class AuthService {
         user.setTenant(tenant);
         user = userRepository.save(user);
 
-        List<String> storedPaths = storeDocuments(tenant, user, documents);
+        storeDocuments(tenant, user, documents);
 
-        try {
-            BillingUrlResponse checkout =
-                    billingService.checkout(tenant.getId(), request.billingInterval());
-            return new SignupResponse(SIGNUP_PENDING_MESSAGE, checkout.url());
-        } catch (RuntimeException ex) {
-            storedPaths.forEach(storageService::deleteQuietly);
-            billingService.deleteCustomerQuietly(tenant.getStripeCustomerId());
-            throw ex;
-        }
+        signupOtpService.clear(email);
+        return new SignupResponse(SIGNUP_TRIAL_MESSAGE, null);
     }
 
     /** Used by GET /api/v1/auth/me — loads the user behind the JWT subject. */
@@ -176,7 +195,7 @@ public class AuthService {
      * inserts the rows with their storage paths. If anything fails, files
      * already written are removed.
      */
-    private List<String> storeDocuments(
+    private void storeDocuments(
             Tenant tenant, User user, Map<DocumentSlot, MultipartFile> documents) {
         for (DocumentSlot slot : DocumentSlot.values()) {
             storageService.validate(documents.get(slot), slot);
@@ -217,8 +236,27 @@ public class AuthService {
             storedPaths.forEach(storageService::deleteQuietly);
             throw ex;
         }
+    }
 
-        return storedPaths;
+    private void consumeTrial(User user) {
+        if (user.getTenant() == null
+                || user.getTenant().getTenantStatus() != TenantStatus.TRIAL) {
+            return;
+        }
+
+        Tenant tenant = tenantRepository
+                .findByIdForUpdate(user.getTenant().getId())
+                .orElseThrow(() -> new AuthException(404, "tenant not found"));
+
+        if (tenant.getTrialUsed() >= tenant.getTrialLimit()) {
+            throw new AuthException(403, "trial limit reached; subscribe to continue");
+        }
+
+        tenant.setTrialUsed(tenant.getTrialUsed() + 1);
+        if (tenant.getTrialUsed() >= tenant.getTrialLimit()) {
+            tenant.setTrialEndedAt(Instant.now());
+        }
+        user.setTenant(tenant);
     }
 
     private TokenPairResponse tokenPair(User user, String refreshToken) {

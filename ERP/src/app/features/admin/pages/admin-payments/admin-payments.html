@@ -22,8 +22,8 @@
       </div>
     </div>
 
-    @if (message()) {
-      <div class="admin-alert">{{ message() }}</div>
+    @if (loadFailed()) {
+      <div class="admin-alert">{{ t('admin.payments.loadError') }}</div>
     }
 
     <div class="admin-filters">
@@ -75,12 +75,15 @@
                 </td>
                 <td>{{ payment.dueDate | date: 'mediumDate' }}</td>
                 <td class="col-right">
-                  @if (payingId() === payment.id) {
-                    <span class="admin-muted">...</span>
-                  } @else if (payment.status !== 'paid') {
-                    <button class="admin-action-btn action-activate" (click)="markPaid(payment)">
-                      {{ t('admin.payments.markPaid') }}
-                    </button>
+                  @if (payment.invoiceUrl) {
+                    <a
+                      class="admin-action-btn action-activate"
+                      [href]="payment.invoiceUrl"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      {{ t('admin.payments.viewInvoice') }}
+                    </a>
                   }
                 </td>
               </tr>

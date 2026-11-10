@@ -10,6 +10,7 @@ import com.erp.erp.kyc.model.SignupDocument;
 import com.erp.erp.kyc.repository.SignupDocumentRepository;
 import com.erp.erp.tenant.model.KycStatus;
 import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.tenant.model.TenantStatus;
 import com.erp.erp.tenant.repository.TenantRepository;
 import com.erp.erp.user.model.User;
 import com.erp.erp.user.repository.UserRepository;
@@ -66,6 +67,7 @@ public class SignupReviewService {
             throw new AuthException(400, "payment required before approval");
         }
         tenant.setKycStatus(KycStatus.APPROVED);
+        tenant.setTenantStatus(TenantStatus.ACTIVE);
         tenant.setDecisionNote(null);
         tenant.setDecidedAt(Instant.now());
         return decision(tenant, "signup approved");

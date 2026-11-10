@@ -1,0 +1,36 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('hr.dashboard.title') }}</h1>
+      <p class="page-subtitle">{{ t('hr.dashboard.subtitle') }}</p>
+    </div>
+  </div>
+
+  @if (loadFailed()) {
+    <div class="alert alert-danger" role="alert">{{ t('hr.employees.loadError') }}</div>
+  }
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <span class="stat-label">{{ t('hr.dashboard.totalEmployees') }}</span>
+      <span class="stat-value">{{ totalEmployees() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">{{ t('hr.dashboard.onLeave') }}</span>
+      <span class="stat-value">{{ onLeave() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">{{ t('hr.dashboard.pendingLeave') }}</span>
+      <span class="stat-value">{{ pendingLeave() }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">{{ t('hr.dashboard.departments') }}</span>
+      <span class="stat-value">{{ departments() }}</span>
+    </div>
+  </div>
+
+  <div class="quick-links">
+    <a routerLink="/hr/employees" class="btn btn-primary">{{ t('hr.dashboard.employeesLink') }}</a>
+    <a routerLink="/hr/leave" class="btn btn-secondary">{{ t('hr.dashboard.leaveLink') }}</a>
+  </div>
+</ng-container>

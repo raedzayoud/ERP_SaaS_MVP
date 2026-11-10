@@ -1,0 +1,72 @@
+.detail-card {
+  margin-bottom: 20px;
+}
+
+.detail-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ticket-description {
+  margin-bottom: 20px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.detail-grid dt {
+  color: var(--gray-500);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.detail-grid dd {
+  margin-top: 4px;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.section-title {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.form-subtitle {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.interaction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  list-style: none;
+}
+
+.interaction-item {
+  padding: 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: var(--gray-50);
+}
+
+.interaction-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}

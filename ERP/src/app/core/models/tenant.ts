@@ -14,7 +14,7 @@ export interface TenantUser {
 }
 
 export interface Tenant {
-  id: number;
+  id: string | number;
   companyName: string;
   email: string;
   subdomain: string;
@@ -28,4 +28,14 @@ export interface Tenant {
   taxId: string;
   address: string;
   createdAt: string;
+  tenantStatus?: string;
+  kycStatus?: string;
+  billingStatus?: string;
+  billingInterval?: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd?: boolean;
+  trialLimit?: number;
+  trialUsed?: number;
+  trialStartedAt?: string;
+  trialEndedAt?: string;
 }

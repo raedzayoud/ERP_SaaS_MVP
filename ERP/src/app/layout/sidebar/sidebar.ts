@@ -158,6 +158,52 @@ export class Sidebar {
       ],
     },
     {
+      titleKey: 'sidebar.sections.hr',
+      items: [
+        {
+          labelKey: 'sidebar.items.hrDashboard',
+          icon: '🧑‍💼',
+          route: '/hr',
+          moduleId: 'hr',
+        },
+        {
+          labelKey: 'sidebar.items.employees',
+          icon: '👤',
+          route: '/hr/employees',
+          moduleId: 'hr',
+        },
+        {
+          labelKey: 'sidebar.items.leave',
+          icon: '🌴',
+          route: '/hr/leave',
+          moduleId: 'hr',
+        },
+      ],
+    },
+    {
+      titleKey: 'sidebar.sections.support',
+      items: [
+        {
+          labelKey: 'sidebar.items.supportDashboard',
+          icon: '🎧',
+          route: '/support',
+          moduleId: 'support',
+        },
+        {
+          labelKey: 'sidebar.items.tickets',
+          icon: '🎫',
+          route: '/support/tickets',
+          moduleId: 'support',
+        },
+        {
+          labelKey: 'sidebar.items.knowledgeBase',
+          icon: '📚',
+          route: '/support/knowledge-base',
+          moduleId: 'support',
+        },
+      ],
+    },
+    {
       titleKey: 'sidebar.sections.tools',
       items: [
         {

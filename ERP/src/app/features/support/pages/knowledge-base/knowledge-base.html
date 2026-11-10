@@ -1,0 +1,144 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('support.knowledge.title') }}</h1>
+      <p class="page-subtitle">{{ t('support.knowledge.subtitle') }}</p>
+    </div>
+  </div>
+
+  @if (notice()) {
+    <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+  }
+
+  @if (permissions.can('support', 'create') || editingId()) {
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <h2 class="section-title">
+        {{ editingId() ? t('support.knowledge.editArticle') : t('support.knowledge.newArticle') }}
+      </h2>
+
+      @if (submitFailed()) {
+        <div class="alert alert-danger" role="alert">{{ t('support.knowledge.saveError') }}</div>
+      }
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="title">{{ t('support.knowledge.columns.title') }}</label>
+          <input
+            id="title"
+            type="text"
+            class="form-control"
+            formControlName="title"
+            [attr.aria-invalid]="isInvalid('title')"
+          />
+          @if (isInvalid('title')) {
+            <p class="field-error">{{ t('support.knowledge.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="category">
+            {{ t('support.knowledge.category') }}
+          </label>
+          <input
+            id="category"
+            type="text"
+            class="form-control"
+            formControlName="category"
+            [attr.aria-invalid]="isInvalid('category')"
+          />
+          @if (isInvalid('category')) {
+            <p class="field-error">{{ t('support.knowledge.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group form-grid-full">
+          <label class="form-label" for="body">{{ t('support.knowledge.body') }}</label>
+          <textarea
+            id="body"
+            class="form-control"
+            rows="5"
+            formControlName="body"
+            [attr.aria-invalid]="isInvalid('body')"
+          ></textarea>
+          @if (isInvalid('body')) {
+            <p class="field-error">{{ t('support.knowledge.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group form-grid-full checkbox-row">
+          <label class="checkbox-option">
+            <input type="checkbox" formControlName="published" />
+            <span>{{ t('support.knowledge.published') }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        @if (editingId()) {
+          <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+            {{ t('support.knowledge.cancel') }}
+          </button>
+        }
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ saving() ? t('common.saving') : t('support.knowledge.save') }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <div class="card">
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('support.knowledge.loadError') }}</p>
+        <p class="state-text">{{ t('support.knowledge.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    } @else if (articles().length === 0) {
+      <div class="state-block">
+        <p class="state-title">{{ t('support.knowledge.emptyTitle') }}</p>
+        <p class="state-text">{{ t('support.knowledge.emptyHint') }}</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ t('support.knowledge.columns.title') }}</th>
+              <th>{{ t('support.knowledge.columns.category') }}</th>
+              <th>{{ t('support.knowledge.columns.updated') }}</th>
+              <th>{{ t('support.knowledge.columns.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (article of articles(); track article.id) {
+              <tr>
+                <td class="cell-strong">{{ article.title }}</td>
+                <td>{{ article.category }}</td>
+                <td>{{ article.updatedAt | date: 'short' }}</td>
+                <td class="col-actions">
+                  @if (permissions.can('support', 'update')) {
+                    <button type="button" class="btn btn-secondary btn-sm" (click)="edit(article)">
+                      {{ t('common.edit') }}
+                    </button>
+                  }
+                  @if (permissions.can('support', 'delete')) {
+                    <button type="button" class="btn btn-danger btn-sm" (click)="delete(article)">
+                      {{ t('common.delete') }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

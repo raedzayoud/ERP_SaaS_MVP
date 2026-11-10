@@ -97,6 +97,22 @@ export const ERP_APPS: ErpApp[] = [
     dependencies: [],
   },
   {
+    id: 'hr',
+    label: 'HR',
+    icon: '🧑‍💼',
+    description: 'Employees, leave requests, and HR records',
+    category: 'People',
+    dependencies: [],
+  },
+  {
+    id: 'support',
+    label: 'Support',
+    icon: '🎧',
+    description: 'Tickets, interactions, and knowledge base',
+    category: 'Service',
+    dependencies: [],
+  },
+  {
     id: 'ai-assistant',
     label: 'AI Assistant',
     icon: '🤖',
@@ -129,6 +145,8 @@ export const ERP_SUITES: ErpSuite[] = [
   { id: 'purchases', apps: ['purchases'] },
   { id: 'inventory', apps: ['stock'] },
   { id: 'finance', apps: ['accounting', 'reports'] },
+  { id: 'people', apps: ['hr'] },
+  { id: 'service', apps: ['support'] },
   { id: 'standalone', apps: ['contacts', 'ai-assistant', 'room-live'] },
 ];
 

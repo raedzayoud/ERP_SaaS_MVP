@@ -1,0 +1,23 @@
+<ng-container *transloco="let t">
+  <div class="result-page">
+    <div class="result-card">
+      <div class="result-icon" [class.cancelled]="mode === 'cancelled'" aria-hidden="true">
+        {{ mode === 'cancelled' ? '✕' : '✓' }}
+      </div>
+
+      <h1 class="result-title">{{ t('signup.result.' + resultKey + '.title') }}</h1>
+      <p class="result-text">{{ t('signup.result.' + resultKey + '.text') }}</p>
+
+      @if (mode === 'success') {
+        <p class="result-hint">{{ t('signup.result.' + resultKey + '.hint') }}</p>
+      } @else {
+        <p class="result-hint">{{ t('signup.result.cancelled.hint') }}</p>
+      }
+
+      <div class="result-actions">
+        <a routerLink="/login" class="btn btn-primary">{{ t('signup.result.signIn') }}</a>
+        <a routerLink="/" class="btn btn-secondary">{{ t('signup.result.home') }}</a>
+      </div>
+    </div>
+  </div>
+</ng-container>

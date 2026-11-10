@@ -15,6 +15,7 @@
               <th>{{ t('admin.tenants.email') }}</th>
               <th>{{ t('admin.tenants.plan') }}</th>
               <th>{{ t('admin.tenants.status') }}</th>
+              <th class="col-right">{{ t('admin.tenants.trialUsage') }}</th>
               <th class="col-right">{{ t('admin.tenants.users') }}</th>
               <th class="col-right">{{ t('admin.tenants.storage') }}</th>
               <th>{{ t('admin.tenants.created') }}</th>
@@ -33,6 +34,7 @@
                     {{ t('admin.tenants.statuses.' + tenant.status) }}
                   </span>
                 </td>
+                <td class="col-right">{{ trialUsage(tenant) }}</td>
                 <td class="col-right">{{ tenant.usersCount }}</td>
                 <td class="col-right">{{ tenant.storageUsedGb }} GB</td>
                 <td>{{ tenant.createdAt | date: 'mediumDate' }}</td>

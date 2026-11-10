@@ -1,34 +1,45 @@
+import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { AuthService } from './auth.service';
-import { TenantService } from './tenant.service';
-import { RbacService } from './rbac.service';
-import { PermissionAction } from '../models/rbac';
+import { ModulePermissions, PermissionAction } from '../models/rbac';
 import { Role } from '../models/role';
-import { withFreshStorage } from './storage-test-helper';
-
-function loginAdmin(): boolean {
-  return TestBed.inject(AuthService).loginAsTenantUser('admin@demo.com', 'demo');
-}
-
-function loginMember(email: string): boolean {
-  return TestBed.inject(AuthService).loginAsTenantUser(email, 'demo');
-}
-
-function addUser(name: string, email: string, role: Role): void {
-  TestBed.inject(TenantService).addUser({ name, email, role });
-}
+import { User } from '../models/user';
+import { AuthService } from './auth.service';
+import { RbacService } from './rbac.service';
 
 describe('RbacService', () => {
   let service: RbacService;
+  let currentUser: WritableSignal<User | null>;
+  let accessToken: WritableSignal<string | null>;
+  let permissions: WritableSignal<ModulePermissions>;
 
   beforeEach(() => {
-    withFreshStorage();
-    TestBed.configureTestingModule({});
+    currentUser = signal<User | null>(null);
+    accessToken = signal<string | null>(null);
+    permissions = signal<ModulePermissions>({});
+
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: AuthService,
+          useValue: { currentUser, accessToken, permissions },
+        },
+      ],
+    });
+
     service = TestBed.inject(RbacService);
   });
 
+  function signIn(role: Role): void {
+    currentUser.set({
+      id: 1,
+      name: 'Test User',
+      email: 'user@acme-test.com',
+      role,
+    });
+  }
+
   it('gives the company administrator the full cycle on every module', () => {
-    expect(loginAdmin()).toBe(true);
+    signIn('admin-entreprise');
 
     for (const moduleId of ['contacts', 'sales', 'accounting', 'settings']) {
       for (const action of ['view', 'create', 'delete'] as PermissionAction[]) {
@@ -37,59 +48,40 @@ describe('RbacService', () => {
     }
   });
 
-  it('keeps fixed templates for the demo employees', () => {
-    expect(loginAdmin()).toBe(true);
-    addUser('Leila Sales', 'leila@demo.com', 'commercial');
-    expect(loginMember('leila@demo.com')).toBe(true);
+  it('falls back to the builtin role matrix before a JWT is loaded', () => {
+    signIn('commercial');
 
     expect(service.can('sales', 'create')).toBe(true);
     expect(service.can('purchases', 'create')).toBe(false);
     expect(service.can('accounting', 'view')).toBe(false);
-    // Workspace basics are always viewable for members
     expect(service.can('dashboard', 'view')).toBe(true);
     expect(service.can('apps', 'view')).toBe(true);
   });
 
-  it('keeps stock handlers inside stock and outside accounting', () => {
-    expect(loginAdmin()).toBe(true);
-    addUser('Karim Store', 'karim@demo.com', 'magasinier');
-    expect(loginMember('karim@demo.com')).toBe(true);
+  it('uses the permissions carried by the access token when present', () => {
+    signIn('admin-entreprise');
+    accessToken.set('access-token');
+    permissions.set({
+      contacts: ['view'],
+      dashboard: ['view'],
+    });
 
-    expect(service.can('stock', 'update')).toBe(true);
-    expect(service.can('accounting', 'view')).toBe(false);
-    expect(service.can('sales', 'create')).toBe(false);
-  });
-
-  it('lets the accountant validate invoices and pay bills', () => {
-    expect(loginAdmin()).toBe(true);
-    addUser('Sonia Books', 'sonia@demo.com', 'comptable');
-    expect(loginMember('sonia@demo.com')).toBe(true);
-
-    expect(service.can('invoices', 'validate')).toBe(true);
-    expect(service.can('payments', 'create')).toBe(true);
+    expect(service.can('contacts', 'view')).toBe(true);
     expect(service.can('contacts', 'create')).toBe(false);
-    expect(service.can('stock', 'view')).toBe(false);
+    expect(service.can('sales', 'view')).toBe(false);
   });
 
-  it('lets the director review without editing or deleting', () => {
-    expect(loginAdmin()).toBe(true);
-    addUser('Hedi Review', 'hedi@demo.com', 'directeur');
-    expect(loginMember('hedi@demo.com')).toBe(true);
+  it('keeps super-admin and external-client tokens permission-free', () => {
+    signIn('super-admin');
+    accessToken.set('access-token');
+    permissions.set({});
 
-    expect(service.can('invoices', 'view')).toBe(true);
-    expect(service.can('invoices', 'validate')).toBe(true);
-    expect(service.can('invoices', 'create')).toBe(false);
-    expect(service.can('invoices', 'delete')).toBe(false);
+    expect(service.can('dashboard', 'view')).toBe(false);
     expect(service.can('settings', 'view')).toBe(false);
   });
 
-  it('reports no access for the external client inside the workspace', () => {
-    TestBed.inject(AuthService).refreshUser({
-      id: 99,
-      name: 'Client',
-      email: 'client@demo.com',
-      role: 'client-externe',
-    });
+  it('does not expose workspace modules to external clients', () => {
+    signIn('client-externe');
 
     expect(service.can('invoices', 'view')).toBe(false);
     expect(service.can('dashboard', 'view')).toBe(false);

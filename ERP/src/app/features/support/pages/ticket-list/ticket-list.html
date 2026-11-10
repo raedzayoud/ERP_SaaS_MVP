@@ -1,0 +1,128 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ t('support.tickets.title') }}</h1>
+      <p class="page-subtitle">{{ t('support.tickets.subtitle') }}</p>
+    </div>
+    @if (permissions.can('support', 'create')) {
+      <a routerLink="/support/tickets/new" class="btn btn-primary">
+        + {{ t('support.tickets.newTicket') }}
+      </a>
+    }
+  </div>
+
+  @if (notice()) {
+    <div class="alert alert-success" role="status">{{ t(notice()) }}</div>
+  }
+
+  <div class="card">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="form-control search-input"
+        [placeholder]="t('support.tickets.searchPlaceholder')"
+        [attr.aria-label]="t('support.tickets.searchPlaceholder')"
+        [formControl]="searchControl"
+      />
+
+      <select
+        class="form-control filter-select"
+        [value]="statusFilter()"
+        [attr.aria-label]="t('common.status')"
+        (change)="onStatusFilter($event)"
+      >
+        <option value="">{{ t('common.all') }}</option>
+        <option value="open">{{ t('support.tickets.status.open') }}</option>
+        <option value="in_progress">{{ t('support.tickets.status.in_progress') }}</option>
+        <option value="resolved">{{ t('support.tickets.status.resolved') }}</option>
+        <option value="closed">{{ t('support.tickets.status.closed') }}</option>
+      </select>
+
+      <select
+        class="form-control filter-select"
+        [value]="typeFilter()"
+        [attr.aria-label]="t('support.form.type')"
+        (change)="onTypeFilter($event)"
+      >
+        <option value="">{{ t('common.all') }}</option>
+        <option value="ticket">{{ t('support.tickets.types.ticket') }}</option>
+        <option value="complaint">{{ t('support.tickets.types.complaint') }}</option>
+        <option value="request">{{ t('support.tickets.types.request') }}</option>
+      </select>
+    </div>
+
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    } @else if (loadFailed()) {
+      <div class="state-block">
+        <p class="state-title">{{ t('support.tickets.loadError') }}</p>
+        <p class="state-text">{{ t('support.tickets.loadErrorHint') }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">
+          {{ t('common.retry') }}
+        </button>
+      </div>
+    } @else if (tickets().length === 0) {
+      <div class="state-block">
+        <p class="state-title">
+          {{ search() || statusFilter() || typeFilter()
+            ? t('support.tickets.noMatch')
+            : t('support.tickets.emptyTitle') }}
+        </p>
+        <p class="state-text">
+          {{ search() || statusFilter() || typeFilter()
+            ? t('support.tickets.noMatchHint')
+            : t('support.tickets.emptyHint') }}
+        </p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ t('support.tickets.columns.subject') }}</th>
+              <th>{{ t('support.tickets.columns.requester') }}</th>
+              <th>{{ t('support.tickets.columns.priority') }}</th>
+              <th>{{ t('support.tickets.columns.status') }}</th>
+              <th>{{ t('support.tickets.columns.created') }}</th>
+              <th>{{ t('support.tickets.columns.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ticket of tickets(); track ticket.id) {
+              <tr>
+                <td class="cell-strong">
+                  <a [routerLink]="['/support/tickets', ticket.id]">{{ ticket.subject }}</a>
+                </td>
+                <td>{{ ticket.requesterName }}</td>
+                <td>
+                  <span [class]="priorityClass(ticket.priority)">
+                    {{ t('support.tickets.priority.' + ticket.priority) }}
+                  </span>
+                </td>
+                <td>
+                  <span [class]="statusClass(ticket.status)">
+                    {{ t('support.tickets.status.' + ticket.status) }}
+                  </span>
+                </td>
+                <td>{{ ticket.createdAt | date: 'short' }}</td>
+                <td class="col-actions">
+                  <a [routerLink]="['/support/tickets', ticket.id]" class="btn btn-secondary btn-sm">
+                    {{ t('support.tickets.view') }}
+                  </a>
+                  @if (permissions.can('support', 'delete')) {
+                    <button type="button" class="btn btn-danger btn-sm" (click)="delete(ticket)">
+                      {{ t('common.delete') }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</ng-container>

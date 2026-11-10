@@ -44,16 +44,15 @@
         </a>
       </p>
 
-      <p class="demo-hint">{{ t('rbac.login.genericHint') }}</p>
-
       <button type="submit" class="btn btn-primary btn-lg login-btn" [disabled]="loading()">
-        {{ t('login.credentials.signIn') }}
+        {{ loading() ? t('login.credentials.signingIn') : t('login.credentials.signIn') }}
       </button>
     </form>
 
     <div class="login-footer">
       <p class="signup-prompt">
-        <a routerLink="/login">← {{ t('login.credentials.back') }}</a>
+        {{ t('login.noAccount') }}
+        <a routerLink="/signup">{{ t('login.createWorkspace') }}</a>
       </p>
       <p class="login-footer-text">{{ t('login.footer') }}</p>
     </div>

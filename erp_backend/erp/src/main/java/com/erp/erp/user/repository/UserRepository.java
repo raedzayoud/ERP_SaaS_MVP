@@ -11,5 +11,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findFirstByTenantId(UUID tenantId);
 
+    long countByTenantId(UUID tenantId);
+
+    long countByTenantIsNotNull();
+
     boolean existsByEmail(String email);
 }

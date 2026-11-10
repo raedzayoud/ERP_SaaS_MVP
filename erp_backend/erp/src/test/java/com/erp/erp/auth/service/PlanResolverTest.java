@@ -26,6 +26,12 @@ class PlanResolverTest {
     }
 
     @Test
+    void businessWhenHrOrSupport() {
+        assertEquals("business", PlanResolver.resolve(List.of("dashboard", "hr")));
+        assertEquals("business", PlanResolver.resolve(List.of("dashboard", "support")));
+    }
+
+    @Test
     void enterpriseWhenAiAssistant() {
         assertEquals("enterprise", PlanResolver.resolve(List.of("dashboard", "ai-assistant")));
     }

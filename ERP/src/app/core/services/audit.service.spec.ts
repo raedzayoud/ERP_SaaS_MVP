@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { AuditEntry } from './audit.service';
 import { AuthService } from './auth.service';
@@ -10,7 +11,7 @@ describe('AuditService', () => {
 
   beforeEach(() => {
     withFreshStorage();
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [provideHttpClient()] });
     service = TestBed.inject(AuditService);
     auth = TestBed.inject(AuthService);
   });

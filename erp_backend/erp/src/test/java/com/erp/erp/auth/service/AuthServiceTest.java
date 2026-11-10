@@ -17,13 +17,13 @@ import com.erp.erp.auth.dto.SignupRequest;
 import com.erp.erp.auth.dto.SignupResponse;
 import com.erp.erp.auth.dto.TokenPairResponse;
 import com.erp.erp.auth.exception.AuthException;
-import com.erp.erp.billing.dto.BillingUrlResponse;
-import com.erp.erp.billing.service.BillingService;
+import com.erp.erp.billing.model.BillingInterval;
 import com.erp.erp.config.JwtService;
 import com.erp.erp.kyc.model.DocumentSlot;
 import com.erp.erp.kyc.repository.SignupDocumentRepository;
 import com.erp.erp.kyc.service.KycStorageService;
 import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.tenant.model.TenantStatus;
 import com.erp.erp.tenant.repository.TenantRepository;
 import com.erp.erp.user.model.Role;
 import com.erp.erp.user.model.User;
@@ -48,10 +48,17 @@ class AuthServiceTest {
     private final JwtService jwtService = mock(JwtService.class);
     private final RefreshTokenService refreshTokens = mock(RefreshTokenService.class);
     private final KycStorageService storage = mock(KycStorageService.class);
-    private final BillingService billing = mock(BillingService.class);
+    private final SignupOtpService signupOtp = mock(SignupOtpService.class);
 
     private final AuthService service = new AuthService(
-            users, tenants, documents, passwordEncoder, jwtService, refreshTokens, storage, billing);
+            users,
+            tenants,
+            documents,
+            passwordEncoder,
+            jwtService,
+            refreshTokens,
+            storage,
+            signupOtp);
 
     @Test
     void loginReturnsAccessAndRefreshTokens() {
@@ -69,6 +76,59 @@ class AuthServiceTest {
         assertEquals("refresh-token", response.refreshToken());
         assertEquals("Bearer", response.tokenType());
         assertEquals(900, response.expiresIn());
+    }
+
+    @Test
+    void loginRejectsASuspendedTenant() {
+        User user = activeUser();
+        Tenant tenant = new Tenant();
+        tenant.setTenantStatus(TenantStatus.SUSPENDED);
+        user.setTenant(tenant);
+
+        when(users.findByEmail("owner@acme.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("secret123", "hash")).thenReturn(true);
+
+        AuthException ex = assertThrows(
+                AuthException.class,
+                () -> service.login(new LoginRequest("owner@acme.com", "secret123")));
+
+        assertEquals(403, ex.getStatus());
+        assertEquals("account suspended", ex.getMessage());
+    }
+
+    @Test
+    void loginConsumesTheLastTrialConnection() {
+        User user = trialUser(29);
+        Tenant tenant = user.getTenant();
+
+        when(users.findByEmail("owner@acme.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("secret123", "hash")).thenReturn(true);
+        when(tenants.findByIdForUpdate(tenant.getId())).thenReturn(Optional.of(tenant));
+        when(jwtService.generateToken(user)).thenReturn("jwt-token");
+        when(jwtService.getExpirationSeconds()).thenReturn(900L);
+        when(refreshTokens.create(user)).thenReturn("refresh-token");
+
+        service.login(new LoginRequest("owner@acme.com", "secret123"));
+
+        assertEquals(30, tenant.getTrialUsed());
+        assertEquals(true, tenant.getTrialEndedAt() != null);
+    }
+
+    @Test
+    void loginRejectsAnExhaustedTrial() {
+        User user = trialUser(30);
+        Tenant tenant = user.getTenant();
+
+        when(users.findByEmail("owner@acme.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("secret123", "hash")).thenReturn(true);
+        when(tenants.findByIdForUpdate(tenant.getId())).thenReturn(Optional.of(tenant));
+
+        AuthException ex = assertThrows(
+                AuthException.class,
+                () -> service.login(new LoginRequest("owner@acme.com", "secret123")));
+
+        assertEquals(403, ex.getStatus());
+        assertEquals("trial limit reached; subscribe to continue", ex.getMessage());
     }
 
     @Test
@@ -93,40 +153,27 @@ class AuthServiceTest {
     }
 
     @Test
-    void signupReturnsTheStripeCheckoutUrlAndKeepsTheSelectedPlan() {
+    void signupCreatesATrialTenantWithoutStripe() {
         UUID tenantId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         stubSignupPersistence(tenantId, userId);
-        when(billing.checkout(tenantId, "MONTHLY"))
-                .thenReturn(new BillingUrlResponse("https://checkout.stripe.com/test"));
 
         SignupResponse response = service.signup(starterRequest(), documents());
 
-        assertEquals(
-                "Account created. Complete the Stripe payment, then wait for administrator approval.",
-                response.message());
-        assertEquals("https://checkout.stripe.com/test", response.checkoutUrl());
-        verify(billing).checkout(tenantId, "MONTHLY");
+        assertEquals("Trial account created with 30 free connections.", response.message());
+        assertEquals(null, response.checkoutUrl());
+        verify(signupOtp).requireVerified("owner@acme.com", "verification-token");
+        verify(signupOtp).clear("owner@acme.com");
 
         ArgumentCaptor<Tenant> tenantCaptor = ArgumentCaptor.forClass(Tenant.class);
         verify(tenants).save(tenantCaptor.capture());
-        assertEquals("starter", tenantCaptor.getValue().getPlanId());
-    }
-
-    @Test
-    void signupDeletesStoredFilesWhenStripeFails() {
-        UUID tenantId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        stubSignupPersistence(tenantId, userId);
-        when(billing.checkout(tenantId, "MONTHLY"))
-                .thenThrow(new AuthException(502, "payment provider error"));
-
-        AuthException ex = assertThrows(
-                AuthException.class, () -> service.signup(starterRequest(), documents()));
-
-        assertEquals(502, ex.getStatus());
-        verify(storage, times(4)).deleteQuietly(anyString());
-        verify(billing).deleteCustomerQuietly(null);
+        Tenant saved = tenantCaptor.getValue();
+        assertEquals("starter", saved.getPlanId());
+        assertEquals(TenantStatus.TRIAL, saved.getTenantStatus());
+        assertEquals(30, saved.getTrialLimit());
+        assertEquals(0, saved.getTrialUsed());
+        assertEquals(BillingInterval.MONTHLY, saved.getBillingInterval());
+        assertEquals(true, saved.getTrialStartedAt() != null);
     }
 
     @Test
@@ -142,6 +189,28 @@ class AuthServiceTest {
         verify(storage, times(4)).deleteQuietly(anyString());
     }
 
+    @Test
+    void signupAvailabilityAcceptsAnUnusedSubdomain() {
+        when(tenants.existsBySubdomain("acme")).thenReturn(false);
+
+        assertEquals(true, service.signupAvailability("Acme ").subdomainAvailable());
+    }
+
+    @Test
+    void signupAvailabilityRejectsAnExistingSubdomain() {
+        when(tenants.existsBySubdomain("acme")).thenReturn(true);
+
+        assertEquals(false, service.signupAvailability("acme").subdomainAvailable());
+    }
+
+    @Test
+    void signupAvailabilityRejectsReservedAndInvalidSubdomains() {
+        assertEquals(false, service.signupAvailability("admin").subdomainAvailable());
+        assertEquals(false, service.signupAvailability("ab").subdomainAvailable());
+        assertEquals(false, service.signupAvailability("my company").subdomainAvailable());
+        assertEquals(false, service.signupAvailability(null).subdomainAvailable());
+    }
+
     private User activeUser() {
         User user = new User();
         user.setId(UUID.randomUUID());
@@ -149,6 +218,17 @@ class AuthServiceTest {
         user.setPasswordHash("hash");
         user.setRole(Role.ADMIN_ENTREPRISE);
         user.setActive(true);
+        return user;
+    }
+
+    private User trialUser(int used) {
+        User user = activeUser();
+        Tenant tenant = new Tenant();
+        tenant.setId(UUID.randomUUID());
+        tenant.setTenantStatus(TenantStatus.TRIAL);
+        tenant.setTrialLimit(30);
+        tenant.setTrialUsed(used);
+        user.setTenant(tenant);
         return user;
     }
 
@@ -184,7 +264,8 @@ class AuthServiceTest {
                 "FR12345",
                 List.of("dashboard", "contacts", "products", "sales", "invoices", "payments"),
                 "starter",
-                "MONTHLY");
+                "MONTHLY",
+                "verification-token");
     }
 
     private Map<DocumentSlot, MultipartFile> documents() {

@@ -1,13 +1,9 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { PasswordResetService } from '../../services/password-reset.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
-/**
- * Step 2 of the demo password reset: the visitor enters the 6-digit code
- * received by e-mail and chooses a new password. On success the new
- * password becomes the only one accepted at login.
- */
 @Component({
   selector: 'app-reset-password',
   imports: [RouterLink, TranslocoDirective],
@@ -15,7 +11,7 @@ import { PasswordResetService } from '../../services/password-reset.service';
   styleUrl: './reset-password.css',
 })
 export class ResetPassword {
-  private readonly resetService = inject(PasswordResetService);
+  private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -47,6 +43,8 @@ export class ResetPassword {
 
   onSubmit(event: Event): void {
     event.preventDefault();
+    if (this.saving()) return;
+
     this.errorKey.set('');
 
     const email = this.email().trim().toLowerCase();
@@ -66,28 +64,21 @@ export class ResetPassword {
     }
 
     this.saving.set(true);
-    const result = this.resetService.applyPassword(email, code, this.newPassword());
-    this.saving.set(false);
-
-    if (result === 'unknown') {
-      this.errorKey.set('forgot.unknown');
-      return;
-    }
-    if (result === 'bad-code') {
-      this.errorKey.set('reset.invalidCode');
-      return;
-    }
-    if (result === 'expired') {
-      this.errorKey.set('reset.expired');
-      return;
-    }
-
-    this.done.set(true);
+    this.authService.resetPassword(email, code, this.newPassword()).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.done.set(true);
+      },
+      error: (error: unknown) => {
+        this.saving.set(false);
+        this.errorKey.set(this.resetErrorKey(error));
+      },
+    });
   }
 
   /** Requests a fresh code when the current one expired. */
   goToNewCode(): void {
-    this.router.navigate(['/forgot-password'], {
+    void this.router.navigate(['/forgot-password'], {
       queryParams: { email: this.email() },
     });
   }
@@ -110,5 +101,26 @@ export class ResetPassword {
 
   onToggleShow(event: Event): void {
     this.showPassword.set((event.target as HTMLInputElement).checked);
+  }
+
+  private resetErrorKey(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 404) return 'forgot.unknown';
+      if (error.status === 0) return 'reset.network';
+
+      if (error.status === 400) {
+        const message = this.errorMessage(error);
+        if (message.includes('expired')) return 'reset.expired';
+        if (message.includes('too many attempts')) return 'reset.tooMany';
+        if (message.includes('no reset code')) return 'reset.noCode';
+        if (message.includes('incorrect reset code')) return 'reset.invalidCode';
+      }
+    }
+    return 'reset.generic';
+  }
+
+  private errorMessage(error: HttpErrorResponse): string {
+    const body = error.error as { message?: unknown } | null;
+    return typeof body?.message === 'string' ? body.message.toLowerCase() : '';
   }
 }

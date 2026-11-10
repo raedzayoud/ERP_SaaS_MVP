@@ -1,0 +1,146 @@
+<ng-container *transloco="let t">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        {{ isEdit ? t('hr.form.editTitle') : t('hr.form.newTitle') }}
+      </h1>
+      <p class="page-subtitle">
+        {{ isEdit ? t('hr.form.editSubtitle') : t('hr.form.newSubtitle') }}
+      </p>
+    </div>
+    <a routerLink="/hr/employees" class="btn btn-secondary">← {{ t('common.back') }}</a>
+  </div>
+
+  @if (loading()) {
+    <div class="card">
+      <div class="state-block">
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="state-text">{{ t('common.loading') }}</p>
+      </div>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="card">
+      <div class="state-block">
+        <p class="state-title">{{ t('hr.form.notFound') }}</p>
+        <p class="state-text">{{ t('hr.form.notFoundHint') }}</p>
+        <a routerLink="/hr/employees" class="btn btn-primary">{{ t('common.back') }}</a>
+      </div>
+    </div>
+  } @else {
+    <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (submitFailed()) {
+        <div class="alert alert-danger" role="alert">{{ t('hr.form.saveError') }}</div>
+      }
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="fullName">
+            {{ t('hr.form.fullName') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="fullName"
+            type="text"
+            class="form-control"
+            formControlName="fullName"
+            [attr.aria-invalid]="isInvalid('fullName')"
+          />
+          @if (isInvalid('fullName')) {
+            <p class="field-error">{{ t('hr.form.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">
+            {{ t('hr.form.email') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="email"
+            type="email"
+            class="form-control"
+            formControlName="email"
+            [attr.aria-invalid]="isInvalid('email')"
+          />
+          @if (isInvalid('email')) {
+            <p class="field-error">
+              {{ hasError('email', 'email') ? t('hr.form.invalidEmail') : t('hr.form.required') }}
+            </p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="phone">{{ t('hr.form.phone') }}</label>
+          <input id="phone" type="tel" class="form-control" formControlName="phone" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="department">
+            {{ t('hr.form.department') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="department"
+            type="text"
+            class="form-control"
+            formControlName="department"
+            [attr.aria-invalid]="isInvalid('department')"
+          />
+          @if (isInvalid('department')) {
+            <p class="field-error">{{ t('hr.form.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="position">
+            {{ t('hr.form.position') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="position"
+            type="text"
+            class="form-control"
+            formControlName="position"
+            [attr.aria-invalid]="isInvalid('position')"
+          />
+          @if (isInvalid('position')) {
+            <p class="field-error">{{ t('hr.form.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="hireDate">
+            {{ t('hr.form.hireDate') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="hireDate"
+            type="date"
+            class="form-control"
+            formControlName="hireDate"
+            [attr.aria-invalid]="isInvalid('hireDate')"
+          />
+          @if (isInvalid('hireDate')) {
+            <p class="field-error">{{ t('hr.form.required') }}</p>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="status">{{ t('hr.form.status') }}</label>
+          <select id="status" class="form-control" formControlName="status">
+            <option value="active">{{ t('hr.employees.status.active') }}</option>
+            <option value="on_leave">{{ t('hr.employees.status.on_leave') }}</option>
+            <option value="inactive">{{ t('hr.employees.status.inactive') }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/hr/employees" class="btn btn-secondary">{{ t('common.cancel') }}</a>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ saving() ? t('common.saving') : t('hr.form.save') }}
+        </button>
+      </div>
+    </form>
+  }
+</ng-container>

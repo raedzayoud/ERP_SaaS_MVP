@@ -1,7 +1,7 @@
 export type PlatformTenantStatus = 'trial' | 'active' | 'suspended';
 
 export interface PlatformTenant {
-  id: number;
+  id: string;
   companyName: string;
   subdomain: string;
   email: string;
@@ -12,6 +12,14 @@ export interface PlatformTenant {
   usersCount: number;
   storageUsedGb: number;
   createdAt: string;
+  kycStatus?: string;
+  billingStatus?: string;
+  billingInterval?: string;
+  currentPeriodEnd?: string;
+  trialUsed?: number;
+  trialLimit?: number;
+  trialStartedAt?: string;
+  trialEndedAt?: string;
 }
 
 export interface PlatformStats {
@@ -27,51 +35,15 @@ export interface PlatformStats {
   overdueAmount: number;
 }
 
-/** A company asking to join the platform (validated by the super-admin with KYC). */
-export type SignupStatus = 'pending' | 'approved' | 'rejected';
-
-/**
- * One KYC document of a signup request. Seed data only says "submitted",
- * while requests filed by the signup wizard carry the real chosen file.
- */
-export type KycDocument =
-  | { kind: 'submitted' }
-  | { kind: 'uploaded'; fileName: string; sizeKb: number; dataUrl?: string };
-
-export type SignupRequestDocuments = {
-  /** National identity card, both sides. */
-  idCardRecto: KycDocument;
-  idCardVerso: KycDocument;
-  tradeRegister: KycDocument;
-  taxRegistration: KycDocument;
-};
-
-export interface SignupRequest {
-  id: number;
-  companyName: string;
-  subdomain: string;
-  email: string;
-  country: string;
-  /** Tax-registration number typed at signup (matricule fiscal). */
-  taxId: string;
-  planId: string;
-  status: SignupStatus;
-  /** KYC documents requested at registration. */
-  documents: SignupRequestDocuments;
-  createdAt: string;
-  decidedAt?: string;
-  decisionNote?: string;
-}
-
-/** One monthly subscription statement of one tenant. */
 export type PaymentStatus = 'paid' | 'pending' | 'overdue';
 
 export interface SubscriptionPayment {
-  id: number;
-  tenantId: number;
+  id: string;
+  tenantId: string;
   /** Billing period, formatted as YYYY-MM. */
   period: string;
   amount: number;
   status: PaymentStatus;
   dueDate: string;
+  invoiceUrl?: string;
 }

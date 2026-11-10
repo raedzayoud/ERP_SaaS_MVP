@@ -13,7 +13,14 @@
     "saving": "Enregistrement…",
     "contactFilter": "Contact : {{name}}",
     "delete": "Supprimer",
-    "deleteConfirm": "Supprimer le brouillon?"
+    "deleteConfirm": "Supprimer le brouillon?",
+    "create": "Créer",
+    "search": "Rechercher",
+    "status": "Statut",
+    "all": "Tous",
+    "confirmDelete": "Supprimer cet enregistrement ?",
+    "saved": "Enregistré",
+    "deleted": "Supprimé"
   },
   "titles": {
     "dashboard": "Tableau de bord",
@@ -80,7 +87,18 @@
     "warehouseDashboard": "Tableau de bord stock",
     "accountingDashboard": "Tableau de bord comptabilité",
     "analytics": "Analytique BI",
-    "rooms": "Salons live"
+    "rooms": "Salons live",
+    "hr": "Ressources humaines",
+    "employees": "Employés",
+    "newEmployee": "Nouvel employé",
+    "editEmployee": "Modifier l'employé",
+    "leave": "Demandes de congé",
+    "support": "Support",
+    "tickets": "Tickets",
+    "newTicket": "Nouveau ticket",
+    "editTicket": "Modifier le ticket",
+    "ticketDetail": "Détail du ticket",
+    "knowledgeBase": "Base de connaissances"
   },
   "descriptions": {
     "contacts": "Les sociétés et les personnes avec lesquelles vous travaillez.",
@@ -101,7 +119,13 @@
     "reminders": "Rappels et relances à traiter.",
     "supplierBills": "Enregistrez et payez les factures de vos fournisseurs",
     "analytics": "Business intelligence sur l'ensemble du PGI.",
-    "rooms": "Salons de discussion avec visio et partage de documents."
+    "rooms": "Salons de discussion avec visio et partage de documents.",
+    "hr": "Employés, congés et dossiers RH.",
+    "employees": "Annuaire du personnel et fiches employés.",
+    "leave": "Consultez et gérez les demandes de congé.",
+    "support": "Tickets internes, interactions et FAQ.",
+    "tickets": "Suivez et résolvez les tickets de support.",
+    "knowledgeBase": "Réponses réutilisables et procédures internes."
   },
   "navbar": {
     "toggleSidebar": "Afficher ou masquer le menu",
@@ -120,7 +144,9 @@
       "finance": "Finance",
       "tools": "Outils",
       "workspace": "Espace de travail",
-      "collaboration": "Collaboration"
+      "collaboration": "Collaboration",
+      "hr": "Ressources humaines",
+      "support": "Support"
     },
     "items": {
       "dashboard": "Tableau de bord",
@@ -143,7 +169,13 @@
       "reminders": "Rappels",
       "supplierBills": "Achats fournisseurs",
       "analytics": "Analytique BI",
-      "rooms": "Salons live"
+      "rooms": "Salons live",
+      "hrDashboard": "Tableau de bord RH",
+      "employees": "Employés",
+      "leave": "Congés",
+      "supportDashboard": "Tableau de bord support",
+      "tickets": "Tickets",
+      "knowledgeBase": "Base de connaissances"
     }
   },
   "placeholder": {
@@ -1502,7 +1534,12 @@
     "goReset": "Saisir le code",
     "resend": "Renvoyer le code",
     "changeEmail": "Changer d’e-mail",
-    "unknown": "Aucun compte trouvé pour cet e-mail."
+    "unknown": "Aucun compte trouvé pour cet e-mail.",
+    "cooldown": "Veuillez patienter avant de demander un nouveau code.",
+    "mailError": "L’e-mail de réinitialisation n’a pas pu être envoyé. Réessayez plus tard.",
+    "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+    "generic": "Le code de réinitialisation n’a pas pu être envoyé. Veuillez réessayer.",
+    "expiresIn": "Ce code expire dans {{minutes}} minutes."
   },
   "reset": {
     "title": "Choisissez un nouveau mot de passe",
@@ -1520,6 +1557,10 @@
     "mismatch": "Les deux mots de passe ne correspondent pas.",
     "invalidCode": "Code incorrect.",
     "expired": "Ce code a expiré. Demandez-en un nouveau.",
+    "tooMany": "Trop de tentatives. Demandez un nouveau code.",
+    "noCode": "Aucun code de réinitialisation n’a été demandé pour cet e-mail.",
+    "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+    "generic": "Le mot de passe n’a pas pu être réinitialisé. Veuillez réessayer.",
     "newCode": "Demander un nouveau code",
     "successTitle": "Mot de passe mis à jour",
     "successDescription": "Votre mot de passe a été mis à jour. Vous pouvez vous connecter.",
@@ -1701,6 +1742,7 @@
       "email": "E-mail",
       "plan": "Plan",
       "status": "Statut",
+      "trialUsage": "Connexions d’essai",
       "users": "Utilisateurs",
       "storage": "Stockage",
       "created": "Créé le",
@@ -1713,13 +1755,15 @@
       }
     },
     "plans": {
-      "editPrice": "Modifier les prix",
-      "priceMonthly": "Prix mensuel",
-      "priceAnnual": "Prix annuel",
-      "invalidPrice": "Veuillez saisir des prix positifs.",
-      "priceSaved": "Prix du plan mis à jour.",
-      "pricesReset": "Prix rétablis sur le catalogue par défaut.",
-      "resetPrices": "Rétablir les prix par défaut"
+      "subtitle": "Catalogue en lecture seule des formules proposées sur la plateforme.",
+      "popular": "Le plus populaire",
+      "month": "mois",
+      "year": "an",
+      "maxUsers": "utilisateurs",
+      "storage": "Go de stockage",
+      "aiQuota": "requêtes IA / mois",
+      "modules": "apps incluses",
+      "loadError": "Impossible de charger le catalogue des formules."
     },
     "signups": {
       "subtitle": "Entreprises en attente d'une décision d'inscription (vérification KYC).",
@@ -1728,6 +1772,7 @@
       "email": "E-mail",
       "country": "Pays",
       "plan": "Formule demandée",
+      "billing": "Facturation",
       "documents": "Pièces KYC",
       "docSubmitted": "3 pièces reçues",
       "status": "Décision",
@@ -1738,8 +1783,8 @@
       "notePlaceholder": "Motif du rejet (conservé dans l'historique)",
       "rejectConfirm": "Confirmer le rejet",
       "empty": "Aucune demande d'inscription.",
-      "approvedMsg": "« {company} » approuvée — l'entreprise passe en essai.",
-      "rejectedMsg": "« {company} » rejetée.",
+      "approvedMsg": "« {{company}} » approuvée — l'entreprise peut accéder à son espace.",
+      "rejectedMsg": "« {{company}} » rejetée.",
       "statuses": {
         "pending": "En attente",
         "approved": "Approuvée",
@@ -1757,10 +1802,19 @@
         "idCardVerso": "CIN – verso"
       },
       "rejectHint": "Cette demande reste dans l'historique avec votre note ; aucune entreprise n'est créée.",
-      "approvedTenant": "Entreprise en essaai créée",
+      "approvedTenant": "Entreprise approuvée",
+      "rejectedLabel": "Inscription rejetée",
+      "loadError": "Impossible de charger les demandes d’inscription.",
+      "errors": {
+        "decision": "Impossible d’enregistrer la décision. Veuillez réessayer.",
+        "paymentRequired": "Cette entreprise doit finaliser le paiement Stripe avant l’approbation.",
+        "notFound": "Cette demande d’inscription n’existe plus."
+      },
       "docViewer": {
         "open": "Voir la pièce justificative",
         "close": "Fermer",
+        "loading": "Chargement du document…",
+        "error": "Impossible de charger ce document.",
         "simulated": "Scan simulé (démo) — la vraie image arrivera avec le dépôt de fichiers.",
         "uploadedFile": "Fichier fourni : {{name}} ({{size}} Ko)"
       },
@@ -1777,6 +1831,8 @@
       "due": "Échéance",
       "markPaid": "Marquer payé",
       "paidMsg": "Paiement de {period} enregistré.",
+      "viewInvoice": "Voir la facture",
+      "loadError": "Impossible de charger les paiements d'abonnement.",
       "empty": "Aucun relevé pour ce filtre.",
       "filters": {
         "all": "Tous",
@@ -1841,6 +1897,14 @@
         "label": "Rapports",
         "description": "Analyse d’activité avec export PDF/Excel/CSV"
       },
+      "hr": {
+        "label": "RH",
+        "description": "Employés, demandes de congé et dossiers RH"
+      },
+      "support": {
+        "label": "Support",
+        "description": "Tickets, interactions et base de connaissances"
+      },
       "ai-assistant": {
         "label": "Assistant IA",
         "description": "Chatbot RAG et extraction de factures"
@@ -1849,6 +1913,233 @@
         "label": "Rooms Live",
         "description": "Salons de chat, visio et partage de fichiers"
       }
+    }
+  },
+  "hr": {
+    "dashboard": {
+      "title": "Tableau de bord RH",
+      "subtitle": "Un aperçu rapide de vos employés et demandes de congé.",
+      "totalEmployees": "Employés",
+      "onLeave": "En congé",
+      "pendingLeave": "Congés en attente",
+      "departments": "Départements",
+      "employeesLink": "Gérer les employés",
+      "leaveLink": "Gérer les congés"
+    },
+    "employees": {
+      "title": "Employés",
+      "subtitle": "Annuaire du personnel et fiches employés.",
+      "newEmployee": "Nouvel employé",
+      "searchPlaceholder": "Rechercher des employés…",
+      "loadError": "Impossible de charger les employés",
+      "loadErrorHint": "Veuillez réessayer.",
+      "emptyTitle": "Aucun employé pour le moment",
+      "emptyHint": "Ajoutez votre premier employé pour commencer.",
+      "noMatch": "Aucun employé ne correspond à votre recherche",
+      "noMatchHint": "Essayez un autre mot-clé.",
+      "columns": {
+        "name": "Nom",
+        "email": "E-mail",
+        "department": "Département",
+        "position": "Poste",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Actif",
+        "on_leave": "En congé",
+        "inactive": "Inactif"
+      },
+      "deleteConfirm": "Supprimer cet employé ?",
+      "deleteBlocked": "Cet employé a des demandes de congé et ne peut pas être supprimé.",
+      "deleted": "Employé supprimé"
+    },
+    "form": {
+      "newTitle": "Nouvel employé",
+      "editTitle": "Modifier l'employé",
+      "newSubtitle": "Ajoutez un employé à votre annuaire.",
+      "editSubtitle": "Mettez à jour cette fiche employé.",
+      "notFound": "Employé introuvable",
+      "notFoundHint": "Il a peut-être été supprimé.",
+      "saveError": "L'employé n'a pas pu être enregistré.",
+      "fullName": "Nom complet",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "department": "Département",
+      "position": "Poste",
+      "hireDate": "Date d'embauche",
+      "status": "Statut",
+      "required": "Ce champ est obligatoire.",
+      "invalidEmail": "Saisissez une adresse e-mail valide.",
+      "save": "Enregistrer l'employé"
+    },
+    "leave": {
+      "title": "Demandes de congé",
+      "subtitle": "Créez et consultez les congés des employés.",
+      "loadError": "Impossible de charger les demandes de congé",
+      "loadErrorHint": "Veuillez réessayer.",
+      "emptyTitle": "Aucune demande de congé pour le moment",
+      "emptyHint": "Créez une demande de congé pour un employé.",
+      "columns": {
+        "employee": "Employé",
+        "type": "Type",
+        "period": "Période",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "status": {
+        "pending": "En attente",
+        "approved": "Approuvée",
+        "rejected": "Refusée"
+      },
+      "types": {
+        "annual": "Annuel",
+        "sick": "Maladie",
+        "unpaid": "Sans solde",
+        "other": "Autre"
+      },
+      "newRequest": "Nouvelle demande de congé",
+      "employee": "Employé",
+      "type": "Type",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "reason": "Motif",
+      "reasonPlaceholder": "Note facultative",
+      "create": "Créer la demande",
+      "approve": "Approuver",
+      "reject": "Refuser",
+      "delete": "Supprimer",
+      "created": "Demande de congé créée",
+      "updated": "Demande de congé mise à jour",
+      "deleted": "Demande de congé supprimée",
+      "noEmployees": "Ajoutez un employé avant de créer une demande de congé.",
+      "dateError": "La date de fin doit être égale ou postérieure à la date de début.",
+      "selectEmployee": "Sélectionnez un employé."
+    }
+  },
+  "support": {
+    "dashboard": {
+      "title": "Tableau de bord support",
+      "subtitle": "Un aperçu rapide de votre activité support interne.",
+      "openTickets": "Tickets ouverts",
+      "inProgress": "En cours",
+      "resolved": "Résolus",
+      "articles": "Articles FAQ",
+      "ticketsLink": "Gérer les tickets",
+      "knowledgeLink": "Gérer la base de connaissances"
+    },
+    "tickets": {
+      "title": "Tickets",
+      "subtitle": "Suivez et résolvez les tickets de support.",
+      "newTicket": "Nouveau ticket",
+      "searchPlaceholder": "Rechercher des tickets…",
+      "loadError": "Impossible de charger les tickets",
+      "loadErrorHint": "Veuillez réessayer.",
+      "emptyTitle": "Aucun ticket pour le moment",
+      "emptyHint": "Créez votre premier ticket de support.",
+      "noMatch": "Aucun ticket ne correspond à votre recherche",
+      "noMatchHint": "Essayez un autre mot-clé ou effacez les filtres.",
+      "columns": {
+        "subject": "Objet",
+        "requester": "Demandeur",
+        "priority": "Priorité",
+        "status": "Statut",
+        "created": "Créé le",
+        "actions": "Actions"
+      },
+      "status": {
+        "open": "Ouvert",
+        "in_progress": "En cours",
+        "resolved": "Résolu",
+        "closed": "Fermé"
+      },
+      "types": {
+        "ticket": "Ticket",
+        "complaint": "Réclamation",
+        "request": "Demande"
+      },
+      "priority": {
+        "low": "Basse",
+        "medium": "Moyenne",
+        "high": "Haute",
+        "urgent": "Urgente"
+      },
+      "view": "Voir",
+      "deleteConfirm": "Supprimer ce ticket et ses interactions ?",
+      "deleted": "Ticket supprimé"
+    },
+    "form": {
+      "newTitle": "Nouveau ticket",
+      "editTitle": "Modifier le ticket",
+      "newSubtitle": "Enregistrez une demande de support.",
+      "editSubtitle": "Mettez à jour ce ticket de support.",
+      "notFound": "Ticket introuvable",
+      "notFoundHint": "Il a peut-être été supprimé.",
+      "saveError": "Le ticket n'a pas pu être enregistré.",
+      "subject": "Objet",
+      "description": "Description",
+      "requesterName": "Nom du demandeur",
+      "requesterEmail": "E-mail du demandeur",
+      "type": "Type",
+      "priority": "Priorité",
+      "status": "Statut",
+      "assignee": "Assigné à",
+      "assigneePlaceholder": "Membre de l'équipe (facultatif)",
+      "required": "Ce champ est obligatoire.",
+      "invalidEmail": "Saisissez une adresse e-mail valide.",
+      "save": "Enregistrer le ticket"
+    },
+    "detail": {
+      "notFound": "Ticket introuvable",
+      "notFoundHint": "Il a peut-être été supprimé.",
+      "back": "Retour aux tickets",
+      "edit": "Modifier le ticket",
+      "delete": "Supprimer le ticket",
+      "deleteConfirm": "Supprimer ce ticket et ses interactions ?",
+      "deleted": "Ticket supprimé",
+      "requester": "Demandeur",
+      "created": "Créé le",
+      "assignee": "Assigné à",
+      "unassigned": "Non assigné",
+      "interactions": "Interactions",
+      "noInteractions": "Aucune interaction pour le moment.",
+      "author": "Auteur",
+      "channel": "Canal",
+      "message": "Message",
+      "addInteraction": "Ajouter une interaction",
+      "added": "Interaction ajoutée",
+      "channels": {
+        "note": "Note",
+        "email": "E-mail",
+        "phone": "Téléphone",
+        "meeting": "Réunion"
+      }
+    },
+    "knowledge": {
+      "title": "Base de connaissances",
+      "subtitle": "Réponses réutilisables et procédures internes.",
+      "newArticle": "Nouvel article",
+      "editArticle": "Modifier l'article",
+      "loadError": "Impossible de charger les articles",
+      "loadErrorHint": "Veuillez réessayer.",
+      "emptyTitle": "Aucun article pour le moment",
+      "emptyHint": "Créez votre premier article FAQ.",
+      "columns": {
+        "title": "Titre",
+        "category": "Catégorie",
+        "updated": "Mis à jour",
+        "actions": "Actions"
+      },
+      "formTitle": "Article",
+      "category": "Catégorie",
+      "body": "Contenu",
+      "published": "Publié",
+      "save": "Enregistrer l'article",
+      "cancel": "Annuler",
+      "deleteConfirm": "Supprimer cet article ?",
+      "deleted": "Article supprimé",
+      "saveError": "L'article n'a pas pu être enregistré.",
+      "required": "Ce champ est obligatoire."
     }
   },
   "contactOverview": {
@@ -2008,6 +2299,7 @@
       "apps": "Applications",
       "details": "Détails",
       "verify": "Vérification",
+      "review": "Récapitulatif",
       "payment": "Paiement",
       "setup": "Configuration",
       "documents": "Documents"
@@ -2027,7 +2319,9 @@
         "purchases": "Achats",
         "finance": "Finance",
         "standalone": "Autonomes",
-        "inventory": "Stock"
+        "inventory": "Stock",
+        "people": "Personnel",
+        "service": "Service"
       },
       "requires": "Requiert : {{list}}",
       "masterAll": "Tout sélectionner ou tout retirer dans ce groupe",
@@ -2048,6 +2342,13 @@
       "subdomainHolder": "votresociete",
       "hintAvailable": "{{url}} est disponible",
       "hintTaken": "Cette adresse est prise ou invalide",
+      "hintChecking": "Vérification de la disponibilité…",
+      "hintCheckFailed": "Impossible de vérifier la disponibilité. Modifiez l’adresse ou réessayez.",
+      "password": "Mot de passe",
+      "passwordHolder": "Au moins 6 caractères",
+      "passwordHint": "Utilisez au moins 6 caractères. Ne partagez jamais ce mot de passe.",
+      "showPassword": "Afficher",
+      "hidePassword": "Masquer",
       "country": "Pays",
       "language": "Langue",
       "companySize": "Taille de la société",
@@ -2060,18 +2361,47 @@
       },
       "invalid": "Merci de remplir correctement tous les champs."
     },
+    "reviewStep": {
+      "intro": "Vérifiez les informations de votre espace, choisissez votre future fréquence de facturation, puis démarrez votre essai gratuit.",
+      "planTitle": "Plan {{plan}}",
+      "planMeta": "{{count}} apps · validation KYC requise",
+      "perMonth": "/mois",
+      "perYear": "/an",
+      "monthly": "Mensuel",
+      "annual": "Annuel",
+      "annualBadge": "Économisez",
+      "intervalLabel": "Fréquence de facturation",
+      "company": "Société",
+      "contact": "Contact principal",
+      "workspace": "Espace de travail",
+      "taxId": "Matricule fiscal",
+      "documents": "Documents KYC",
+      "documentsReady": "{{count}} fichiers prêts",
+      "country": "Pays",
+      "trialNote": "Aucun paiement maintenant. Vous disposez de 30 connexions gratuites ; abonnez-vous plus tard depuis la page de statut du compte."
+    },
     "verifyStep": {
       "title": "Vérifiez votre e-mail",
-      "sent": "Nous avons envoyé un code de vérification à 6 chiffres à",
-      "demoPrefix": "Mode démo — aucun vrai e-mail n’est envoyé. Votre code est",
+      "intro": "Confirmez cette adresse avant de téléverser vos documents.",
+      "sent": "Nous avons envoyé un code à 6 chiffres à",
+      "verifiedTitle": "E-mail vérifié",
+      "verifiedText": "Cette adresse e-mail est confirmée.",
+      "verifiedBadge": "Vérifié",
+      "codeLabel": "Code de vérification",
+      "codePlaceholder": "000000",
+      "codeSent": "Code envoyé. Il expire dans {{minutes}} minutes.",
       "resend": "Renvoyer le code",
       "resendIn": "Renvoyer dans {{seconds}} s",
-      "codeValid": "Code valable 5 minutes",
-      "codeExpired": "Code expiré",
       "errors": {
-        "expired": "Code expiré. Veuillez renvoyer un nouveau code.",
+        "email": "Saisissez d’abord une adresse e-mail valide.",
+        "code": "Saisissez le code à 6 chiffres.",
+        "required": "Vérifiez votre adresse e-mail pour continuer.",
+        "expired": "Cette vérification a expiré. Veuillez vérifier votre e-mail à nouveau.",
         "wrong": "Code incorrect. Veuillez réessayer.",
-        "tooMany": "Trop de tentatives. Veuillez renvoyer un nouveau code."
+        "tooMany": "Trop de tentatives. Demandez un nouveau code.",
+        "cooldown": "Veuillez patienter avant de demander un autre code.",
+        "mail": "Impossible d’envoyer l’e-mail de vérification. Veuillez réessayer.",
+        "send": "Impossible d’envoyer le code de vérification. Veuillez réessayer."
       }
     },
     "paymentStep": {
@@ -2111,7 +2441,8 @@
       "sendCode": "Envoyer le code →",
       "verify": "Vérifier et continuer →",
       "processing": "Traitement…",
-      "pay": "Payer {{price}} $ et créer l’espace →"
+      "pay": "Payer {{price}} $ et créer l’espace →",
+      "startTrial": "Démarrer l’essai gratuit →"
     },
     "footer": {
       "terms": "En créant un compte, vous acceptez nos Conditions d’utilisation et notre Politique de confidentialité."
@@ -2119,13 +2450,22 @@
     "error": {
       "generic": "Une erreur est survenue. Veuillez réessayer."
     },
+    "errors": {
+      "generic": "Une erreur est survenue. Veuillez réessayer.",
+      "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+      "invalid": "Certaines informations sont invalides. Vérifiez vos données et vos documents.",
+      "emailUsed": "Cette adresse e-mail est déjà utilisée par un autre compte.",
+      "subdomainTaken": "Cette adresse d’espace n’est plus disponible.",
+      "payment": "Impossible de démarrer le paiement Stripe. Veuillez réessayer.",
+      "billingNotConfigured": "Les paiements ne sont pas encore configurés sur le serveur. Contactez le support."
+    },
     "docStep": {
       "intro": "Joignez les documents administratifs habituels pour finaliser votre inscription.",
       "choose": "Choisir un fichier",
       "change": "Remplacer",
       "remove": "Retirer le document",
       "sizeKb": "{{size}} Ko",
-      "hint": "PNG, JPG ou PDF · {{size}} Ko max par document. Les images légères affichent un aperçu réel dans la console super-admin.",
+      "hint": "PNG, JPG ou PDF · {{size}} Ko max par document.",
       "errors": {
         "missing": "Ajoutez tous les documents pour continuer.",
         "tooLarge": "Fichier trop volumineux (max {{size}} Ko).",
@@ -2159,7 +2499,81 @@
     },
     "request": {
       "autoApprovedNote": "Abonnement payé · justificatifs fournis"
+    },
+    "result": {
+      "signIn": "Se connecter",
+      "home": "Retour à l’accueil",
+      "success": {
+        "title": "Paiement reçu",
+        "text": "Votre paiement a bien été effectué. Connectez-vous et attendez qu’un administrateur valide votre compte.",
+        "hint": "Votre paiement est confirmé. L’ERP s’ouvrira automatiquement dès que l’administrateur aura validé vos documents."
+      },
+      "trial": {
+        "title": "Votre essai gratuit est prêt",
+        "text": "Votre espace a été créé avec 30 connexions gratuites. Connectez-vous pour commencer à utiliser l’ERP.",
+        "hint": "Chaque connexion réussie utilise une connexion. Abonnez-vous depuis la page de statut du compte pour continuer après l’essai."
+      },
+      "cancelled": {
+        "title": "Paiement annulé",
+        "text": "Votre espace a été créé mais le paiement n’a pas été finalisé.",
+        "hint": "Connectez-vous et utilisez le bouton Réessayer le paiement pour rouvrir Stripe Checkout."
+      }
     }
+  },
+  "accountStatus": {
+    "title": "Votre espace est en cours d’activation",
+    "subtitle": "Le paiement et la vérification d’identité sont requis avant d’ouvrir l’ERP.",
+    "loading": "Vérification du statut de votre compte…",
+    "kycLabel": "Vérification d’identité",
+    "tenantLabel": "Accès à l’espace",
+    "trialLabel": "Connexions d’essai",
+    "trialUsage": "{{used}} sur {{limit}} utilisées",
+    "billingLabel": "Abonnement",
+    "workspaceLabel": "Espace de travail",
+    "planLabel": "Plan",
+    "kyc": {
+      "PENDING": "En attente de validation",
+      "APPROVED": "Validé",
+      "REJECTED": "Refusé"
+    },
+    "tenant": {
+      "TRIAL": "Essai",
+      "ACTIVE": "Actif",
+      "SUSPENDED": "Suspendu"
+    },
+    "billing": {
+      "NONE": "Paiement requis",
+      "PENDING": "Paiement en cours",
+      "ACTIVE": "Actif",
+      "PAST_DUE": "En retard",
+      "CANCELED": "Annulé",
+      "EXEMPT": "Exonéré"
+    },
+    "trialText": "Mode essai : {{remaining}} connexions gratuites restantes sur {{limit}}. Abonnez-vous à tout moment pour garder votre espace ouvert.",
+    "trialEndedText": "Vos 30 connexions gratuites sont utilisées. Abonnez-vous pour continuer à utiliser l’ERP.",
+    "subscribe": "S’abonner",
+    "suspendedText": "Cet espace a été suspendu par l’administrateur de la plateforme. Contactez le support si vous pensez qu’il s’agit d’une erreur.",
+    "rejectedText": "Votre inscription a été refusée. Contactez le support si vous pensez qu’il s’agit d’une erreur.",
+    "pastDueText": "Votre dernier paiement a échoué. Mettez à jour votre moyen de paiement dans le portail Stripe.",
+    "paymentText": "Votre espace est créé. Effectuez le paiement Stripe pour lancer la vérification d’identité.",
+    "paymentPendingText": "Votre paiement est en cours de traitement par Stripe. Actualisez le statut dans un instant ; aucun nouveau paiement n’est nécessaire.",
+    "paymentConfirmedText": "Votre paiement a bien été effectué. Veuillez patienter pendant qu’un administrateur valide votre compte.",
+    "pendingText": "Vos documents sont en cours de validation par un administrateur. Actualisez pour voir le dernier statut.",
+    "readyText": "Votre compte est actif. Vous pouvez ouvrir votre tableau de bord.",
+    "retryPayment": "Réessayer le paiement",
+    "manageBilling": "Gérer la facturation",
+    "refresh": "Actualiser le statut",
+    "goToDashboard": "Aller au tableau de bord",
+    "signOut": "Se déconnecter",
+    "working": "Ouverture de Stripe…",
+    "errors": {
+      "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+      "action": "Impossible d’ouvrir la page de facturation. Réessayez ou contactez le support."
+    }
+  },
+  "trial": {
+    "banner": "Essai : {{remaining}} connexions restantes sur {{limit}}",
+    "subscribe": "S’abonner"
   },
   "settings": {
     "messages": {
@@ -2431,7 +2845,9 @@
     "reports": "Rapports",
     "ai-assistant": "Assistant IA",
     "settings": "Réglages",
-    "collab": "Salons live"
+    "collab": "Salons live",
+    "hr": "Ressources humaines",
+    "support": "Support"
   },
   "rbac": {
     "actions": {
@@ -2457,8 +2873,12 @@
       "genericTitle": "Connexion à votre espace",
       "genericHint": "Utilisez l'email créé par votre administrateur. Les comptes démo fonctionnent aussi ici.",
       "email": "Email",
-      "invalid": "Cet email n'appartient à aucun membre actif.",
+      "invalid": "E-mail ou mot de passe invalide.",
       "activate": "Votre compte a été désactivé ; contactez votre administrateur.",
+      "suspended": "Cet espace est suspendu. Contactez l’administrateur de la plateforme.",
+      "trialEnded": "Votre essai gratuit est terminé. Abonnez-vous pour continuer à utiliser l’ERP.",
+      "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+      "generic": "La connexion a échoué. Veuillez réessayer.",
       "mustRenew": "Vous devez choisir un nouveau mot de passe avant de continuer."
     },
     "renewal": {

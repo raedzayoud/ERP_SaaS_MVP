@@ -19,11 +19,16 @@ public record TenantResponse(
         String taxId,
         String address,
         String createdAt,
+        String tenantStatus,
         String kycStatus,
         String billingStatus,
         String billingInterval,
         String currentPeriodEnd,
-        boolean cancelAtPeriodEnd) {
+        boolean cancelAtPeriodEnd,
+        int trialLimit,
+        int trialUsed,
+        String trialStartedAt,
+        String trialEndedAt) {
 
     public static TenantResponse from(Tenant tenant) {
         return new TenantResponse(
@@ -40,10 +45,15 @@ public record TenantResponse(
                 tenant.getTaxId(),
                 tenant.getAddress(),
                 tenant.getCreatedAt() == null ? null : tenant.getCreatedAt().toString(),
+                tenant.getTenantStatus() == null ? null : tenant.getTenantStatus().name(),
                 tenant.getKycStatus() == null ? null : tenant.getKycStatus().name(),
                 tenant.getBillingStatus() == null ? null : tenant.getBillingStatus().name(),
                 tenant.getBillingInterval() == null ? null : tenant.getBillingInterval().name(),
                 tenant.getCurrentPeriodEnd() == null ? null : tenant.getCurrentPeriodEnd().toString(),
-                tenant.isCancelAtPeriodEnd());
+                tenant.isCancelAtPeriodEnd(),
+                tenant.getTrialLimit(),
+                tenant.getTrialUsed(),
+                tenant.getTrialStartedAt() == null ? null : tenant.getTrialStartedAt().toString(),
+                tenant.getTrialEndedAt() == null ? null : tenant.getTrialEndedAt().toString());
     }
 }

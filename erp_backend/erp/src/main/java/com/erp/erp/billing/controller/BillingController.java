@@ -37,6 +37,11 @@ public class BillingController {
         return billingService.subscription(tenantId(jwt));
     }
 
+    @PostMapping("/refresh")
+    public BillingStatusResponse refresh(@AuthenticationPrincipal Jwt jwt) {
+        return billingService.refresh(tenantId(jwt));
+    }
+
     @PostMapping("/portal-session")
     public BillingUrlResponse portal(@AuthenticationPrincipal Jwt jwt) {
         return billingService.portal(tenantId(jwt));

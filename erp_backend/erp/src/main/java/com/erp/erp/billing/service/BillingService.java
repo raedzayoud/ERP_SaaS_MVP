@@ -10,10 +10,15 @@ import com.erp.erp.tenant.repository.TenantRepository;
 import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
+import com.stripe.model.StripeCollection;
+import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.SubscriptionListParams;
 import com.stripe.param.checkout.SessionCreateParams;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -98,13 +103,53 @@ public class BillingService {
 
     @Transactional(readOnly = true)
     public BillingStatusResponse subscription(UUID tenantId) {
+        return response(requireTenant(tenantId));
+    }
+
+    /**
+     * Re-reads the Stripe subscriptions for this tenant. This is the fallback
+     * when a webhook is delayed or missing: a paid checkout becomes ACTIVE
+     * without waiting for the next event.
+     */
+    @Transactional
+    public BillingStatusResponse refresh(UUID tenantId) {
+        requireConfigured();
         Tenant tenant = requireTenant(tenantId);
-        return new BillingStatusResponse(
-                tenant.getPlanId(),
-                tenant.getBillingStatus() == null ? null : tenant.getBillingStatus().name(),
-                tenant.getBillingInterval() == null ? null : tenant.getBillingInterval().name(),
-                tenant.getCurrentPeriodEnd() == null ? null : tenant.getCurrentPeriodEnd().toString(),
-                tenant.isCancelAtPeriodEnd());
+        BillingStatus current = status(tenant);
+
+        if (current == BillingStatus.EXEMPT) {
+            return response(tenant);
+        }
+
+        String customerId = tenant.getStripeCustomerId();
+        if (customerId == null || customerId.isBlank()) {
+            if (current == BillingStatus.PENDING) {
+                tenant.setBillingStatus(BillingStatus.NONE);
+            }
+            return response(tenant);
+        }
+
+        try {
+            StripeCollection<Subscription> subscriptions = stripeClient.v1()
+                    .subscriptions()
+                    .list(SubscriptionListParams.builder()
+                            .setCustomer(customerId)
+                            .setLimit(10L)
+                            .build());
+
+            Subscription latest = selectSubscription(subscriptions.getData());
+            if (latest != null) {
+                SubscriptionSync.apply(tenant, latest);
+            } else if (current == BillingStatus.PENDING) {
+                // No subscription means the checkout was not completed. Let the
+                // client retry the payment instead of staying stuck on PENDING.
+                tenant.setBillingStatus(BillingStatus.NONE);
+            }
+
+            return response(tenant);
+        } catch (StripeException ex) {
+            throw providerError(ex);
+        }
     }
 
     @Transactional
@@ -195,6 +240,44 @@ public class BillingService {
 
     private BillingStatus status(Tenant tenant) {
         return tenant.getBillingStatus() == null ? BillingStatus.NONE : tenant.getBillingStatus();
+    }
+
+    private BillingStatusResponse response(Tenant tenant) {
+        return new BillingStatusResponse(
+                tenant.getPlanId(),
+                tenant.getBillingStatus() == null ? null : tenant.getBillingStatus().name(),
+                tenant.getBillingInterval() == null ? null : tenant.getBillingInterval().name(),
+                tenant.getCurrentPeriodEnd() == null ? null : tenant.getCurrentPeriodEnd().toString(),
+                tenant.isCancelAtPeriodEnd());
+    }
+
+    /**
+     * Picks the subscription that best represents the current billing state.
+     * Active subscriptions win over failed or canceled ones.
+     */
+    static Subscription selectSubscription(List<Subscription> subscriptions) {
+        if (subscriptions == null || subscriptions.isEmpty()) {
+            return null;
+        }
+        return subscriptions.stream()
+                .max(Comparator.comparingInt(BillingService::subscriptionPriority)
+                        .thenComparingLong(
+                                subscription -> subscription.getCreated() == null
+                                        ? 0L
+                                        : subscription.getCreated()))
+                .orElse(null);
+    }
+
+    private static int subscriptionPriority(Subscription subscription) {
+        String status = subscription.getStatus() == null
+                ? ""
+                : subscription.getStatus().toLowerCase(Locale.ROOT);
+        return switch (status) {
+            case "active", "trialing" -> 3;
+            case "past_due", "unpaid" -> 2;
+            case "incomplete" -> 1;
+            default -> 0;
+        };
     }
 
     private String successUrlWithSessionId() {

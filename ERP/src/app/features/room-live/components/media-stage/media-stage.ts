@@ -38,7 +38,10 @@ export class MediaStage implements OnDestroy {
   readonly screening = signal(false);
   readonly errorKey = signal<string | null>(null);
   readonly participants = this.service.workspaceUsers;
-  readonly currentUserId = computed(() => this.authService.currentUser()?.id ?? 0);
+  readonly currentUserId = computed(() => {
+    const id = this.authService.currentUser()?.id;
+    return typeof id === 'number' ? id : 0;
+  });
 
   /** Local camera/mic/screen stream. A signal so the effect below can attach it to the <video>. */
   private readonly localStream = signal<MediaStream | null>(null);

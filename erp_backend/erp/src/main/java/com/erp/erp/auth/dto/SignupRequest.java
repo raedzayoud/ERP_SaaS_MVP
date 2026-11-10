@@ -48,4 +48,7 @@ public record SignupRequest(
 
         @NotBlank(message = "billingInterval is required")
         @Pattern(regexp = "(?i)MONTHLY|ANNUAL", message = "billingInterval must be MONTHLY or ANNUAL")
-        String billingInterval) {}
+        String billingInterval,
+
+        @NotBlank(message = "verificationToken is required")
+        String verificationToken) {}

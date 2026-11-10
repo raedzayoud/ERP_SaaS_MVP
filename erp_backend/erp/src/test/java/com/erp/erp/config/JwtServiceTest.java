@@ -3,6 +3,8 @@ package com.erp.erp.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.tenant.model.TenantStatus;
 import com.erp.erp.user.model.Role;
 import com.erp.erp.user.model.User;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -47,5 +49,25 @@ class JwtServiceTest {
                 permissions.get("sales"));
         assertTrue(permissions.containsKey("dashboard"));
         assertEquals(900, service.getExpirationSeconds());
+    }
+
+    @Test
+    void accessTokenContainsTrialUsageForTenantUsers() {
+        User user = new User();
+        user.setId(UUID.randomUUID());
+        user.setEmail("owner@acme.com");
+        user.setRole(Role.ADMIN_ENTREPRISE);
+        Tenant tenant = new Tenant();
+        tenant.setId(UUID.randomUUID());
+        tenant.setTenantStatus(TenantStatus.TRIAL);
+        tenant.setTrialLimit(30);
+        tenant.setTrialUsed(7);
+        user.setTenant(tenant);
+
+        Jwt jwt = decoder.decode(service.generateToken(user));
+
+        assertEquals(7, ((Number) jwt.getClaim("trialUsed")).intValue());
+        assertEquals(30, ((Number) jwt.getClaim("trialLimit")).intValue());
+        assertEquals("TRIAL", jwt.getClaimAsString("tenantStatus"));
     }
 }

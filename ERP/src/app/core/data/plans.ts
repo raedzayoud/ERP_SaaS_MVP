@@ -1,60 +1,7 @@
 import { Plan } from '../models/plan';
 
-/** localStorage key holding the price overrides made by the super-admin. */
-const PLAN_PRICE_KEY = 'erp_plan_prices';
-
-type PlanPricePatch = Partial<Pick<Plan, 'priceMonthly' | 'priceAnnual'>>;
-
-/** Reads the stored price overrides. Never throws (mock app + test runner). */
-function loadPlanPriceOverrides(): Record<string, PlanPricePatch> {
-  try {
-    const raw = localStorage.getItem(PLAN_PRICE_KEY);
-    const parsed = raw ? JSON.parse(raw) : {};
-    return typeof parsed === 'object' && parsed !== null ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-/** Returns the given plan with the stored price overrides applied. */
-export function applyPlanPriceOverrides(plan: Plan): Plan {
-  const patch = loadPlanPriceOverrides()[plan.id];
-  if (!patch) return plan;
-  return {
-    ...plan,
-    priceMonthly:
-      typeof patch.priceMonthly === 'number' ? patch.priceMonthly : plan.priceMonthly,
-    priceAnnual: typeof patch.priceAnnual === 'number' ? patch.priceAnnual : plan.priceAnnual,
-  };
-}
-
-/** Stores (or removes with null) the price override of one plan. */
-export function savePlanPriceOverride(id: string, patch: PlanPricePatch | null): void {
-  try {
-    const overrides = loadPlanPriceOverrides();
-    if (patch) {
-      overrides[id] = { ...overrides[id], ...patch };
-    } else {
-      delete overrides[id];
-    }
-    localStorage.setItem(PLAN_PRICE_KEY, JSON.stringify(overrides));
-  } catch {
-    // mock app: ignore storage issues
-  }
-}
-
-/** Removes every stored price override (back to the default PLANS). */
-export function clearPlanPriceOverrides(): void {
-  try {
-    localStorage.removeItem(PLAN_PRICE_KEY);
-  } catch {
-    // mock app: ignore storage issues
-  }
-}
-
-/** All plans with the super-admin price overrides applied. */
 export function getAllPlans(): Plan[] {
-  return PLANS.map(applyPlanPriceOverrides);
+  return PLANS;
 }
 
 export const PLANS: Plan[] = [
@@ -98,6 +45,8 @@ export const PLANS: Plan[] = [
       'invoicing',
       'reports',
       'collab',
+      'hr',
+      'support',
     ],
     features: [
       'Up to 15 users',
@@ -105,6 +54,7 @@ export const PLANS: Plan[] = [
       'Everything in Starter',
       'Purchases & Stock',
       'Accounting & Reports',
+      'HR & Support',
       '100 AI queries/month',
       'Rooms live included',
       'Priority support',
@@ -134,11 +84,14 @@ export const PLANS: Plan[] = [
       'ai-assistant',
       'room-live',
       'collab',
+      'hr',
+      'support',
     ],
     features: [
       'Unlimited users',
       '100 GB storage',
       'Everything in Business',
+      'HR & Support',
       'AI Assistant (RAG)',
       '1,000 AI queries/month',
       'Advanced analytics',
@@ -150,7 +103,7 @@ export const PLANS: Plan[] = [
 ];
 
 export function getPlanById(id: string): Plan {
-  return applyPlanPriceOverrides(PLANS.find((p) => p.id === id) || PLANS[0]);
+  return PLANS.find((p) => p.id === id) || PLANS[0];
 }
 
 /**
@@ -166,7 +119,7 @@ export function getPlanForModules(modules: string[]): Plan {
     const cheapest = matching.reduce((cheapest, p) =>
       p.priceMonthly < cheapest.priceMonthly ? p : cheapest,
     );
-    return applyPlanPriceOverrides(cheapest);
+    return cheapest;
   }
   return PLANS[0];
 }

@@ -5,9 +5,24 @@ import { User } from '../../../core/models/user';
 import { RoomLiveService } from './room-live.service';
 import { Room } from '../models/room';
 
-const ADMIN: User = { id: 1, name: 'Admin', email: 'admin@demo.com', role: 'admin-entreprise' };
-const SALES: User = { id: 2, name: 'Sales', email: 'commercial@demo.com', role: 'commercial' };
-const WIRM: User = { id: 3, name: 'Warda', email: 'magasinier@demo.com', role: 'magasinier' };
+const ADMIN: User & { id: number } = {
+  id: 1,
+  name: 'Admin',
+  email: 'admin@demo.com',
+  role: 'admin-entreprise',
+};
+const SALES: User & { id: number } = {
+  id: 2,
+  name: 'Sales',
+  email: 'commercial@demo.com',
+  role: 'commercial',
+};
+const WIRM: User & { id: number } = {
+  id: 3,
+  name: 'Warda',
+  email: 'magasinier@demo.com',
+  role: 'magasinier',
+};
 
 describe('RoomLiveService', () => {
   let service: RoomLiveService;

@@ -1,10 +1,13 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
-import { AuthService } from '../../../core/services/auth.service';
-import { TenantService } from '../../../core/services/tenant.service';
-import { PlatformService } from '../../admin/services/platform.service';
-import type { KycDocument, SignupRequestDocuments } from '../../admin/models/platform';
+import { AuthApiService } from '../../../core/services/auth-api.service';
+import {
+  BillingInterval,
+  SignupDocumentSlot,
+  SignupRequestPayload,
+} from '../../../core/models/auth';
 import {
   ErpApp,
   ERP_APPS,
@@ -25,17 +28,6 @@ interface AppGroup {
   apps: ErpApp[];
 }
 
-/** A KYC file chosen by the company during the wizard. */
-interface UploadedKycDoc {
-  fileName: string;
-  sizeKb: number;
-  /** Kept only for small images so the super-admin console can show it. */
-  dataUrl?: string;
-}
-
-/** A line of the KYC request: either declared, or the real uploaded file. */
-type KycDocumentLike = KycDocument;
-
 /**
  * Holds the whole signup wizard state so it survives navigation between
  * /signup (hub) and /signup/apps/:suite (suite pages): the router recreates
@@ -43,9 +35,7 @@ type KycDocumentLike = KycDocument;
  */
 @Injectable({ providedIn: 'root' })
 export class SignupStateService {
-  private authService = inject(AuthService);
-  private tenantService = inject(TenantService);
-  private platformService = inject(PlatformService);
+  private authApi = inject(AuthApiService);
   private router = inject(Router);
   private transloco = inject(TranslocoService);
 
@@ -56,23 +46,41 @@ export class SignupStateService {
   selectedApps = signal<string[]>(['dashboard']);
   depNotice = signal('');
 
-  // ── Step 2: form ──────────────────────────────
+  // ── Step 2: details and password ──────────────
   fullName = signal('');
   companyName = signal('');
   subdomain = signal('');
   email = signal('');
+  password = signal('');
+  showPassword = signal(false);
+
+  // ── Step 3: email verification (OTP) ───────────
+  emailVerified = signal(false);
+  otpSent = signal(false);
+  otpCode = signal('');
+  otpSending = signal(false);
+  otpVerifying = signal(false);
+  otpError = signal('');
+  otpInfo = signal('');
+  otpResendAfter = signal(0);
+  verificationToken = signal('');
+  private otpResendTimer: ReturnType<typeof setInterval> | null = null;
   country = signal('TN');
   language = signal('en');
   companySize = signal('1-5');
   subdomainChecked = signal<boolean | null>(null);
+  subdomainChecking = signal(false);
+  subdomainCheckFailed = signal(false);
+  private availabilityTimer: ReturnType<typeof setTimeout> | null = null;
+  private availabilityRequestId = 0;
 
-  // ── Step 3: KYC documents ─────────────────────
-  readonly docSlots = [
+  // ── Step 4: KYC documents ─────────────────────
+  readonly docSlots: readonly SignupDocumentSlot[] = [
     'idCardRecto',
     'idCardVerso',
     'tradeRegister',
     'taxRegistration',
-  ] as const;
+  ];
   readonly maxDocSizeKb = 2048;
   private readonly docIcons: Record<string, string> = {
     idCardRecto: '🪪',
@@ -80,10 +88,10 @@ export class SignupStateService {
     tradeRegister: '🏛️',
     taxRegistration: '🧮',
   };
-  uploadedDocs = signal<Partial<Record<string, UploadedKycDoc>>>({});
+  uploadedDocs = signal<Partial<Record<SignupDocumentSlot, File>>>({});
   docError = signal('');
 
-  /** Matricule fiscal typed at step 3 (kept as text, uppercase). */
+  /** Matricule fiscal typed at step 4 (kept as text, uppercase). */
   taxId = signal('');
   taxIdTouched = signal(false);
 
@@ -91,32 +99,14 @@ export class SignupStateService {
     this.docSlots.every((slot) => this.uploadedDocs()[slot] !== undefined),
   );
 
-  /** Step 3 asks for the four KYC files AND the tax number. */
-  step3Complete = computed(
+  /** Step 4 asks for the four KYC files AND the tax number. */
+  documentsStepComplete = computed(
     () => this.docsComplete() && this.taxId().trim().length >= 5,
   );
 
-  // ── Step 4: email verification ────────────────
-  verificationCode = signal('');
-  codeInput = signal('');
-  codeSentAt = signal(0);
-  resendCooldown = signal(0);
-  verifyAttempts = signal(0);
-  verifyError = signal('');
-  private codeTimer: ReturnType<typeof setInterval> | null = null;
-  private resendTimer: ReturnType<typeof setInterval> | null = null;
-
-  // ── Step 5: payment (Stripe-style demo form) ──
-  cardNumber = signal('');
-  cardExpiry = signal('');
-  cardCvc = signal('');
-  cardName = signal('');
-  paymentError = signal('');
-  paying = signal(false);
-
-  // ── Step 6: provisioning ──────────────────────
-  provisioningStep = signal(0);
-  private provisionTimers: ReturnType<typeof setTimeout>[] = [];
+  // ── Step 5: review and payment ─────────────────
+  billingInterval = signal<BillingInterval>('MONTHLY');
+  submitting = signal(false);
 
   countries = COUNTRIES;
   languages = LANGUAGES;
@@ -155,6 +145,13 @@ export class SignupStateService {
     getPlanForModules(this.selectedApps().filter((id) => !AUTO_BUNDLED_IDS.includes(id))),
   );
 
+  /** Price of the selected plan for the chosen billing interval. */
+  selectedPrice = computed(() =>
+    this.billingInterval() === 'ANNUAL'
+      ? this.selectedPlan().priceAnnual
+      : this.selectedPlan().priceMonthly,
+  );
+
   /** Auto-provisioned apps are never a user choice, so not counted. */
   selectableCount = computed(
     () =>
@@ -174,19 +171,11 @@ export class SignupStateService {
       this.fullName().trim().length > 1 &&
       this.companyName().trim().length > 1 &&
       this.email().includes('@') &&
+      this.password().length >= 6 &&
       this.subdomain().length >= 3 &&
       this.subdomainChecked() === true
     );
   });
-
-  canVerify = computed(
-    () => this.codeInput().length === 6 && this.codeInput() === this.verificationCode(),
-  );
-
-  get codeExpired(): boolean {
-    if (!this.codeSentAt()) return false;
-    return Date.now() - this.codeSentAt() > 5 * 60 * 1000;
-  }
 
   get fullSubdomain(): string {
     return this.subdomain() ? `${this.subdomain()}.erpcloud.com` : 'yourcompany.erpcloud.com';
@@ -395,16 +384,120 @@ export class SignupStateService {
   }
 
   // ══════════════════════════════════════════════
-  // Step 2 — Form
+  // Step 2 — Details
   // ══════════════════════════════════════════════
   onFormInput(field: string, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
+
+    if (field === 'email') {
+      const previous = this.email().trim().toLowerCase();
+      const next = value.trim().toLowerCase();
+      if (next !== previous) {
+        this.resetOtp();
+      }
+      this.email.set(value);
+      return;
+    }
+
     const map: Record<string, (v: string) => void> = {
       fullName: (v) => this.fullName.set(v),
       companyName: (v) => this.companyName.set(v),
-      email: (v) => this.email.set(v),
     };
     map[field]?.(value);
+  }
+
+  sendOtp(): void {
+    if (this.otpSending()) return;
+
+    const email = this.email().trim().toLowerCase();
+    if (!email.includes('@')) {
+      this.otpError.set(this.transloco.translate('signup.verifyStep.errors.email'));
+      return;
+    }
+
+    this.otpSending.set(true);
+    this.otpError.set('');
+    this.otpInfo.set('');
+
+    this.authApi.sendSignupOtp(email).subscribe({
+      next: (response) => {
+        if (this.email().trim().toLowerCase() !== email) return;
+        this.otpSending.set(false);
+        this.otpSent.set(true);
+        this.otpCode.set('');
+        this.otpInfo.set(
+          this.transloco.translate('signup.verifyStep.codeSent', {
+            minutes: response.expiresInMinutes,
+          }),
+        );
+        this.startOtpCooldown(response.resendAfterSeconds);
+      },
+      error: (error: unknown) => {
+        if (this.email().trim().toLowerCase() !== email) return;
+        this.otpSending.set(false);
+        this.otpError.set(this.otpErrorKey(error));
+      },
+    });
+  }
+
+  verifyOtp(): void {
+    if (this.otpVerifying()) return;
+
+    const email = this.email().trim().toLowerCase();
+    const code = this.otpCode().trim();
+    if (code.length !== 6) {
+      this.otpError.set(this.transloco.translate('signup.verifyStep.errors.code'));
+      return;
+    }
+
+    this.otpVerifying.set(true);
+    this.otpError.set('');
+    this.otpInfo.set('');
+
+    this.authApi.verifySignupOtp(email, code).subscribe({
+      next: (response) => {
+        if (this.email().trim().toLowerCase() !== email) return;
+        this.otpVerifying.set(false);
+        this.emailVerified.set(true);
+        this.verificationToken.set(response.verificationToken);
+        this.otpInfo.set(this.transloco.translate('signup.verifyStep.verifiedText'));
+        this.stopOtpCooldown();
+        this.otpResendAfter.set(0);
+      },
+      error: (error: unknown) => {
+        if (this.email().trim().toLowerCase() !== email) return;
+        this.otpVerifying.set(false);
+        this.otpError.set(this.otpErrorKey(error));
+      },
+    });
+  }
+
+  onOtpCodeInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const code = input.value.replace(/\D/g, '').slice(0, 6);
+    this.otpCode.set(code);
+    input.value = code;
+  }
+
+  resetOtp(): void {
+    this.emailVerified.set(false);
+    this.otpSent.set(false);
+    this.otpCode.set('');
+    this.otpSending.set(false);
+    this.otpVerifying.set(false);
+    this.otpError.set('');
+    this.otpInfo.set('');
+    this.verificationToken.set('');
+    this.stopOtpCooldown();
+    this.otpResendAfter.set(0);
+  }
+
+  onPasswordInput(event: Event): void {
+    this.password.set((event.target as HTMLInputElement).value);
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword.update((visible) => !visible);
   }
 
   onSubdomainInput(event: Event): void {
@@ -413,9 +506,33 @@ export class SignupStateService {
       .replace(/[^a-z0-9-]/g, '');
     this.subdomain.set(raw);
     this.subdomainChecked.set(null);
-    if (raw.length >= 3) {
-      this.subdomainChecked.set(this.tenantService.isSubdomainAvailable(raw));
+    this.subdomainCheckFailed.set(false);
+    this.subdomainChecking.set(false);
+
+    if (this.availabilityTimer) {
+      clearTimeout(this.availabilityTimer);
+      this.availabilityTimer = null;
     }
+
+    const requestId = ++this.availabilityRequestId;
+    if (raw.length < 3) return;
+
+    this.subdomainChecking.set(true);
+    this.availabilityTimer = setTimeout(() => {
+      this.authApi.signupAvailability(raw).subscribe({
+        next: (response) => {
+          if (requestId !== this.availabilityRequestId) return;
+          this.subdomainChecked.set(response.subdomainAvailable);
+          this.subdomainChecking.set(false);
+        },
+        error: () => {
+          if (requestId !== this.availabilityRequestId) return;
+          this.subdomainChecked.set(null);
+          this.subdomainChecking.set(false);
+          this.subdomainCheckFailed.set(true);
+        },
+      });
+    }, 350);
   }
 
   onSelectChange(field: string, event: Event): void {
@@ -435,53 +552,38 @@ export class SignupStateService {
     return this.docIcons[slot] ?? '📄';
   }
 
-  /** Stores the chosen file: small images keep a preview for the console. */
-  onDocPick(slot: string, event: Event): void {
+  docSizeKb(file: File): number {
+    return Math.max(1, Math.round(file.size / 1024));
+  }
+
+  onDocPick(slot: SignupDocumentSlot, event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
     if (!file) return;
 
-    const allowed = file.type.startsWith('image/') || file.type === 'application/pdf';
-    const sizeKb = Math.max(1, Math.round(file.size / 1024));
-
-    if (sizeKb > this.maxDocSizeKb) {
-      this.docError.set(
-        this.transloco.translate('signup.docStep.errors.tooLarge', { size: this.maxDocSizeKb }),
-      );
-      input.value = '';
-      return;
-    }
-    if (!allowed) {
+    const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
       this.docError.set(this.transloco.translate('signup.docStep.errors.type'));
       input.value = '';
       return;
     }
-
-    const entry: UploadedKycDoc = { fileName: file.name, sizeKb };
-    const keepImage = file.type.startsWith('image/') && sizeKb <= 200;
-
-    const done = (result: UploadedKycDoc) => {
-      this.uploadedDocs.update((docs) => ({ ...docs, [slot]: result }));
-      this.docError.set('');
-    };
-
-    if (!keepImage) {
-      done(entry);
+    if (file.size > this.maxDocSizeKb * 1024) {
+      this.docError.set(
+        this.transloco.translate('signup.docStep.errors.tooLarge', {
+          size: this.maxDocSizeKb,
+        }),
+      );
       input.value = '';
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => done({ ...entry, dataUrl: String(reader.result) });
-    reader.onerror = () => {
-      this.docError.set(this.transloco.translate('signup.docStep.errors.read'));
-    };
-    reader.readAsDataURL(file);
+    this.uploadedDocs.update((docs) => ({ ...docs, [slot]: file }));
+    this.docError.set('');
     input.value = '';
   }
 
-  removeDoc(slot: string): void {
+  removeDoc(slot: SignupDocumentSlot): void {
     this.uploadedDocs.update((docs) => {
       const next = { ...docs };
       delete next[slot];
@@ -493,263 +595,158 @@ export class SignupStateService {
   onTaxIdInput(event: Event): void {
     this.taxIdTouched.set(true);
     const raw = (event.target as HTMLInputElement).value.toUpperCase();
-    this.taxId.set(raw.replace(/[^A-Z0-9/-]/g, ''));
+    this.taxId.set(raw.replace(/[^A-Z0-9/-]/g, '').slice(0, 30));
   }
 
-  /** Builds the request history kept by the super-admin console. */
-  private documentsForRequest(): SignupRequestDocuments {
+  // ══════════════════════════════════════════════
+  // Step 5 — Review and submit
+  // ══════════════════════════════════════════════
+  setBillingInterval(interval: BillingInterval): void {
+    this.billingInterval.set(interval);
+  }
+
+  submit(): void {
+    if (this.submitting()) return;
+    this.error.set('');
+
+    if (!this.formValid()) {
+      this.error.set(this.transloco.translate('signup.detailsStep.invalid'));
+      this.step.set(2);
+      return;
+    }
+    if (!this.emailVerified()) {
+      this.error.set(this.transloco.translate('signup.verifyStep.errors.required'));
+      this.step.set(3);
+      return;
+    }
+    if (!this.documentsStepComplete()) {
+      this.error.set(this.transloco.translate('signup.docStep.errors.missing'));
+      this.step.set(4);
+      return;
+    }
+
+    this.submitting.set(true);
+    this.authApi.signup(this.buildPayload(), this.documentMap()).subscribe({
+      next: (response) => {
+        this.submitting.set(false);
+        this.password.set('');
+
+        if (response.checkoutUrl) {
+          window.location.assign(response.checkoutUrl);
+          return;
+        }
+
+        void this.router.navigate(['/signup/success'], {
+          queryParams: { trial: 1 },
+        });
+      },
+      error: (error: unknown) => {
+        this.submitting.set(false);
+        this.error.set(this.signupErrorKey(error));
+      },
+    });
+  }
+
+  private buildPayload(): SignupRequestPayload {
     return {
-      idCardRecto: this.docEntry('idCardRecto'),
-      idCardVerso: this.docEntry('idCardVerso'),
-      tradeRegister: this.docEntry('tradeRegister'),
-      taxRegistration: this.docEntry('taxRegistration'),
+      fullName: this.fullName().trim(),
+      companyName: this.companyName().trim(),
+      subdomain: this.subdomain(),
+      email: this.email().trim().toLowerCase(),
+      password: this.password(),
+      country: this.country(),
+      language: this.language(),
+      companySize: this.companySize(),
+      taxId: this.taxId(),
+      modules: [...this.selectedApps()],
+      planId: this.selectedPlan().id,
+      billingInterval: this.billingInterval(),
+      verificationToken: this.verificationToken(),
     };
   }
 
-  private docEntry(slot: string): KycDocumentLike {
-    const uploaded = this.uploadedDocs()[slot];
-    return uploaded ? { kind: 'uploaded', ...uploaded } : { kind: 'submitted' };
+  private documentMap(): Record<SignupDocumentSlot, File> {
+    return this.uploadedDocs() as Record<SignupDocumentSlot, File>;
   }
 
-  // ══════════════════════════════════════════════
-  // Step 4 — Email verification
-  // ══════════════════════════════════════════════
-  private startVerification(): void {
-    this.generateCode();
-    this.verifyAttempts.set(0);
-    this.verifyError.set('');
-    this.codeInput.set('');
-    this.startResendCooldown(60);
+  private signupErrorKey(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'signup.errors.generic';
+    }
+    if (error.status === 0) {
+      return 'signup.errors.network';
+    }
+
+    const message = String(error.error?.message ?? '').toLowerCase();
+    if (message.includes('email already in use')) {
+      return 'signup.errors.emailUsed';
+    }
+    if (message.includes('subdomain not available')) {
+      return 'signup.errors.subdomainTaken';
+    }
+    if (message.includes('billing is not configured')) {
+      return 'signup.errors.billingNotConfigured';
+    }
+    if (message.includes('payment provider')) {
+      return 'signup.errors.payment';
+    }
+    if (message.includes('email verification required or expired')) {
+      return 'signup.verifyStep.errors.expired';
+    }
+    if (error.status === 400) {
+      return 'signup.errors.invalid';
+    }
+    return 'signup.errors.generic';
   }
 
-  private generateCode(): void {
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    this.verificationCode.set(code);
-    this.codeSentAt.set(Date.now());
+  private otpErrorKey(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'signup.verifyStep.errors.send';
+    }
+    if (error.status === 0) {
+      return 'signup.errors.network';
+    }
+
+    const message = String(error.error?.message ?? '').toLowerCase();
+    if (message.includes('email already in use')) {
+      return 'signup.errors.emailUsed';
+    }
+    if (message.includes('please wait')) {
+      return 'signup.verifyStep.errors.cooldown';
+    }
+    if (message.includes('too many attempts')) {
+      return 'signup.verifyStep.errors.tooMany';
+    }
+    if (message.includes('expired') || message.includes('no verification code')) {
+      return 'signup.verifyStep.errors.expired';
+    }
+    if (message.includes('incorrect verification code')) {
+      return 'signup.verifyStep.errors.wrong';
+    }
+    if (message.includes('could not send verification email')) {
+      return 'signup.verifyStep.errors.mail';
+    }
+    return 'signup.verifyStep.errors.send';
   }
 
-  private startResendCooldown(seconds: number): void {
-    if (this.resendTimer) clearInterval(this.resendTimer);
-    this.resendCooldown.set(seconds);
-    this.resendTimer = setInterval(() => {
-      const next = this.resendCooldown() - 1;
-      this.resendCooldown.set(next);
-      if (next <= 0 && this.resendTimer) {
-        clearInterval(this.resendTimer);
-        this.resendTimer = null;
+  private startOtpCooldown(seconds: number): void {
+    this.stopOtpCooldown();
+    this.otpResendAfter.set(Math.max(0, Math.ceil(seconds)));
+    if (this.otpResendAfter() === 0) return;
+
+    this.otpResendTimer = setInterval(() => {
+      const next = this.otpResendAfter() - 1;
+      this.otpResendAfter.set(Math.max(0, next));
+      if (next <= 0) {
+        this.stopOtpCooldown();
       }
     }, 1000);
   }
 
-  resendCode(): void {
-    if (this.resendCooldown() > 0) return;
-    this.generateCode();
-    this.verifyError.set('');
-    this.codeInput.set('');
-    this.startResendCooldown(60);
-  }
-
-  onCodeInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value
-      .replace(/\D/g, '')
-      .slice(0, 6);
-    this.codeInput.set(value);
-  }
-
-  verifyCode(): void {
-    this.verifyError.set('');
-
-    if (this.codeExpired) {
-      this.verifyError.set(this.transloco.translate('signup.verifyStep.errors.expired'));
-      return;
-    }
-
-    if (this.codeInput() === this.verificationCode()) {
-      this.error.set('');
-      this.paymentError.set('');
-      this.step.set(5);
-    } else {
-      this.verifyAttempts.update((n) => n + 1);
-      this.verifyError.set(this.transloco.translate('signup.verifyStep.errors.wrong'));
-      if (this.verifyAttempts() >= 5) {
-        this.verifyError.set(this.transloco.translate('signup.verifyStep.errors.tooMany'));
-        this.resendCooldown.set(0);
-      }
-    }
-  }
-
-  // ══════════════════════════════════════════════
-  // Step 5 — Payment (Stripe-style demo)
-  // ══════════════════════════════════════════════
-  get cardDigits(): string {
-    return this.cardNumber().replace(/\D/g, '');
-  }
-
-  get cardBrand(): string {
-    const digits = this.cardDigits;
-    if (/^4/.test(digits)) return 'VISA';
-    if (/^(5[1-5]|2[2-7])/.test(digits)) return 'MASTERCARD';
-    if (/^3[47]/.test(digits)) return 'AMEX';
-    return 'CARD';
-  }
-
-  onCardNumberInput(event: Event): void {
-    const digits = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 19);
-    this.cardNumber.set(digits.replace(/(\d{4})(?=\d)/g, '$1 '));
-    this.paymentError.set('');
-  }
-
-  onCardExpiryInput(event: Event): void {
-    let digits = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 4);
-    if (digits.length >= 3) {
-      digits = `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    }
-    this.cardExpiry.set(digits);
-    this.paymentError.set('');
-  }
-
-  onCardCvcInput(event: Event): void {
-    const digits = (event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 4);
-    this.cardCvc.set(digits);
-    this.paymentError.set('');
-  }
-
-  onCardNameInput(event: Event): void {
-    this.cardName.set((event.target as HTMLInputElement).value);
-    this.paymentError.set('');
-  }
-
-  pay(): void {
-    this.paymentError.set('');
-    const digits = this.cardDigits;
-
-    if (!this.cardName().trim()) {
-      this.paymentError.set(this.transloco.translate('signup.paymentStep.errors.name'));
-      return;
-    }
-    if ((digits.length !== 15 && digits.length !== 16) || !this.luhnValid(digits)) {
-      this.paymentError.set(this.transloco.translate('signup.paymentStep.errors.card'));
-      return;
-    }
-    if (!this.expiryValid()) {
-      this.paymentError.set(this.transloco.translate('signup.paymentStep.errors.expiry'));
-      return;
-    }
-    if (this.cardCvc().length < 3) {
-      this.paymentError.set(this.transloco.translate('signup.paymentStep.errors.cvc'));
-      return;
-    }
-
-    this.paying.set(true);
-    const t = setTimeout(() => {
-      this.paying.set(false);
-      this.goToProvisioning();
-    }, 1200);
-    this.provisionTimers.push(t);
-  }
-
-  private luhnValid(digits: string): boolean {    let sum = 0;
-    let double = false;
-
-    for (let i = digits.length - 1; i >= 0; i--) {
-      let n = digits.charCodeAt(i) - 48;
-      if (double) {
-        n *= 2;
-        if (n > 9) n -= 9;
-      }
-      sum += n;
-      double = !double;
-    }
-
-    return sum % 10 === 0;
-  }
-
-  private expiryValid(): boolean {
-    const [month, year] = this.cardExpiry().split('/');
-    if (!month || !year || month.length !== 2 || year.length !== 2) return false;
-
-    const m = Number(month);
-    const y = Number(year);
-    if (!Number.isInteger(m) || !Number.isInteger(y) || m < 1 || m > 12) return false;
-
-    const now = new Date();
-    const currentYear = now.getFullYear() % 100;
-    const currentMonth = now.getMonth() + 1;
-    return y > currentYear || (y === currentYear && m >= currentMonth);
-  }
-
-  // ══════════════════════════════════════════════
-  // Step 6 — Provisioning
-  // ══════════════════════════════════════════════
-  private goToProvisioning(): void {
-    if (this.codeTimer) clearInterval(this.codeTimer);
-    if (this.resendTimer) clearInterval(this.resendTimer);
-    this.step.set(6);
-    this.provisioningStep.set(0);
-    this.runProvisioning();
-  }
-
-  private runProvisioning(): void {
-    const totalSteps = 5;
-    const stepDelay = 500;
-    const tick = () => {
-      this.provisioningStep.update((n) => n + 1);
-      if (this.provisioningStep() < totalSteps) {
-        const t = setTimeout(tick, stepDelay);
-        this.provisionTimers.push(t);
-      } else {
-        const t = setTimeout(() => this.finishProvisioning(), stepDelay);
-        this.provisionTimers.push(t);
-      }
-    };
-
-    const start = setTimeout(tick, 400);
-    this.provisionTimers.push(start);
-  }
-
-  /** Localized provisioning checklist rendered in step 6. */
-  provisionItems(): { key: string; params: Record<string, unknown> }[] {
-    return [
-      { key: 'signup.setupStep.item1', params: {} },
-      { key: 'signup.setupStep.item2', params: { subdomain: this.fullSubdomain } },
-      { key: 'signup.setupStep.item3', params: {} },
-      { key: 'signup.setupStep.item4', params: { count: this.selectedApps().length } },
-      { key: 'signup.setupStep.item5', params: {} },
-      { key: 'signup.setupStep.item6', params: {} },
-    ];
-  }
-
-  private finishProvisioning(): void {
-    const success = this.authService.signup({
-      fullName: this.fullName(),
-      companyName: this.companyName(),
-      subdomain: this.subdomain(),
-      email: this.email(),
-      country: this.country(),
-      language: this.language(),
-      companySize: this.companySize(),
-      modules: this.selectedApps(),
-    });
-
-    if (success) {
-      // The console keeps a trace of the registration with its KYC files.
-      this.platformService
-        .createSignupRequest({
-          companyName: this.companyName(),
-          subdomain: this.subdomain(),
-          email: this.email(),
-          country: this.country(),
-          taxId: this.taxId(),
-          planId: this.selectedPlan().id,
-          documents: this.documentsForRequest(),
-          decisionNote: this.transloco.translate('signup.request.autoApprovedNote'),
-        })
-        .subscribe();
-
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.error.set(this.transloco.translate('signup.error.generic'));
-      this.step.set(1);
+  private stopOtpCooldown(): void {
+    if (this.otpResendTimer) {
+      clearInterval(this.otpResendTimer);
+      this.otpResendTimer = null;
     }
   }
 
@@ -777,7 +774,7 @@ export class SignupStateService {
       }
 
       // Leave the suite URL behind: later steps live on /signup.
-      this.router.navigate(['/signup']);
+      void this.router.navigate(['/signup']);
       this.step.set(2);
       return;
     }
@@ -788,10 +785,22 @@ export class SignupStateService {
         return;
       }
       this.step.set(3);
+      if (!this.otpSent() && !this.emailVerified()) {
+        this.sendOtp();
+      }
       return;
     }
 
     if (this.step() === 3) {
+      if (!this.emailVerified()) {
+        this.error.set(this.transloco.translate('signup.verifyStep.errors.required'));
+        return;
+      }
+      this.step.set(4);
+      return;
+    }
+
+    if (this.step() === 4) {
       if (!this.docsComplete()) {
         this.error.set(this.transloco.translate('signup.docStep.errors.missing'));
         return;
@@ -800,23 +809,14 @@ export class SignupStateService {
         this.error.set(this.transloco.translate('signup.docStep.errors.taxIdMissing'));
         return;
       }
-      this.startVerification();
-      this.step.set(4);
-      return;
+      this.step.set(5);
     }
   }
 
   back(): void {
     this.error.set('');
-    if (this.step() > 1 && this.step() < 6) {
-      this.step.update((s) => s - 1);
+    if (this.step() > 1) {
+      this.step.update((step) => step - 1);
     }
-  }
-
-  /** Stops every pending timer. Called from the component's ngOnDestroy. */
-  cleanupTimers(): void {
-    if (this.codeTimer) clearInterval(this.codeTimer);
-    if (this.resendTimer) clearInterval(this.resendTimer);
-    for (const t of this.provisionTimers) clearTimeout(t);
   }
 }

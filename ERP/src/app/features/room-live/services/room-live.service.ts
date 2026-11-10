@@ -154,9 +154,10 @@ export class RoomLiveService {
   /** Private 1-to-1 threads, persisted separately from the rooms. */
   readonly dms = signal<RoomDm[]>(loadDms());
 
-  /** User of the open workspace, or an anonymous fallback for tests. */
+  /** User of the open workspace, or an anonymous fallback for backend UUIDs. */
   private currentUserId(): number {
-    return this.authService.currentUser()?.id ?? 0;
+    const id = this.authService.currentUser()?.id;
+    return typeof id === 'number' ? id : 0;
   }
 
   private loadOrSeed(): Room[] {

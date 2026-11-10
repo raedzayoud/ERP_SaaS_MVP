@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { PlatformService } from '../../services/platform.service';
+import { AdminApiService } from '../../services/admin-api.service';
 import { PlatformTenant } from '../../models/platform';
 import { getPlanById } from '../../../../core/data/plans';
 
@@ -12,11 +12,11 @@ import { getPlanById } from '../../../../core/data/plans';
   styleUrl: './admin-tenants.css',
 })
 export class AdminTenants {
-  private readonly platformService = inject(PlatformService);
+  private readonly adminApi = inject(AdminApiService);
 
   tenants = signal<PlatformTenant[]>([]);
   loading = signal(true);
-  updatingId = signal<number | null>(null);
+  updatingId = signal<string | null>(null);
 
   constructor() {
     this.load();
@@ -24,24 +24,36 @@ export class AdminTenants {
 
   load(): void {
     this.loading.set(true);
-    this.platformService.getTenants().subscribe((tenants) => {
-      this.tenants.set(tenants);
-      this.loading.set(false);
+    this.adminApi.getTenants().subscribe({
+      next: (tenants) => {
+        this.tenants.set(tenants);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
     });
   }
 
   toggleStatus(tenant: PlatformTenant): void {
+    if (tenant.status === 'trial') return;
+
     this.updatingId.set(tenant.id);
-    this.platformService.toggleStatus(tenant.id).subscribe((updated) => {
-      if (updated) {
+    const nextStatus = tenant.status === 'active' ? 'suspended' : 'active';
+    this.adminApi.updateTenantStatus(tenant.id, nextStatus).subscribe({
+      next: (updated) => {
         this.tenants.update((list) => list.map((t) => (t.id === updated.id ? updated : t)));
-      }
-      this.updatingId.set(null);
+        this.updatingId.set(null);
+      },
+      error: () => this.updatingId.set(null),
     });
   }
 
   planOf(tenant: PlatformTenant) {
     return getPlanById(tenant.planId);
+  }
+
+  trialUsage(tenant: PlatformTenant): string {
+    if (tenant.status !== 'trial' || !tenant.trialLimit) return '—';
+    return `${tenant.trialUsed ?? 0} / ${tenant.trialLimit}`;
   }
 
   statusClass(status: string): string {
