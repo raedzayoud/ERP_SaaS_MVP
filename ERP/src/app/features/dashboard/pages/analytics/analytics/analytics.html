@@ -29,7 +29,7 @@
       </div>
     } @else if (loadFailed()) {
       <div class="card">
-        <div class="state-block">
+        <div class="state-block state-block--error" role="alert">
           <p class="state-title">{{ t('analytics.loadError') }}</p>
           <p class="state-text">{{ t('analytics.loadErrorHint') }}</p>
           <button type="button" class="btn btn-secondary" (click)="load()">

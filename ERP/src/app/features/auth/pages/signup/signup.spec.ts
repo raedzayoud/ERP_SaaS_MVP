@@ -18,6 +18,7 @@ function kycFile(name: string, type: string, size = 120 * 1024): File {
 
 describe('SignupStateService', () => {
   let state: SignupStateService;
+  let translate: ReturnType<typeof vi.fn>;
   let api: {
     signupAvailability: ReturnType<typeof vi.fn>;
     sendSignupOtp: ReturnType<typeof vi.fn>;
@@ -37,13 +38,15 @@ describe('SignupStateService', () => {
       signup: vi.fn().mockReturnValue(of({ message: 'created', checkoutUrl: null })),
     };
 
+    translate = vi.fn((key: string) => key);
+
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
         { provide: AuthApiService, useValue: api },
         {
           provide: TranslocoService,
-          useValue: { translate: (key: string) => key } as unknown as TranslocoService,
+          useValue: { translate } as unknown as TranslocoService,
         },
       ],
     });
@@ -320,6 +323,7 @@ describe('SignupStateService', () => {
       }),
     );
     expect(documents.idCardRecto).toBeInstanceOf(File);
+    expect(translate).toHaveBeenCalledWith('signup.errors.emailUsed');
     expect(state.error()).toBe('signup.errors.emailUsed');
     expect(state.submitting()).toBe(false);
   });

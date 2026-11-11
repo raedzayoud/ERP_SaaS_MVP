@@ -122,7 +122,7 @@
           <p class="state-text">{{ t('common.loading') }}</p>
         </div>
       } @else if (loadFailed()) {
-        <div class="state-block">
+        <div class="state-block state-block--error" role="alert">
           <p class="state-title">{{ t('invoices.list.loadError') }}</p>
           <p class="state-text">{{ t('invoices.list.loadErrorHint') }}</p>
           <button type="button" class="btn btn-secondary" (click)="load()">

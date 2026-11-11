@@ -61,7 +61,7 @@
           <p class="state-text">{{ t('common.loading') }}</p>
         </div>
       } @else if (loadFailed()) {
-        <div class="state-block">
+        <div class="state-block state-block--error" role="alert">
           <p class="state-title">{{ t('deliveries.list.loadError') }}</p>
           <button type="button" class="btn btn-secondary" (click)="load()">
             {{ t('common.retry') }}

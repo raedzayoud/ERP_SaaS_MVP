@@ -8,7 +8,7 @@
     </div>
 
     @if (loadFailed()) {
-      <div class="admin-alert">{{ t('admin.plans.loadError') }}</div>
+      <div class="admin-alert admin-alert-error" role="alert">{{ t('admin.plans.loadError') }}</div>
     }
 
     @if (loading()) {

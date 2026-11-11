@@ -1,4 +1,4 @@
-﻿<ng-container *transloco="let t">
+<ng-container *transloco="let t">
   <div class="stock-page">
     <div class="page-header">
       <div>
@@ -56,8 +56,9 @@
           <p class="state-text">{{ t('stock.levels.loading') }}</p>
         </div>
       } @else if (loadFailed()) {
-        <div class="state-block">
-          <p class="state-title">{{ t('common.retry') }}</p>
+        <div class="state-block state-block--error" role="alert">
+          <p class="state-title">{{ t('common.errorTitle') }}</p>
+          <p class="state-text">{{ t('common.errorHint') }}</p>
           <button type="button" class="btn btn-secondary" (click)="load()">
             {{ t('common.retry') }}
           </button>

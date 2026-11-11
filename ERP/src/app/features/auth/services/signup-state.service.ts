@@ -435,7 +435,7 @@ export class SignupStateService {
       error: (error: unknown) => {
         if (this.email().trim().toLowerCase() !== email) return;
         this.otpSending.set(false);
-        this.otpError.set(this.otpErrorKey(error));
+        this.otpError.set(this.transloco.translate(this.otpErrorKey(error)));
       },
     });
   }
@@ -467,7 +467,7 @@ export class SignupStateService {
       error: (error: unknown) => {
         if (this.email().trim().toLowerCase() !== email) return;
         this.otpVerifying.set(false);
-        this.otpError.set(this.otpErrorKey(error));
+        this.otpError.set(this.transloco.translate(this.otpErrorKey(error)));
       },
     });
   }
@@ -642,7 +642,7 @@ export class SignupStateService {
       },
       error: (error: unknown) => {
         this.submitting.set(false);
-        this.error.set(this.signupErrorKey(error));
+        this.error.set(this.transloco.translate(this.signupErrorKey(error)));
       },
     });
   }

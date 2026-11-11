@@ -43,8 +43,9 @@
       </div>
     } @else if (loadFailed()) {
       <div class="card">
-        <div class="state-block">
+        <div class="state-block state-block--error" role="alert">
           <p class="state-title">{{ t('purchases.bills.detail.notFound') }}</p>
+          <p class="state-text">{{ t('common.errorHint') }}</p>
           <a routerLink="/supplier-bills" class="btn btn-primary">{{ t('common.back') }}</a>
         </div>
       </div>

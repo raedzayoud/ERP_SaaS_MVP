@@ -20,7 +20,7 @@
     </div>
   } @else if (loadFailed()) {
     <div class="card">
-      <div class="state-block">
+      <div class="state-block state-block--error" role="alert">
         <p class="state-title">{{ t('hr.form.notFound') }}</p>
         <p class="state-text">{{ t('hr.form.notFoundHint') }}</p>
         <a routerLink="/hr/employees" class="btn btn-primary">{{ t('common.back') }}</a>

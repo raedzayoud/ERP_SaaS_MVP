@@ -387,6 +387,17 @@ a:hover {
   font-weight: 600;
 }
 
+.admin-alert.admin-alert-error {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.portal-alert.portal-alert-error {
+  background: var(--danger-bg);
+  border-color: rgba(220, 53, 69, 0.25);
+  color: var(--danger);
+}
+
 /* Loading and empty states */
 .state-block {
   display: flex;
@@ -407,6 +418,36 @@ a:hover {
   font-size: 13px;
   color: var(--gray-500);
   max-width: 360px;
+}
+
+.state-block--error {
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  border-radius: var(--radius);
+  background: var(--danger-bg);
+  padding-block: 40px;
+}
+
+.state-block--error::before {
+  content: "!";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.state-block--error .state-title {
+  color: var(--danger);
+}
+
+.state-block--error .state-text {
+  color: var(--danger);
+  opacity: 0.8;
 }
 
 .spinner {

@@ -8,6 +8,8 @@
     "next": "Next",
     "previous": "Previous",
     "retry": "Try again",
+    "errorTitle": "Something went wrong",
+    "errorHint": "Please check your connection and try again.",
     "actions": "Actions",
     "save": "Save",
     "saving": "Saving…",
@@ -2799,10 +2801,24 @@
   },
   "settings": {
     "messages": {
-      "userInvalid": "Please enter a valid name and email.",
+      "companyInvalid": "Please enter a valid company name and email.",
+      "saveFailed": "Could not save the company information. Please try again.",
+      "userInvalid": "Please enter a valid name, email and password (8 characters minimum).",
       "userAdded": "User added successfully.",
       "userLimit": "User limit reached for your plan. Please upgrade.",
-      "planUpgraded": "Plan upgraded to {{plan}}!"
+      "userEmailTaken": "This email is already used by another account.",
+      "lastAdmin": "The last company administrator cannot be removed or demoted.",
+      "userFailed": "Could not complete the user action. Please try again.",
+      "userRemoved": "User removed successfully.",
+      "renewalRequested": "The user will be asked to choose a new password at their next login.",
+      "removeConfirm": "Remove this user from the workspace?",
+      "network": "Cannot reach the server. Check your connection and try again.",
+      "adminOnly": "Only the company administrator can manage these settings.",
+      "subscriptionExists": "A subscription already exists. Use the billing portal to manage it.",
+      "billingFailed": "Could not start the billing action. Please try again.",
+      "billingExempt": "Billing is not required for this account.",
+      "completePayment": "Complete payment",
+      "manageBilling": "Manage billing"
     }
   },
   "notFound": {

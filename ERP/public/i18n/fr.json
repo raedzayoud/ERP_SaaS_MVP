@@ -8,6 +8,8 @@
     "next": "Suivant",
     "previous": "Précédent",
     "retry": "Réessayer",
+    "errorTitle": "Une erreur est survenue",
+    "errorHint": "V\u00e9rifiez votre connexion et r\u00e9essayez.",
     "actions": "Actions",
     "save": "Enregistrer",
     "saving": "Enregistrement…",
@@ -2799,10 +2801,24 @@
   },
   "settings": {
     "messages": {
-      "userInvalid": "Veuillez saisir un nom et un email valides.",
-      "userAdded": "Utilisateur ajouté avec succès.",
-      "userLimit": "Limite d'utilisateurs atteinte pour votre plan. Passez à un plan supérieur.",
-      "planUpgraded": "Abonnement mis à niveau vers {{plan}} !"
+      "companyInvalid": "Veuillez saisir un nom d'entreprise et un email valides.",
+      "saveFailed": "Impossible d'enregistrer les informations de l'entreprise. Veuillez r\u00e9essayer.",
+      "userInvalid": "Veuillez saisir un nom, un email et un mot de passe valides (8 caract\u00e8res minimum).",
+      "userAdded": "Utilisateur ajout\u00e9 avec succ\u00e8s.",
+      "userLimit": "Limite d'utilisateurs atteinte pour votre plan. Passez \u00e0 un plan sup\u00e9rieur.",
+      "userEmailTaken": "Cet email est d\u00e9j\u00e0 utilis\u00e9 par un autre compte.",
+      "lastAdmin": "Le dernier administrateur de l'entreprise ne peut pas \u00eatre supprim\u00e9 ni r\u00e9trograd\u00e9.",
+      "userFailed": "Impossible de terminer l'action sur l'utilisateur. Veuillez r\u00e9essayer.",
+      "userRemoved": "Utilisateur supprim\u00e9 avec succ\u00e8s.",
+      "renewalRequested": "L'utilisateur devra choisir un nouveau mot de passe \u00e0 sa prochaine connexion.",
+      "removeConfirm": "Supprimer cet utilisateur de l'espace de travail ?",
+      "network": "Impossible de joindre le serveur. V\u00e9rifiez votre connexion et r\u00e9essayez.",
+      "adminOnly": "Seul l'administrateur de l'entreprise peut g\u00e9rer ces param\u00e8tres.",
+      "subscriptionExists": "Un abonnement existe d\u00e9j\u00e0. Utilisez le portail de facturation pour le g\u00e9rer.",
+      "billingFailed": "Impossible de lancer l'action de facturation. Veuillez r\u00e9essayer.",
+      "billingExempt": "La facturation n'est pas requise pour ce compte.",
+      "completePayment": "Finaliser le paiement",
+      "manageBilling": "G\u00e9rer la facturation"
     }
   },
   "notFound": {

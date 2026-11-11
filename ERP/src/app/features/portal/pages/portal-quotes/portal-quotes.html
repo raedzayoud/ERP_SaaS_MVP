@@ -11,7 +11,7 @@
     @if (loading()) {
       <div class="portal-empty">{{ t('common.loading') }}</div>
     } @else if (loadFailed()) {
-      <div class="portal-alert">{{ t('portal.quotes.loadError') }}</div>
+      <div class="portal-alert portal-alert-error" role="alert">{{ t('portal.quotes.loadError') }}</div>
     } @else if (quotes().length === 0) {
       <div class="portal-empty">{{ t('portal.quotes.empty') }}</div>
     } @else {

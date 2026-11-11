@@ -20,7 +20,7 @@
         <a [routerLink]="listRoute()" class="btn btn-secondary">← {{ t('common.back') }}</a>
       </div>
       <div class="card">
-        <div class="state-block">
+        <div class="state-block state-block--error" role="alert">
           <p class="state-title">{{ t('invoices.detail.notFound') }}</p>
           <p class="state-text">{{ t('invoices.detail.notFoundHint') }}</p>
           <a [routerLink]="listRoute()" class="btn btn-primary">{{ t('common.back') }}</a>
