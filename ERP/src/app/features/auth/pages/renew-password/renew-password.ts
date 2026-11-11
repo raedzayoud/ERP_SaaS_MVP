@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthService } from '../../../../core/services/auth.service';
-import { AuditService } from '../../../../core/services/audit.service';
 import { homeRouteForRole } from '../../../../core/models/role';
 
 /**
@@ -17,7 +16,6 @@ import { homeRouteForRole } from '../../../../core/models/role';
 })
 export class RenewPassword {
   private readonly authService = inject(AuthService);
-  private readonly audit = inject(AuditService);
   private readonly router = inject(Router);
 
   readonly session = this.authService.currentUser;
@@ -56,7 +54,6 @@ export class RenewPassword {
       return;
     }
 
-    this.audit.log('settings', 'update', 'Password renewed after admin request');
     this.router.navigate([homeRouteForRole(this.authService.currentUser()?.role ?? 'commercial')]);
   }
 

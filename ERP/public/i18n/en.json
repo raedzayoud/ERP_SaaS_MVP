@@ -2800,6 +2800,10 @@
     "subscribe": "Subscribe"
   },
   "settings": {
+    "activity": {
+      "title": "Recent activity",
+      "empty": "No activity recorded yet."
+    },
     "messages": {
       "companyInvalid": "Please enter a valid company name and email.",
       "saveFailed": "Could not save the company information. Please try again.",
@@ -3086,7 +3090,8 @@
     "settings": "Settings",
     "collab": "Rooms Live",
     "hr": "Human Resources",
-    "support": "Support"
+    "support": "Support",
+    "marketing": "Marketing"
   },
   "rbac": {
     "actions": {

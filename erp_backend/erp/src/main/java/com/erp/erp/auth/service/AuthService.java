@@ -1,5 +1,7 @@
 package com.erp.erp.auth.service;
 
+import com.erp.erp.activity.model.ActivityAction;
+import com.erp.erp.activity.service.ActivityService;
 import com.erp.erp.auth.dto.AuthResponse;
 import com.erp.erp.auth.dto.LoginRequest;
 import com.erp.erp.auth.dto.RefreshTokenRequest;
@@ -54,6 +56,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final KycStorageService storageService;
     private final SignupOtpService signupOtpService;
+    private final ActivityService activityService;
 
     public AuthService(
             UserRepository userRepository,
@@ -63,7 +66,8 @@ public class AuthService {
             JwtService jwtService,
             RefreshTokenService refreshTokenService,
             KycStorageService storageService,
-            SignupOtpService signupOtpService) {
+            SignupOtpService signupOtpService,
+            ActivityService activityService) {
         this.userRepository = userRepository;
         this.tenantRepository = tenantRepository;
         this.documentRepository = documentRepository;
@@ -72,6 +76,7 @@ public class AuthService {
         this.refreshTokenService = refreshTokenService;
         this.storageService = storageService;
         this.signupOtpService = signupOtpService;
+        this.activityService = activityService;
     }
 
     @Transactional
@@ -95,6 +100,18 @@ public class AuthService {
         }
 
         consumeTrial(user);
+
+        activityService.log(
+                user.getTenant() == null ? null : user.getTenant().getId(),
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getRole().getCode(),
+                "settings",
+                ActivityAction.LOGIN,
+                "user",
+                "user",
+                user.getId().toString());
 
         return tokenPair(user, refreshTokenService.create(user));
     }
@@ -241,6 +258,11 @@ public class AuthService {
     private void consumeTrial(User user) {
         if (user.getTenant() == null
                 || user.getTenant().getTenantStatus() != TenantStatus.TRIAL) {
+            return;
+        }
+
+        BillingStatus billing = user.getTenant().getBillingStatus();
+        if (billing != null && billing.allowsPlatformAccess()) {
             return;
         }
 

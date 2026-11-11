@@ -7,10 +7,12 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.erp.erp.activity.service.ActivityService;
 import com.erp.erp.auth.dto.LoginRequest;
 import com.erp.erp.auth.dto.RefreshTokenRequest;
 import com.erp.erp.auth.dto.SignupRequest;
@@ -18,6 +20,7 @@ import com.erp.erp.auth.dto.SignupResponse;
 import com.erp.erp.auth.dto.TokenPairResponse;
 import com.erp.erp.auth.exception.AuthException;
 import com.erp.erp.billing.model.BillingInterval;
+import com.erp.erp.billing.model.BillingStatus;
 import com.erp.erp.config.JwtService;
 import com.erp.erp.kyc.model.DocumentSlot;
 import com.erp.erp.kyc.repository.SignupDocumentRepository;
@@ -49,6 +52,7 @@ class AuthServiceTest {
     private final RefreshTokenService refreshTokens = mock(RefreshTokenService.class);
     private final KycStorageService storage = mock(KycStorageService.class);
     private final SignupOtpService signupOtp = mock(SignupOtpService.class);
+    private final ActivityService activityService = mock(ActivityService.class);
 
     private final AuthService service = new AuthService(
             users,
@@ -58,7 +62,8 @@ class AuthServiceTest {
             jwtService,
             refreshTokens,
             storage,
-            signupOtp);
+            signupOtp,
+            activityService);
 
     @Test
     void loginReturnsAccessAndRefreshTokens() {
@@ -129,6 +134,23 @@ class AuthServiceTest {
 
         assertEquals(403, ex.getStatus());
         assertEquals("trial limit reached; subscribe to continue", ex.getMessage());
+    }
+
+    @Test
+    void loginDoesNotConsumeTheTrialForAPaidTenant() {
+        User user = trialUser(30);
+        user.getTenant().setBillingStatus(BillingStatus.ACTIVE);
+
+        when(users.findByEmail("owner@acme.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("secret123", "hash")).thenReturn(true);
+        when(jwtService.generateToken(user)).thenReturn("jwt-token");
+        when(jwtService.getExpirationSeconds()).thenReturn(900L);
+        when(refreshTokens.create(user)).thenReturn("refresh-token");
+
+        service.login(new LoginRequest("owner@acme.com", "secret123"));
+
+        assertEquals(30, user.getTenant().getTrialUsed());
+        verify(tenants, never()).findByIdForUpdate(any());
     }
 
     @Test

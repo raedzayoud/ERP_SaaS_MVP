@@ -28,7 +28,8 @@ export class MainLayout {
 
   readonly trial = computed(() => {
     const tenant = this.tenantService.currentTenant();
-    if (tenant?.tenantStatus !== 'TRIAL') return null;
+    if (!tenant || tenant.tenantStatus !== 'TRIAL') return null;
+    if (['ACTIVE', 'EXEMPT'].includes(tenant.billingStatus ?? '')) return null;
 
     const limit = tenant.trialLimit ?? 0;
     const used = tenant.trialUsed ?? 0;

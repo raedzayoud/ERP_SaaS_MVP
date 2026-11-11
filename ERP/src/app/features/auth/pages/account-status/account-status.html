@@ -40,7 +40,7 @@
               {{ t('accountStatus.tenant.' + tenantStatus()) }}
             </span>
           </div>
-          @if (tenantStatus() === 'TRIAL') {
+          @if (tenantStatus() === 'TRIAL' && !paid()) {
             <div class="status-row">
               <span class="status-label">{{ t('accountStatus.trialLabel') }}</span>
               <span class="status-value">
@@ -75,7 +75,7 @@
           <div class="status-message bad">{{ t('accountStatus.suspendedText') }}</div>
         } @else if (rejected()) {
           <div class="status-message bad">{{ t('accountStatus.rejectedText') }}</div>
-        } @else if (trialEnded() && !paid()) {
+        } @else if (trialEnded()) {
           <div class="status-message warn">{{ t('accountStatus.trialEndedText') }}</div>
         } @else if (trialActive()) {
           <div class="status-message ok">

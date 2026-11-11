@@ -176,16 +176,18 @@ export class AuthService {
     const tenant = this.tenantService.currentTenant();
     if (!tenant) return false;
     if (tenant.tenantStatus === 'SUSPENDED') return false;
+    if (tenant.kycStatus === 'REJECTED') return false;
 
+    const paid = ['ACTIVE', 'EXEMPT'].includes(tenant.billingStatus ?? '');
     const trialActive =
       tenant.tenantStatus === 'TRIAL' &&
       (tenant.trialLimit ?? 0) > 0 &&
       (tenant.trialUsed ?? 0) < (tenant.trialLimit ?? 0);
-    if (trialActive) return true;
+    const trialAccess = tenant.tenantStatus === 'TRIAL' && (trialActive || paid);
+    if (trialAccess) return true;
 
     const kycOk = !tenant.kycStatus || tenant.kycStatus === 'APPROVED';
-    const billingOk =
-      !tenant.billingStatus || ['ACTIVE', 'EXEMPT'].includes(tenant.billingStatus);
+    const billingOk = !tenant.billingStatus || paid;
     return kycOk && billingOk;
   }
 

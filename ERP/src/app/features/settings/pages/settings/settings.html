@@ -334,29 +334,46 @@
       }
 
       <!-- Recent activity -->
-      <h2 class="section-title activity-title">Recent activity</h2>
-      <table class="table audit-table">
-        <thead>
-          <tr>
-            <th>When</th>
-            <th>Who</th>
-            <th>Module</th>
-            <th>Action</th>
-            <th>Detail</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (entry of auditEntries(); track entry.id) {
+      <h2 class="section-title activity-title">{{ t('settings.activity.title') }}</h2>
+      @if (activityLoading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else if (activityLoadFailed()) {
+        <div class="state-block state-block--error" role="alert">
+          <p class="state-title">{{ t('common.errorTitle') }}</p>
+          <p class="state-text">{{ t('common.errorHint') }}</p>
+          <button type="button" class="btn btn-secondary" (click)="loadActivity()">
+            {{ t('common.retry') }}
+          </button>
+        </div>
+      } @else if (activity().length === 0) {
+        <p class="text-muted">{{ t('settings.activity.empty') }}</p>
+      } @else {
+        <table class="table audit-table">
+          <thead>
             <tr>
-              <td class="text-muted">{{ entry.at | date: 'MM-dd HH:mm' }}</td>
-              <td>{{ entry.userName }}</td>
-              <td>{{ t('modules.' + entry.module) }}</td>
-              <td>{{ t('rbac.audit.actions.' + entry.action) }}</td>
-              <td class="text-muted">{{ entry.detail }}</td>
+              <th>When</th>
+              <th>Who</th>
+              <th>Module</th>
+              <th>Action</th>
+              <th>Detail</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (entry of activity(); track entry.id) {
+              <tr>
+                <td class="text-muted">{{ entry.at | date: 'MM-dd HH:mm' }}</td>
+                <td>{{ entry.userName }}</td>
+                <td>{{ t('modules.' + entry.module) }}</td>
+                <td>{{ t('rbac.audit.actions.' + entry.action) }}</td>
+                <td class="text-muted">{{ entry.detail ?? '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
   }
 

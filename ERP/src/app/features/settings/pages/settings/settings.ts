@@ -6,7 +6,6 @@ import { RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { AuditService } from '../../../../core/services/audit.service';
 import { BillingApiService } from '../../../../core/services/billing-api.service';
 import { getPlanById, getAllPlans } from '../../../../core/data/plans';
 import { BillingInterval } from '../../../../core/models/auth';
@@ -15,7 +14,9 @@ import { Plan } from '../../../../core/models/plan';
 import { COUNTRIES, LANGUAGES, COMPANY_SIZES } from '../../../../core/data/countries';
 import { ASSIGNEE_ROLES, ROLE_INFO, Role, roleLabelKey } from '../../../../core/models/role';
 import { CompanySettingsRequest, TeamMember } from '../../models/settings';
+import { ActivityEntry } from '../../models/activity';
 import { SettingsApiService } from '../../services/settings-api.service';
+import { ActivityApiService } from '../../services/activity-api.service';
 
 type SettingsTab = 'company' | 'users' | 'roles' | 'subscription';
 type ErrorContext = 'save' | 'user' | 'billing';
@@ -41,8 +42,8 @@ export class SettingsComponent {
   private tenantService = inject(TenantService);
   private authService = inject(AuthService);
   private transloco = inject(TranslocoService);
-  private audit = inject(AuditService);
   private api = inject(SettingsApiService);
+  private activityApi = inject(ActivityApiService);
   private billingApi = inject(BillingApiService);
   private destroyRef = inject(DestroyRef);
 
@@ -87,7 +88,9 @@ export class SettingsComponent {
   readonly roleInfo = ROLE_INFO.filter((r) => ASSIGNEE_ROLES.includes(r.role));
 
   // ── Recent activity (audit trail) ───────────
-  auditEntries = computed(() => this.audit.recent(8));
+  activity = signal<ActivityEntry[]>([]);
+  activityLoading = signal(true);
+  activityLoadFailed = signal(false);
 
   roleLabel(role: Role): string {
     return roleLabelKey(role);
@@ -136,6 +139,9 @@ export class SettingsComponent {
     this.activeTab.set(tab);
     this.companySaved.set(false);
     this.billingError.set('');
+    if (tab === 'users') {
+      this.loadActivity();
+    }
   }
 
   // ── Company actions ──────────────────────────
@@ -223,6 +229,24 @@ export class SettingsComponent {
       });
   }
 
+  loadActivity(): void {
+    this.activityLoading.set(true);
+    this.activityLoadFailed.set(false);
+    this.activityApi
+      .recent(8)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (entries) => {
+          this.activity.set(entries);
+          this.activityLoading.set(false);
+        },
+        error: () => {
+          this.activityLoadFailed.set(true);
+          this.activityLoading.set(false);
+        },
+      });
+  }
+
   toggleAddUser(): void {
     this.showAddUser.update((v) => !v);
     this.userError.set('');
@@ -258,6 +282,7 @@ export class SettingsComponent {
           this.userSuccess.set('settings.messages.userAdded');
           this.showAddUser.set(false);
           this.resetAddUserForm();
+          this.loadActivity();
           setTimeout(() => this.userSuccess.set(''), 3000);
         },
         error: (error: unknown) => this.userError.set(this.errorKey(error, 'user')),
@@ -271,7 +296,10 @@ export class SettingsComponent {
       .updateUser(user.id, { active })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (updated) => this.replaceUser(updated),
+        next: (updated) => {
+          this.replaceUser(updated);
+          this.loadActivity();
+        },
         error: (error: unknown) => this.userError.set(this.errorKey(error, 'user')),
       });
   }
@@ -286,6 +314,7 @@ export class SettingsComponent {
         next: (updated) => {
           this.replaceUser(updated);
           this.userSuccess.set('settings.messages.renewalRequested');
+          this.loadActivity();
           setTimeout(() => this.userSuccess.set(''), 3000);
         },
         error: (error: unknown) => this.userError.set(this.errorKey(error, 'user')),
@@ -314,6 +343,7 @@ export class SettingsComponent {
         next: () => {
           this.users.update((list) => list.filter((u) => u.id !== user.id));
           this.userSuccess.set('settings.messages.userRemoved');
+          this.loadActivity();
           setTimeout(() => this.userSuccess.set(''), 3000);
         },
         error: (error: unknown) => this.userError.set(this.errorKey(error, 'user')),

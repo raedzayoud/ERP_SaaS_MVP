@@ -2800,6 +2800,10 @@
     "subscribe": "S’abonner"
   },
   "settings": {
+    "activity": {
+      "title": "Activité récente",
+      "empty": "Aucune activité enregistrée pour le moment."
+    },
     "messages": {
       "companyInvalid": "Veuillez saisir un nom d'entreprise et un email valides.",
       "saveFailed": "Impossible d'enregistrer les informations de l'entreprise. Veuillez r\u00e9essayer.",
@@ -3085,7 +3089,8 @@
     "settings": "Réglages",
     "collab": "Salons live",
     "hr": "Ressources humaines",
-    "support": "Support"
+    "support": "Support",
+    "marketing": "Marketing"
   },
   "rbac": {
     "actions": {

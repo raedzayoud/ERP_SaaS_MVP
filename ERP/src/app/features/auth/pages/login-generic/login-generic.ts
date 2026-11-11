@@ -3,7 +3,6 @@ import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthService } from '../../../../core/services/auth.service';
-import { AuditService } from '../../../../core/services/audit.service';
 
 @Component({
   selector: 'app-login-generic',
@@ -13,7 +12,6 @@ import { AuditService } from '../../../../core/services/audit.service';
 })
 export class LoginGeneric {
   private readonly authService = inject(AuthService);
-  private readonly audit = inject(AuditService);
   private readonly router = inject(Router);
 
   email = signal('');
@@ -37,7 +35,6 @@ export class LoginGeneric {
     this.authService.login(email, this.password()).subscribe({
       next: (user) => {
         this.loading.set(false);
-        this.audit.log('settings', 'login', `${user.name} (${user.email})`);
         void this.router.navigate([
           user.mustRenewPassword ? '/renew-password' : this.authService.homeRouteForCurrentUser(),
         ]);

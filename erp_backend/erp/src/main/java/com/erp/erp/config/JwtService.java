@@ -45,6 +45,7 @@ public class JwtService {
                 .expiresAt(now.plusMillis(expirationMs))
                 .claims(claimMap -> {
                     claimMap.put("userId", user.getId().toString());
+                    claimMap.put("name", user.getFullName());
                     claimMap.put("role", user.getRole().getCode());
                     claimMap.put("permissions", RolePermissions.of(user.getRole()));
                     claimMap.put("kycStatus", kycStatus(user));

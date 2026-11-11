@@ -132,18 +132,24 @@ describe('AccountStatusComponent', () => {
     tenant.set({
       companyName: 'Acme',
       planId: 'starter',
+      tenantStatus: 'TRIAL',
       kycStatus: 'PENDING',
       billingStatus: 'ACTIVE',
       billingInterval: 'MONTHLY',
+      trialLimit: 30,
+      trialUsed: 8,
     });
 
     fixture.detectChanges();
 
+    expect(fixture.componentInstance.trialActive()).toBe(false);
+    expect(fixture.componentInstance.trialEnded()).toBe(false);
     expect(fixture.componentInstance.awaitingApproval()).toBe(true);
     expect(fixture.componentInstance.paymentRequired()).toBe(false);
     expect(fixture.nativeElement.textContent).toContain(
       'Payment successful. Wait for admin approval.',
     );
+    expect(fixture.nativeElement.textContent).not.toContain('Trial mode');
     expect(fixture.nativeElement.textContent).not.toContain('Retry payment');
   });
 

@@ -88,7 +88,7 @@ public class SecurityConfig {
      * - the role code as-is (e.g. "super-admin")
      * - "kyc:" + kycStatus (e.g. "kyc:pending"), defaulting to approved.
      */
-    private Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
+    static Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
         return jwt -> {
             List<GrantedAuthority> authorities = new ArrayList<>();
 
@@ -112,12 +112,17 @@ public class SecurityConfig {
                     tenantStatus == null || !"suspended".equalsIgnoreCase(tenantStatus);
 
             boolean kycApproved = "approved".equalsIgnoreCase(normalized);
+            boolean kycRejected = "rejected".equalsIgnoreCase(normalized);
             boolean billingOk = "active".equalsIgnoreCase(normalizedBilling)
                     || "exempt".equalsIgnoreCase(normalizedBilling);
             boolean trialActive = "trial".equalsIgnoreCase(tenantStatus)
+                    && !kycRejected
                     && intClaim(jwt, "trialLimit") > 0
                     && intClaim(jwt, "trialUsed") < intClaim(jwt, "trialLimit");
-            if ((kycApproved && billingOk && tenantActive) || trialActive) {
+            boolean paidTrial = "trial".equalsIgnoreCase(tenantStatus)
+                    && !kycRejected
+                    && billingOk;
+            if ((kycApproved && billingOk && tenantActive) || trialActive || paidTrial) {
                 authorities.add(new SimpleGrantedAuthority("access:full"));
             }
 
@@ -136,10 +141,19 @@ public class SecurityConfig {
         String message = "access denied";
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
-            boolean trialExhausted = authentication instanceof JwtAuthenticationToken token
-                    && "trial".equalsIgnoreCase(token.getToken().getClaimAsString("tenantStatus"))
-                    && intClaim(token.getToken(), "trialUsed")
-                            >= intClaim(token.getToken(), "trialLimit");
+            boolean billingOk = false;
+            boolean trialExhausted = false;
+            if (authentication instanceof JwtAuthenticationToken token) {
+                String billing = token.getToken().getClaimAsString("billingStatus");
+                billingOk = billing == null || billing.isBlank()
+                        || "active".equalsIgnoreCase(billing)
+                        || "exempt".equalsIgnoreCase(billing);
+                trialExhausted = "trial".equalsIgnoreCase(
+                                token.getToken().getClaimAsString("tenantStatus"))
+                        && !billingOk
+                        && intClaim(token.getToken(), "trialUsed")
+                                >= intClaim(token.getToken(), "trialLimit");
+            }
             boolean pending = authentication.getAuthorities().stream()
                     .anyMatch(authority -> "kyc:pending".equals(authority.getAuthority()));
             boolean rejected = authentication.getAuthorities().stream()

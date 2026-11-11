@@ -31,14 +31,19 @@ export class AccountStatusComponent implements OnInit {
   readonly billingStatus = computed(() => this.tenant()?.billingStatus ?? 'NONE');
   readonly trialLimit = computed(() => this.tenant()?.trialLimit ?? 0);
   readonly trialUsed = computed(() => this.tenant()?.trialUsed ?? 0);
+  readonly paid = computed(() =>
+    ['ACTIVE', 'EXEMPT'].includes(this.billingStatus()),
+  );
   readonly trialActive = computed(
     () =>
+      !this.paid() &&
       this.tenantStatus() === 'TRIAL' &&
       this.trialLimit() > 0 &&
       this.trialUsed() < this.trialLimit(),
   );
   readonly trialEnded = computed(
     () =>
+      !this.paid() &&
       this.tenantStatus() === 'TRIAL' &&
       this.trialLimit() > 0 &&
       this.trialUsed() >= this.trialLimit(),
@@ -53,9 +58,6 @@ export class AccountStatusComponent implements OnInit {
   );
   readonly paymentPending = computed(() => this.billingStatus() === 'PENDING');
   readonly pastDue = computed(() => this.billingStatus() === 'PAST_DUE');
-  readonly paid = computed(() =>
-    ['ACTIVE', 'EXEMPT'].includes(this.billingStatus()),
-  );
   readonly awaitingApproval = computed(
     () => this.paid() && this.kycStatus() === 'PENDING',
   );

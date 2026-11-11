@@ -180,6 +180,74 @@ describe('AuthService', () => {
     expect(auth.homeRouteForCurrentUser()).toBe('/account-status');
   });
 
+  it('allows a paid tenant whose trial is exhausted', () => {
+    const auth = TestBed.inject(AuthService);
+
+    auth.login('owner@acme-test.com', 'secret').subscribe();
+    http.expectOne(`${environment.apiUrl}/auth/login`).flush(TOKENS);
+    http.expectOne(`${environment.apiUrl}/auth/me`).flush(
+      meResponse({
+        tenant: {
+          id: 'tenant-1',
+          companyName: 'Acme Test',
+          email: 'owner@acme-test.com',
+          subdomain: 'acme-test',
+          country: 'TN',
+          language: 'en',
+          companySize: '1-5',
+          planId: 'starter',
+          enabledModules: ['dashboard'],
+          currency: 'USD',
+          taxId: '',
+          address: '',
+          createdAt: '2026-01-01T00:00:00Z',
+          tenantStatus: 'TRIAL',
+          kycStatus: 'PENDING',
+          billingStatus: 'ACTIVE',
+          trialLimit: 30,
+          trialUsed: 30,
+        },
+      }),
+    );
+
+    expect(auth.hasAccountAccess()).toBe(true);
+    expect(auth.homeRouteForCurrentUser()).toBe('/dashboard');
+  });
+
+  it('denies workspace access to a rejected trial tenant', () => {
+    const auth = TestBed.inject(AuthService);
+
+    auth.login('owner@acme-test.com', 'secret').subscribe();
+    http.expectOne(`${environment.apiUrl}/auth/login`).flush(TOKENS);
+    http.expectOne(`${environment.apiUrl}/auth/me`).flush(
+      meResponse({
+        tenant: {
+          id: 'tenant-1',
+          companyName: 'Acme Test',
+          email: 'owner@acme-test.com',
+          subdomain: 'acme-test',
+          country: 'TN',
+          language: 'en',
+          companySize: '1-5',
+          planId: 'starter',
+          enabledModules: ['dashboard'],
+          currency: 'USD',
+          taxId: '',
+          address: '',
+          createdAt: '2026-01-01T00:00:00Z',
+          tenantStatus: 'TRIAL',
+          kycStatus: 'REJECTED',
+          billingStatus: 'NONE',
+          trialLimit: 30,
+          trialUsed: 5,
+        },
+      }),
+    );
+
+    expect(auth.hasAccountAccess()).toBe(false);
+    expect(auth.homeRouteForCurrentUser()).toBe('/account-status');
+  });
+
   it('restores a trial session from session storage', () => {
     sessionStorage.setItem('erp_refresh_token', 'saved-trial-refresh');
     const auth = TestBed.inject(AuthService);
