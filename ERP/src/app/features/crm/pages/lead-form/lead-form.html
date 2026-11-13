@@ -49,8 +49,15 @@
             <input id="phone" type="tel" class="form-control" formControlName="phone" />
           </div>
 
+          @if (hasContactError()) {
+            <p class="field-error">{{ t('crm.errors.noContactInfo') }}</p>
+          }
+
           <div class="form-group">
-            <label class="form-label" for="source">{{ t('crm.leads.form.source') }}</label>
+            <label class="form-label" for="source">
+              {{ t('crm.leads.form.source') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
             <select id="source" class="form-control" formControlName="source">
               @for (source of sources; track source) {
                 <option [value]="source">{{ t(sourceKey(source)) }}</option>

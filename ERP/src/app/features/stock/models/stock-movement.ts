@@ -20,6 +20,13 @@ export interface StockMovementRow extends StockMovement {
   warehouseName: string;
 }
 
+/** One product that cannot be taken out of the stock. */
+export interface AvailabilityIssue {
+  productId: string;
+  required: number;
+  available: number;
+}
+
 export interface StockLevelRow {
   productId: string;
   sku: string;

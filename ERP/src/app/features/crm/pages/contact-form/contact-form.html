@@ -29,8 +29,8 @@
       </div>
     } @else {
       <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-        @if (submitFailed()) {
-          <div class="alert alert-danger" role="alert">{{ t('contacts.form.saveError') }}</div>
+        @if (errorKey(); as key) {
+          <div class="alert alert-danger" role="alert">{{ t(key) }}</div>
         }
 
         <fieldset class="form-section">
@@ -102,7 +102,10 @@
 
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label" for="email">{{ t('contacts.form.email') }}</label>
+              <label class="form-label" for="email">
+                {{ t('contacts.form.email') }}
+                <span class="required" aria-hidden="true">*</span>
+              </label>
               <input
                 id="email"
                 type="email"
@@ -113,7 +116,13 @@
                 [attr.aria-describedby]="isInvalid('email') ? 'email-error' : null"
               />
               @if (isInvalid('email')) {
-                <p class="field-error" id="email-error">{{ t('contacts.form.emailInvalid') }}</p>
+                <p class="field-error" id="email-error">
+                  @if (hasError('email', 'required')) {
+                    {{ t('contacts.form.emailRequired') }}
+                  } @else {
+                    {{ t('contacts.form.emailInvalid') }}
+                  }
+                </p>
               }
             </div>
 

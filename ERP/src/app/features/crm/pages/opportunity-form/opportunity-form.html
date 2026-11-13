@@ -50,7 +50,10 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="stage">{{ t('crm.opportunities.form.stage') }}</label>
+            <label class="form-label" for="stage">
+              {{ t('crm.opportunities.form.stage') }}
+              <span class="required" aria-hidden="true">*</span>
+            </label>
             <select id="stage" class="form-control" formControlName="stage">
               @for (stage of stages; track stage) {
                 <option [value]="stage">{{ t(stageKey(stage)) }}</option>
@@ -75,6 +78,9 @@
               <span class="required" aria-hidden="true">*</span>
             </label>
             <input id="expectedCloseDate" type="date" class="form-control" formControlName="expectedCloseDate" />
+            @if (isInvalid('expectedCloseDate')) {
+              <p class="field-error">{{ t('crm.errors.dateRequired') }}</p>
+            }
           </div>
 
           <div class="form-group form-group-wide">

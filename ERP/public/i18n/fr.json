@@ -283,6 +283,7 @@
       "sectionContact": "Coordonnées",
       "email": "E-mail",
       "emailInvalid": "Saisissez une adresse e-mail valide.",
+      "emailRequired": "Une adresse email est obligatoire.",
       "phone": "Téléphone",
       "tags": "Étiquettes",
       "tagsHint": "Indiquez s'il s'agit d'un client, d'un fournisseur ou des deux.",
@@ -1025,7 +1026,9 @@
       "inactiveWarehouse": "Cet entrepôt est archivé.",
       "sameWarehouse": "Le départ et la destination doivent être différents.",
       "missingReason": "Un motif est obligatoire.",
-      "insufficientStock": "Stock insuffisant dans l’entrepôt sélectionné."
+      "insufficientStock": "Stock insuffisant dans l’entrepôt sélectionné.",
+      "invalidType": "Ce type de mouvement n'existe pas.",
+      "invalidDirection": "Ce sens de mouvement n'existe pas."
     }
   },
   "payments": {
@@ -2808,7 +2811,7 @@
       "companyInvalid": "Veuillez saisir un nom d'entreprise et un email valides.",
       "saveFailed": "Impossible d'enregistrer les informations de l'entreprise. Veuillez r\u00e9essayer.",
       "userInvalid": "Veuillez saisir un nom, un email et un mot de passe valides (8 caract\u00e8res minimum).",
-      "userAdded": "Utilisateur ajout\u00e9 avec succ\u00e8s.",
+      "credentialsSent": "Les identifiants de connexion ont \u00e9t\u00e9 envoy\u00e9s par email au nouveau membre.",
       "userLimit": "Limite d'utilisateurs atteinte pour votre plan. Passez \u00e0 un plan sup\u00e9rieur.",
       "userEmailTaken": "Cet email est d\u00e9j\u00e0 utilis\u00e9 par un autre compte.",
       "lastAdmin": "Le dernier administrateur de l'entreprise ne peut pas \u00eatre supprim\u00e9 ni r\u00e9trograd\u00e9.",
@@ -3077,7 +3080,13 @@
       "invalidKind": "Ce type de contact n'existe pas.",
       "invalidSource": "Cette source de piste n'existe pas.",
       "invalidStatus": "Ce statut de piste n'existe pas.",
-      "invalidParent": "Un contact ne peut pas être sa propre société."
+      "invalidParent": "Un contact ne peut pas être sa propre société.",
+      "duplicateContact": "Un contact avec cet email ou ce numéro fiscal existe déjà.",
+      "duplicateLead": "Une piste avec cet email, ou avec ce nom et cette société, existe déjà.",
+      "duplicateOpportunity": "Une opportunité avec ce nom existe déjà pour ce client.",
+      "noEmail": "Une adresse email est obligatoire.",
+      "noContactInfo": "Veuillez saisir un email ou un numéro de téléphone.",
+      "dateRequired": "Veuillez choisir la date de clôture prévue."
     }
   },
   "modules": {

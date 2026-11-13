@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -20,13 +21,15 @@ import com.erp.erp.user.repository.UserRepository;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.mail.MailSendException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 class SettingsUserServiceTest {
 
     private final UserRepository users = mock(UserRepository.class);
     private final PasswordEncoder encoder = mock(PasswordEncoder.class);
-    private final SettingsUserService service = new SettingsUserService(users, encoder);
+    private final TeamMemberMailService mail = mock(TeamMemberMailService.class);
+    private final SettingsUserService service = new SettingsUserService(users, encoder, mail);
 
     @Test
     void createsATeamMemberWithHashedPassword() {
@@ -45,6 +48,28 @@ class SettingsUserServiceTest {
         assertTrue(response.active());
         assertTrue(response.mustRenewPassword());
         verify(encoder).encode("secret123");
+    }
+
+    @Test
+    void sendsTheLoginDetailsByEmail() {
+        Tenant tenant = tenant("starter");
+        when(users.save(any(User.class))).thenAnswer(call -> call.getArgument(0));
+
+        service.create(tenant, request("commercial"));
+
+        verify(mail).sendCredentials("ada@example.com", "secret123", tenant.getCompanyName());
+    }
+
+    @Test
+    void failsWhenTheCredentialsEmailCannotBeSent() {
+        Tenant tenant = tenant("starter");
+        when(users.save(any(User.class))).thenAnswer(call -> call.getArgument(0));
+        doThrow(new MailSendException("smtp down")).when(mail).sendCredentials(any(), any(), any());
+        AuthException ex = assertThrows(
+                AuthException.class, () -> service.create(tenant, request("commercial")));
+
+        assertEquals(502, ex.getStatus());
+        assertEquals("could not send the credentials email", ex.getMessage());
     }
 
     @Test
@@ -124,6 +149,7 @@ class SettingsUserServiceTest {
         Tenant tenant = new Tenant();
         tenant.setId(UUID.randomUUID());
         tenant.setPlanId(planId);
+        tenant.setCompanyName("Acme");
         return tenant;
     }
 

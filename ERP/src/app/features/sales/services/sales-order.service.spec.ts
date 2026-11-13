@@ -6,6 +6,8 @@ import { DeliveryNoteService } from './delivery-note.service';
 import { MAIN_WAREHOUSE_ID } from '../../stock/models/warehouse';
 import { InvoicingSettingsService } from '../../invoicing/services/invoicing-settings.service';
 import { partnerServiceStub } from '../../crm/services/partner-test-stub';
+import { stockServiceStub } from '../../stock/services/stock-test-stub';
+import { productServiceStub } from '../../products/services/product-test-stub';
 
 const QUOTE_POSTED = 'c3000000-0000-4000-8000-000000000008';
 const QUOTE_DRAFT = 'c3000000-0000-4000-8000-000000000007';
@@ -18,7 +20,7 @@ describe('SalesOrderService quote conversion', () => {
   let stock: StockService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [partnerServiceStub()] });
+    TestBed.configureTestingModule({ providers: [partnerServiceStub(), stockServiceStub(), productServiceStub()] });
     service = TestBed.inject(SalesOrderService);
     stock = TestBed.inject(StockService);
   });
@@ -102,7 +104,7 @@ describe('SalesOrderService delivery and invoice guards', () => {
   let invoicingSettings: InvoicingSettingsService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [partnerServiceStub()] });
+    TestBed.configureTestingModule({ providers: [partnerServiceStub(), stockServiceStub(), productServiceStub()] });
     service = TestBed.inject(SalesOrderService);
     deliveries = TestBed.inject(DeliveryNoteService);
     invoicingSettings = TestBed.inject(InvoicingSettingsService);

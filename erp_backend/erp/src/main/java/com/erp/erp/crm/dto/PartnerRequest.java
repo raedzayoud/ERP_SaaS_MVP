@@ -11,7 +11,7 @@ public record PartnerRequest(
         Boolean isCustomer,
         Boolean isSupplier,
         String taxId,
-        @Email String email,
+        @NotBlank @Email String email,
         String phone,
         String jobTitle,
         PartnerAddress address,

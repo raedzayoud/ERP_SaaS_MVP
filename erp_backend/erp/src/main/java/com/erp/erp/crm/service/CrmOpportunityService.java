@@ -49,6 +49,7 @@ public class CrmOpportunityService {
         opportunity.setOriginLeadId(null);
         opportunity.setCurrency(currency(request.currency(), tenant));
         apply(opportunity, request, tenant);
+        guardDuplicate(opportunity, null);
         return OpportunityResponse.from(opportunities.save(opportunity));
     }
 
@@ -59,6 +60,7 @@ public class CrmOpportunityService {
             throw new AuthException(409, "closed opportunity cannot be changed", "stageClosed");
         }
         apply(opportunity, request, tenant);
+        guardDuplicate(opportunity, id);
         opportunity.setUpdatedAt(Instant.now());
         return OpportunityResponse.from(opportunities.save(opportunity));
     }
@@ -92,6 +94,26 @@ public class CrmOpportunityService {
         opportunity.setAmount(amount(request.amount()));
         opportunity.setExpectedCloseDate(request.expectedCloseDate());
         opportunity.setNotes(request.notes() == null ? "" : request.notes().trim());
+    }
+
+    /** Refuses a second deal with the same name for the same customer. */
+    private void guardDuplicate(CrmOpportunity opportunity, UUID currentId) {
+        UUID tenantId = opportunity.getTenant().getId();
+        UUID customerId = opportunity.getCustomerId();
+        String name = opportunity.getName();
+
+        boolean exists =
+                currentId == null
+                        ? opportunities.existsByTenantIdAndCustomerIdAndNameIgnoreCase(
+                                tenantId, customerId, name)
+                        : opportunities.existsByTenantIdAndCustomerIdAndNameIgnoreCaseAndIdNot(
+                                tenantId, customerId, name, currentId);
+        if (exists) {
+            throw new AuthException(
+                    409,
+                    "an opportunity with this name already exists for this customer",
+                    "duplicateOpportunity");
+        }
     }
 
     private UUID customerId(String value, Tenant tenant) {

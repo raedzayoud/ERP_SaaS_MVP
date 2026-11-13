@@ -283,6 +283,7 @@
       "sectionContact": "Contact details",
       "email": "Email",
       "emailInvalid": "Enter a valid email address.",
+      "emailRequired": "An email address is required.",
       "phone": "Phone",
       "tags": "Tags",
       "tagsHint": "Choose whether this contact is a customer, a supplier, or both.",
@@ -1025,7 +1026,9 @@
       "inactiveWarehouse": "This warehouse is archived.",
       "sameWarehouse": "Source and destination must be different.",
       "missingReason": "A reason is required.",
-      "insufficientStock": "Not enough stock in the selected warehouse."
+      "insufficientStock": "Not enough stock in the selected warehouse.",
+      "invalidType": "This movement type does not exist.",
+      "invalidDirection": "This movement direction does not exist."
     }
   },
   "payments": {
@@ -2808,7 +2811,7 @@
       "companyInvalid": "Please enter a valid company name and email.",
       "saveFailed": "Could not save the company information. Please try again.",
       "userInvalid": "Please enter a valid name, email and password (8 characters minimum).",
-      "userAdded": "User added successfully.",
+      "credentialsSent": "The login details were emailed to the new member.",
       "userLimit": "User limit reached for your plan. Please upgrade.",
       "userEmailTaken": "This email is already used by another account.",
       "lastAdmin": "The last company administrator cannot be removed or demoted.",
@@ -3078,7 +3081,13 @@
       "invalidKind": "This contact type does not exist.",
       "invalidSource": "This lead source does not exist.",
       "invalidStatus": "This lead status does not exist.",
-      "invalidParent": "A contact cannot be its own company."
+      "invalidParent": "A contact cannot be its own company.",
+      "duplicateContact": "A contact with this email or tax number already exists.",
+      "duplicateLead": "A lead with this email, or with this name and company, already exists.",
+      "duplicateOpportunity": "An opportunity with this name already exists for this customer.",
+      "noEmail": "An email address is required.",
+      "noContactInfo": "Please enter an email address or a phone number.",
+      "dateRequired": "Please pick the expected close date."
     }
   },
   "modules": {

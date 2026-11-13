@@ -4,6 +4,7 @@ import { ReceiveInput } from '../models/purchase-order';
 import { PurchaseService } from './purchase.service';
 import { SupplierBillService } from './supplier-bill.service';
 import { partnerServiceStub } from '../../crm/services/partner-test-stub';
+import { stockServiceStub } from '../../stock/services/stock-test-stub';
 
 const ORDER_NO_RECEPTION = 'd4000000-0000-4000-8000-000000000002';
 const ORDER_CANCELLED = 'd4000000-0000-4000-8000-000000000006';
@@ -22,7 +23,7 @@ describe('SupplierBillService', () => {
   let orders: PurchaseService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [partnerServiceStub()] });
+    TestBed.configureTestingModule({ providers: [partnerServiceStub(), stockServiceStub()] });
     service = TestBed.inject(SupplierBillService);
     orders = TestBed.inject(PurchaseService);
   });

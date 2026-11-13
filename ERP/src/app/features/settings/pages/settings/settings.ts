@@ -279,7 +279,7 @@ export class SettingsComponent {
       .subscribe({
         next: (user) => {
           this.users.update((list) => [...list, user]);
-          this.userSuccess.set('settings.messages.userAdded');
+          this.userSuccess.set('settings.messages.credentialsSent');
           this.showAddUser.set(false);
           this.resetAddUserForm();
           this.loadActivity();

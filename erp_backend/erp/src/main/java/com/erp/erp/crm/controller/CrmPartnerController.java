@@ -3,7 +3,7 @@ package com.erp.erp.crm.controller;
 import com.erp.erp.common.security.CurrentTenantService;
 import com.erp.erp.crm.dto.InteractionRequest;
 import com.erp.erp.crm.dto.InteractionResponse;
-import com.erp.erp.crm.dto.PageResponse;
+import com.erp.erp.common.dto.PageResponse;
 import com.erp.erp.crm.dto.PartnerRequest;
 import com.erp.erp.crm.dto.PartnerResponse;
 import com.erp.erp.crm.service.CrmInteractionService;

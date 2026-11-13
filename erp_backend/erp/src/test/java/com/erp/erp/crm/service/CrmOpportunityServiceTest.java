@@ -72,6 +72,24 @@ class CrmOpportunityServiceTest {
     }
 
     @Test
+    void rejectsADuplicateOpportunityForTheSameCustomer() {
+        Tenant tenant = tenant();
+        UUID customerId = UUID.randomUUID();
+        when(partners.existsByIdAndTenantId(customerId, tenant.getId())).thenReturn(true);
+        when(opportunities.existsByTenantIdAndCustomerIdAndNameIgnoreCase(
+                        tenant.getId(), customerId, "Carthage rollout"))
+                .thenReturn(true);
+
+        AuthException ex =
+                assertThrows(
+                        AuthException.class,
+                        () -> service.create(tenant, request(customerId, "24000")));
+
+        assertEquals(409, ex.getStatus());
+        assertEquals("duplicateOpportunity", ex.getCode());
+    }
+
+    @Test
     void refusesToMoveAClosedDeal() {
         Tenant tenant = tenant();
         CrmOpportunity opportunity = opportunity(tenant, OpportunityStage.WON);

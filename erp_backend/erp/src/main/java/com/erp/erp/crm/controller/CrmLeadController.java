@@ -4,7 +4,7 @@ import com.erp.erp.common.security.CurrentTenantService;
 import com.erp.erp.crm.dto.LeadConversionResponse;
 import com.erp.erp.crm.dto.LeadRequest;
 import com.erp.erp.crm.dto.LeadResponse;
-import com.erp.erp.crm.dto.PageResponse;
+import com.erp.erp.common.dto.PageResponse;
 import com.erp.erp.crm.service.CrmLeadService;
 import com.erp.erp.tenant.model.Tenant;
 import jakarta.validation.Valid;

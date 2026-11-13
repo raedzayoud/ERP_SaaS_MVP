@@ -4,14 +4,14 @@ import com.erp.erp.auth.exception.AuthException;
 import com.erp.erp.crm.dto.LeadConversionResponse;
 import com.erp.erp.crm.dto.LeadRequest;
 import com.erp.erp.crm.dto.LeadResponse;
-import com.erp.erp.crm.dto.PageResponse;
+import com.erp.erp.common.dto.PageResponse;
+import com.erp.erp.crm.dto.PartnerAddress;
+import com.erp.erp.crm.dto.PartnerRequest;
+import com.erp.erp.crm.dto.PartnerResponse;
 import com.erp.erp.crm.model.CrmLead;
-import com.erp.erp.crm.model.CrmPartner;
 import com.erp.erp.crm.model.LeadSource;
 import com.erp.erp.crm.model.LeadStatus;
-import com.erp.erp.crm.model.PartnerKind;
 import com.erp.erp.crm.repository.CrmLeadRepository;
-import com.erp.erp.crm.repository.CrmPartnerRepository;
 import com.erp.erp.tenant.model.Tenant;
 import java.time.Instant;
 import java.util.Comparator;
@@ -29,11 +29,11 @@ public class CrmLeadService {
     private static final int MAX_SIZE = 500;
 
     private final CrmLeadRepository leads;
-    private final CrmPartnerRepository partners;
+    private final CrmPartnerService partnerService;
 
-    public CrmLeadService(CrmLeadRepository leads, CrmPartnerRepository partners) {
+    public CrmLeadService(CrmLeadRepository leads, CrmPartnerService partnerService) {
         this.leads = leads;
-        this.partners = partners;
+        this.partnerService = partnerService;
     }
 
     @Transactional(readOnly = true)
@@ -73,6 +73,7 @@ public class CrmLeadService {
         lead.setTenant(tenant);
         lead.setStatus(LeadStatus.NEW);
         apply(lead, request);
+        guardDuplicate(lead, null);
         return LeadResponse.from(leads.save(lead));
     }
 
@@ -80,6 +81,7 @@ public class CrmLeadService {
     public LeadResponse update(Tenant tenant, UUID id, LeadRequest request) {
         CrmLead lead = find(tenant, id);
         apply(lead, request);
+        guardDuplicate(lead, id);
         lead.setUpdatedAt(Instant.now());
         return LeadResponse.from(leads.save(lead));
     }
@@ -110,31 +112,35 @@ public class CrmLeadService {
         if (lead.getStatus() == LeadStatus.LOST) {
             throw new AuthException(409, "lost lead cannot be converted", "lostLead");
         }
+        if (lead.getEmail().isBlank()) {
+            throw new AuthException(
+                    400, "this lead has no email, add one before converting", "noEmail");
+        }
 
         boolean company = lead.getCompany() != null && !lead.getCompany().isBlank();
-        CrmPartner partner = new CrmPartner();
-        partner.setTenant(tenant);
-        partner.setActive(true);
-        partner.setKind(company ? PartnerKind.COMPANY : PartnerKind.PERSON);
-        partner.setName(company ? lead.getCompany() : lead.getName());
-        partner.setCustomer(true);
-        partner.setSupplier(false);
-        partner.setTaxId("");
-        partner.setEmail(lead.getEmail());
-        partner.setPhone(lead.getPhone());
-        partner.setJobTitle(company ? "" : "Customer");
-        partner.setAddressStreet("");
-        partner.setAddressCity("");
-        partner.setAddressCountry("");
-        partner.setNotes(("Converted from lead \"" + lead.getName() + "\". " + lead.getNotes()).trim());
-        CrmPartner saved = partners.save(partner);
+        PartnerResponse contact =
+                partnerService.create(
+                        tenant,
+                        new PartnerRequest(
+                                company ? "company" : "person",
+                                company ? lead.getCompany() : lead.getName(),
+                                null,
+                                true,
+                                false,
+                                "",
+                                lead.getEmail(),
+                                lead.getPhone(),
+                                company ? "" : "Customer",
+                                new PartnerAddress("", "", ""),
+                                ("Converted from lead \"" + lead.getName() + "\". " + lead.getNotes())
+                                        .trim()));
 
         lead.setStatus(LeadStatus.CONVERTED);
-        lead.setConvertedPartnerId(saved.getId());
+        lead.setConvertedPartnerId(contact.id());
         lead.setUpdatedAt(Instant.now());
         CrmLead savedLead = leads.save(lead);
 
-        return new LeadConversionResponse(saved.getId().toString(), LeadResponse.from(savedLead));
+        return new LeadConversionResponse(contact.id().toString(), LeadResponse.from(savedLead));
     }
 
     private CrmLead find(Tenant tenant, UUID id) {
@@ -148,8 +154,45 @@ public class CrmLeadService {
         lead.setCompany(trim(request.company()));
         lead.setEmail(trim(request.email()).toLowerCase(Locale.ROOT));
         lead.setPhone(trim(request.phone()));
+        if (lead.getEmail().isBlank() && lead.getPhone().isBlank()) {
+            throw new AuthException(
+                    400, "an email or a phone number is required", "noContactInfo");
+        }
         lead.setSource(parseSource(request.source()));
         lead.setNotes(trim(request.notes()));
+    }
+
+    /** Refuses a second lead with the same email, or the same name and company. */
+    private void guardDuplicate(CrmLead lead, UUID currentId) {
+        UUID tenantId = lead.getTenant().getId();
+        String email = lead.getEmail();
+        String name = lead.getName();
+        String company = lead.getCompany();
+
+        if (!email.isBlank()) {
+            boolean exists =
+                    currentId == null
+                            ? leads.existsByTenantIdAndEmailIgnoreCase(tenantId, email)
+                            : leads.existsByTenantIdAndEmailIgnoreCaseAndIdNot(
+                                    tenantId, email, currentId);
+            if (exists) {
+                throw new AuthException(
+                        409, "a lead with this email already exists", "duplicateLead");
+            }
+        }
+
+        if (!company.isBlank()) {
+            boolean exists =
+                    currentId == null
+                            ? leads.existsByTenantIdAndNameIgnoreCaseAndCompanyIgnoreCase(
+                                    tenantId, name, company)
+                            : leads.existsByTenantIdAndNameIgnoreCaseAndCompanyIgnoreCaseAndIdNot(
+                                    tenantId, name, company, currentId);
+            if (exists) {
+                throw new AuthException(
+                        409, "a lead with this name and company already exists", "duplicateLead");
+            }
+        }
     }
 
     private boolean matches(CrmLead lead, String query) {

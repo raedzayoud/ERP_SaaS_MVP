@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -31,14 +31,17 @@ export class LeadForm {
   submitted = signal(false);
   errorKey = signal<string | null>(null);
 
-  form = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
-    company: [''],
-    email: ['', Validators.email],
-    phone: [''],
-    source: ['website' as LeadSource, Validators.required],
-    notes: [''],
-  });
+  form = this.fb.nonNullable.group(
+    {
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      company: [''],
+      email: ['', Validators.email],
+      phone: [''],
+      source: ['website' as LeadSource, Validators.required],
+      notes: [''],
+    },
+    { validators: [this.needsEmailOrPhone()] },
+  );
 
   constructor() {
     if (this.leadId) {
@@ -53,6 +56,21 @@ export class LeadForm {
 
   hasError(controlName: CheckedControl, error: string): boolean {
     return this.isInvalid(controlName) && this.form.controls[controlName].hasError(error);
+  }
+
+  /** A lead must be reachable: an email or a phone number. */
+  hasContactError(): boolean {
+    return (
+      this.form.hasError('noContactInfo') && (this.form.touched || this.submitted())
+    );
+  }
+
+  private needsEmailOrPhone(): ValidatorFn {
+    return (group) => {
+      const email = String(group.get('email')?.value ?? '').trim();
+      const phone = String(group.get('phone')?.value ?? '').trim();
+      return email || phone ? null : { noContactInfo: true };
+    };
   }
 
   sourceKey(source: LeadSource): string {

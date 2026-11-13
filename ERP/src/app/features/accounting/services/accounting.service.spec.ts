@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { AccountingService } from './accounting.service';
 import { PaymentService } from '../../payments/services/payment.service';
+import { stockServiceStub } from '../../stock/services/stock-test-stub';
+import { productServiceStub } from '../../products/services/product-test-stub';
 
 const FAC_0004 = 'c3000000-0000-4000-8000-000000000005';
 const CN_0001 = 'c3000000-0000-4000-8000-000000000006';
@@ -19,7 +21,7 @@ describe('AccountingService', () => {
   let payments: PaymentService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [stockServiceStub(), productServiceStub()] });
     service = TestBed.inject(AccountingService);
     payments = TestBed.inject(PaymentService);
   });

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ContactForm } from './contact-form';
 import { PartnerService } from '../../services/partner.service';
 import { Partner, PartnerInput, PartnerQuery } from '../../models/partner';
@@ -17,6 +17,7 @@ const EN = {
       newTitle: 'New contact',
       editTitle: 'Edit contact',
       emailInvalid: 'Enter a valid email address.',
+      emailRequired: 'An email address is required.',
       nameRequired: 'A name is required.',
       notFound: 'Contact not found',
       save: 'Save contact',
@@ -30,6 +31,9 @@ const EN = {
       suppliedMinQty: 'Min. qty',
       suppliedDelayDays: 'Lead time (days)',
     },
+  },
+  crm: {
+    errors: { duplicateContact: 'A contact with this email or tax number already exists.' },
   },
   common: {
     back: 'Back',
@@ -114,6 +118,7 @@ describe('ContactForm', () => {
       partnerId?: string;
       getPartner?: () => Partner | undefined;
       products?: Product[];
+      createError?: Error;
     } = {},
   ) {
     created = [];
@@ -144,6 +149,7 @@ describe('ContactForm', () => {
             getPartner: () => of(options.getPartner ? options.getPartner() : undefined),
             createPartner: (input: PartnerInput) => {
               created.push(input);
+              if (options.createError) return throwError(() => options.createError);
               return of({ ...SAVED_PARTNER, ...input });
             },
             updatePartner: (id: string, input: PartnerInput) => {
@@ -198,6 +204,37 @@ describe('ContactForm', () => {
     expect(error).toBeTruthy();
     expect(error?.textContent).toContain('Enter a valid email address.');
     expect(created.length).toBe(0);
+  });
+
+  it('requires an email address', async () => {
+    const fixture = setup();
+    await render(fixture);
+
+    const el = fixture.nativeElement as HTMLElement;
+    setInput(el, 'name', 'Acme Corp');
+    submitForm(fixture);
+    await render(fixture);
+
+    const error = el.querySelector('#email-error');
+    expect(error?.textContent).toContain('An email address is required.');
+    expect(created.length).toBe(0);
+  });
+
+  it('shows the duplicate message when the contact already exists', async () => {
+    const failure = Object.assign(new Error('duplicate'), { code: 'duplicateContact' });
+    const fixture = setup({ createError: failure });
+    await render(fixture);
+
+    const el = fixture.nativeElement as HTMLElement;
+    setInput(el, 'name', 'Acme Corp');
+    setInput(el, 'email', 'billing@acme-corp.com');
+    submitForm(fixture);
+    await render(fixture);
+
+    const alert = el.querySelector('.alert-danger');
+    expect(alert?.textContent).toContain(
+      'A contact with this email or tax number already exists.',
+    );
   });
 
   it('saves a valid contact and goes back to the list', async () => {

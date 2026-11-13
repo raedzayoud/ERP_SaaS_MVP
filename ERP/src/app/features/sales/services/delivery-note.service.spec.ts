@@ -6,6 +6,7 @@ import { SalesOrderService } from './sales-order.service';
 import { DeliveryNoteService } from './delivery-note.service';
 import { InvoiceService } from '../../invoices/services/invoice.service';
 import { partnerServiceStub } from '../../crm/services/partner-test-stub';
+import { stockServiceStub } from '../../stock/services/stock-test-stub';
 
 const CONFIRMED_ORDER = 'e5000000-0000-4000-8000-000000000002';
 const DRAFT_ORDER = 'e5000000-0000-4000-8000-000000000001';
@@ -18,7 +19,7 @@ describe('DeliveryNoteService', () => {
   let invoices: InvoiceService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [partnerServiceStub()] });
+    TestBed.configureTestingModule({ providers: [partnerServiceStub(), stockServiceStub()] });
     service = TestBed.inject(DeliveryNoteService);
     stock = TestBed.inject(StockService);
     sales = TestBed.inject(SalesOrderService);

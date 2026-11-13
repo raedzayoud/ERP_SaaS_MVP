@@ -10,4 +10,10 @@ public interface CrmOpportunityRepository extends JpaRepository<CrmOpportunity, 
     List<CrmOpportunity> findByTenantIdOrderByUpdatedAtDesc(UUID tenantId);
 
     Optional<CrmOpportunity> findByIdAndTenantId(UUID id, UUID tenantId);
+
+    boolean existsByTenantIdAndCustomerIdAndNameIgnoreCase(
+            UUID tenantId, UUID customerId, String name);
+
+    boolean existsByTenantIdAndCustomerIdAndNameIgnoreCaseAndIdNot(
+            UUID tenantId, UUID customerId, String name, UUID id);
 }

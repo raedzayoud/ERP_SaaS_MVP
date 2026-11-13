@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { ReportsService } from './reports.service';
+import { stockServiceStub } from '../../stock/services/stock-test-stub';
+import { productServiceStub } from '../../products/services/product-test-stub';
 
 const YEAR = { from: '2026-01-01', to: '2026-12-31' };
 
@@ -8,7 +10,7 @@ describe('ReportsService', () => {
   let service: ReportsService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [stockServiceStub(), productServiceStub()] });
     service = TestBed.inject(ReportsService);
   });
 

@@ -10,4 +10,14 @@ public interface CrmLeadRepository extends JpaRepository<CrmLead, UUID> {
     List<CrmLead> findByTenantIdOrderByCreatedAtDesc(UUID tenantId);
 
     Optional<CrmLead> findByIdAndTenantId(UUID id, UUID tenantId);
+
+    boolean existsByTenantIdAndEmailIgnoreCase(UUID tenantId, String email);
+
+    boolean existsByTenantIdAndNameIgnoreCaseAndCompanyIgnoreCase(
+            UUID tenantId, String name, String company);
+
+    boolean existsByTenantIdAndEmailIgnoreCaseAndIdNot(UUID tenantId, String email, UUID id);
+
+    boolean existsByTenantIdAndNameIgnoreCaseAndCompanyIgnoreCaseAndIdNot(
+            UUID tenantId, String name, String company, UUID id);
 }

@@ -8,7 +8,7 @@ import { PartnerService } from '../../services/partner.service';
 import { OpportunityInput, Opportunity } from '../../models/opportunity';
 import { PIPELINE_STAGES, PipelineStage } from '../../models/pipeline';
 
-type CheckedControl = 'name' | 'amount' | 'customerId';
+type CheckedControl = 'name' | 'amount' | 'customerId' | 'expectedCloseDate';
 
 @Component({
   selector: 'app-opportunity-form',

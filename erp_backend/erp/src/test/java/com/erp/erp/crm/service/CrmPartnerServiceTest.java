@@ -4,10 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.erp.erp.auth.exception.AuthException;
-import com.erp.erp.crm.dto.PageResponse;
+import com.erp.erp.common.dto.PageResponse;
 import com.erp.erp.crm.dto.PartnerAddress;
 import com.erp.erp.crm.dto.PartnerRequest;
 import com.erp.erp.crm.dto.PartnerResponse;
@@ -86,6 +88,60 @@ class CrmPartnerServiceTest {
         assertEquals(1, page.page());
         assertEquals(1, page.size());
         assertEquals("Atlas Digital", page.items().get(0).name());
+    }
+
+    @Test
+    void rejectsADuplicateContactEmail() {
+        Tenant tenant = tenant();
+        when(partners.existsByTenantIdAndEmailIgnoreCase(tenant.getId(), "billing@acme.com"))
+                .thenReturn(true);
+
+        AuthException ex =
+                assertThrows(
+                        AuthException.class, () -> service.create(tenant, request(" Acme Corp ", null)));
+
+        assertEquals(409, ex.getStatus());
+        assertEquals("duplicateContact", ex.getCode());
+        verify(partners, never()).save(any(CrmPartner.class));
+    }
+
+    @Test
+    void rejectsADuplicateContactTaxId() {
+        Tenant tenant = tenant();
+        when(partners.existsByTenantIdAndTaxIdIgnoreCase(tenant.getId(), "12034567"))
+                .thenReturn(true);
+
+        AuthException ex =
+                assertThrows(
+                        AuthException.class, () -> service.create(tenant, request(" Acme Corp ", null)));
+
+        assertEquals(409, ex.getStatus());
+        assertEquals("duplicateContact", ex.getCode());
+        verify(partners, never()).save(any(CrmPartner.class));
+    }
+
+    @Test
+    void refusesAContactWithoutEmail() {
+        Tenant tenant = tenant();
+        PartnerRequest request =
+                new PartnerRequest(
+                        "person",
+                        " Acme Corp ",
+                        null,
+                        true,
+                        false,
+                        " 12034567 ",
+                        "",
+                        " +1 415 ",
+                        "Manager",
+                        new PartnerAddress(" 120 Market Street ", " Paris ", "FR"),
+                        " note ");
+
+        AuthException ex =
+                assertThrows(AuthException.class, () -> service.create(tenant, request));
+
+        assertEquals(400, ex.getStatus());
+        assertEquals("noEmail", ex.getCode());
     }
 
     @Test

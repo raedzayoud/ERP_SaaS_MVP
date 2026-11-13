@@ -11,6 +11,7 @@ import com.erp.erp.user.repository.UserRepository;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +22,15 @@ public class SettingsUserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TeamMemberMailService mailService;
 
-    public SettingsUserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public SettingsUserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            TeamMemberMailService mailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.mailService = mailService;
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +59,17 @@ public class SettingsUserService {
         user.setMustRenewPassword(request.mustRenewPassword());
         user.setTenant(tenant);
 
-        return TeamMemberResponse.from(userRepository.save(user));
+        User saved = userRepository.save(user);
+
+        try {
+            mailService.sendCredentials(
+                    email, request.password(), tenant.getCompanyName());
+        } catch (MailException ex) {
+            // The transaction is rolled back: no member without known credentials.
+            throw new AuthException(502, "could not send the credentials email");
+        }
+
+        return TeamMemberResponse.from(saved);
     }
 
     @Transactional

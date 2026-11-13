@@ -1,7 +1,7 @@
 package com.erp.erp.crm.service;
 
 import com.erp.erp.auth.exception.AuthException;
-import com.erp.erp.crm.dto.PageResponse;
+import com.erp.erp.common.dto.PageResponse;
 import com.erp.erp.crm.dto.PartnerAddress;
 import com.erp.erp.crm.dto.PartnerRequest;
 import com.erp.erp.crm.dto.PartnerResponse;
@@ -78,6 +78,7 @@ public class CrmPartnerService {
         partner.setTenant(tenant);
         partner.setActive(true);
         apply(partner, request, tenant);
+        guardDuplicate(partner, null);
         return PartnerResponse.from(partners.save(partner));
     }
 
@@ -85,6 +86,7 @@ public class CrmPartnerService {
     public PartnerResponse update(Tenant tenant, UUID id, PartnerRequest request) {
         CrmPartner partner = find(tenant, id);
         apply(partner, request, tenant);
+        guardDuplicate(partner, id);
         partner.setUpdatedAt(Instant.now());
         return PartnerResponse.from(partners.save(partner));
     }
@@ -119,6 +121,9 @@ public class CrmPartnerService {
         partner.setSupplier(Boolean.TRUE.equals(request.isSupplier()));
         partner.setTaxId(trim(request.taxId()));
         partner.setEmail(trim(request.email()).toLowerCase(Locale.ROOT));
+        if (partner.getEmail().isBlank()) {
+            throw new AuthException(400, "an email is required", "noEmail");
+        }
         partner.setPhone(trim(request.phone()));
         partner.setJobTitle(trim(request.jobTitle()));
 
@@ -142,6 +147,37 @@ public class CrmPartnerService {
             throw new AuthException(404, "parent contact not found", "notFound");
         }
         return id;
+    }
+
+    /** Refuses a second contact with the same email or tax number in this workspace. */
+    private void guardDuplicate(CrmPartner partner, UUID currentId) {
+        UUID tenantId = partner.getTenant().getId();
+        String email = partner.getEmail();
+        String taxId = partner.getTaxId();
+
+        if (!email.isBlank()) {
+            boolean exists =
+                    currentId == null
+                            ? partners.existsByTenantIdAndEmailIgnoreCase(tenantId, email)
+                            : partners.existsByTenantIdAndEmailIgnoreCaseAndIdNot(
+                                    tenantId, email, currentId);
+            if (exists) {
+                throw new AuthException(
+                        409, "a contact with this email already exists", "duplicateContact");
+            }
+        }
+
+        if (!taxId.isBlank()) {
+            boolean exists =
+                    currentId == null
+                            ? partners.existsByTenantIdAndTaxIdIgnoreCase(tenantId, taxId)
+                            : partners.existsByTenantIdAndTaxIdIgnoreCaseAndIdNot(
+                                    tenantId, taxId, currentId);
+            if (exists) {
+                throw new AuthException(
+                        409, "a contact with this tax number already exists", "duplicateContact");
+            }
+        }
     }
 
     private boolean matches(CrmPartner partner, String query, Map<UUID, String> names) {

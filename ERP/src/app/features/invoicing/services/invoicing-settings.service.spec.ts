@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { InvoicingSettingsService } from './invoicing-settings.service';
 import { InvoiceService } from '../../invoices/services/invoice.service';
 import { partnerServiceStub } from '../../crm/services/partner-test-stub';
+import { stockServiceStub } from '../../stock/services/stock-test-stub';
 
 const STORAGE_KEY = 'erp_invoicing';
 const FAC_DRAFT = 'c3000000-0000-4000-8000-000000000001';
@@ -37,7 +38,7 @@ describe('InvoicingSettingsService', () => {
   beforeEach(() => {
     installMockStorage();
     localStorage.removeItem(STORAGE_KEY);
-    TestBed.configureTestingModule({ providers: [partnerServiceStub()] });
+    TestBed.configureTestingModule({ providers: [partnerServiceStub(), stockServiceStub()] });
     service = TestBed.inject(InvoicingSettingsService);
   });
 
@@ -80,7 +81,7 @@ describe('Invoicing numbering integration', () => {
   beforeEach(() => {
     installMockStorage();
     localStorage.removeItem(STORAGE_KEY);
-    TestBed.configureTestingModule({ providers: [partnerServiceStub()] });
+    TestBed.configureTestingModule({ providers: [partnerServiceStub(), stockServiceStub()] });
   });
 
   it('uses the configured prefix for the next posted invoice number', async () => {

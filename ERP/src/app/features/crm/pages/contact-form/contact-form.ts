@@ -41,7 +41,7 @@ export class ContactForm {
   loading = signal(this.isEdit);
   loadFailed = signal(false);
   saving = signal(false);
-  submitFailed = signal(false);
+  errorKey = signal<string | null>(null);
   submitted = signal(false);
 
   kind = signal<PartnerKind>('company');
@@ -56,7 +56,7 @@ export class ContactForm {
     isCustomer: [false],
     isSupplier: [false],
     taxId: [''],
-    email: ['', Validators.email],
+    email: ['', [Validators.required, Validators.email]],
     phone: [''],
     jobTitle: [''],
     street: [''],
@@ -88,7 +88,7 @@ export class ContactForm {
 
   submit(): void {
     this.submitted.set(true);
-    this.submitFailed.set(false);
+    this.errorKey.set(null);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -126,9 +126,13 @@ export class ContactForm {
         this.saving.set(false);
         this.router.navigate(['/contacts']);
       },
-      error: () => {
+      error: (error: unknown) => {
         this.saving.set(false);
-        this.submitFailed.set(true);
+        this.errorKey.set(
+          error instanceof Error && 'code' in error
+            ? `crm.errors.${(error as { code: string }).code}`
+            : 'contacts.form.saveError',
+        );
       },
     });
   }
