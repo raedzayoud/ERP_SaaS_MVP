@@ -3070,7 +3070,15 @@
       "noCustomer": "Please select a customer.",
       "invalidAmount": "The amount must be greater than 0.",
       "invalidStage": "This pipeline stage no longer exists.",
-      "noSubject": "Please enter a subject."
+      "noSubject": "Please enter a subject.",
+      "notFound": "This record no longer exists.",
+      "noPartner": "Please select a contact.",
+      "stageClosed": "This deal is closed and cannot change any more.",
+      "invalidType": "This interaction type does not exist.",
+      "invalidKind": "This contact type does not exist.",
+      "invalidSource": "This lead source does not exist.",
+      "invalidStatus": "This lead status does not exist.",
+      "invalidParent": "A contact cannot be its own company."
     }
   },
   "modules": {

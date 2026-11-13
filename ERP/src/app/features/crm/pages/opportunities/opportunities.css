@@ -41,6 +41,11 @@
   min-height: 220px;
 }
 
+.kanban-col--over {
+  border-color: var(--primary, #714b67);
+  background: var(--gray-100, #f3f4f6);
+}
+
 .kanban-col-header {
   display: flex;
   align-items: center;
@@ -72,6 +77,12 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  cursor: grab;
+}
+
+.kanban-card--dragging {
+  opacity: 0.5;
+  cursor: grabbing;
 }
 
 .kanban-card-closed {

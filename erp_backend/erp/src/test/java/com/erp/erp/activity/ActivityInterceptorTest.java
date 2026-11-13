@@ -91,6 +91,25 @@ class ActivityInterceptorTest {
     }
 
     @Test
+    void mapsCrmToTheContactsModule() {
+        Jwt jwt = authenticate();
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/crm/leads");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(201);
+
+        interceptor.afterCompletion(request, response, new Object(), null);
+
+        verify(activityService)
+                .logFromJwt(
+                        eq(jwt),
+                        eq("contacts"),
+                        eq(ActivityAction.CREATE),
+                        eq("leads"),
+                        eq("leads"),
+                        isNull());
+    }
+
+    @Test
     void ignoresReads() {
         authenticate();
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/settings/users");

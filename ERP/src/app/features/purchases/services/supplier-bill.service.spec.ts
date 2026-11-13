@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { ReceiveInput } from '../models/purchase-order';
 import { PurchaseService } from './purchase.service';
 import { SupplierBillService } from './supplier-bill.service';
+import { partnerServiceStub } from '../../crm/services/partner-test-stub';
 
 const ORDER_NO_RECEPTION = 'd4000000-0000-4000-8000-000000000002';
 const ORDER_CANCELLED = 'd4000000-0000-4000-8000-000000000006';
@@ -21,7 +22,7 @@ describe('SupplierBillService', () => {
   let orders: PurchaseService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [partnerServiceStub()] });
     service = TestBed.inject(SupplierBillService);
     orders = TestBed.inject(PurchaseService);
   });

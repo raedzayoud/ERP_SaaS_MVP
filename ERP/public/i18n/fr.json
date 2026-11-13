@@ -3069,7 +3069,15 @@
       "noCustomer": "Veuillez sélectionner un client.",
       "invalidAmount": "Le montant doit être supérieur à 0.",
       "invalidStage": "Cette étape du pipeline n'existe plus.",
-      "noSubject": "Veuillez saisir un objet."
+      "noSubject": "Veuillez saisir un objet.",
+      "notFound": "Cet enregistrement n'existe plus.",
+      "noPartner": "Veuillez sélectionner un contact.",
+      "stageClosed": "Cette affaire est close et ne peut plus changer.",
+      "invalidType": "Ce type d'interaction n'existe pas.",
+      "invalidKind": "Ce type de contact n'existe pas.",
+      "invalidSource": "Cette source de piste n'existe pas.",
+      "invalidStatus": "Ce statut de piste n'existe pas.",
+      "invalidParent": "Un contact ne peut pas être sa propre société."
     }
   },
   "modules": {

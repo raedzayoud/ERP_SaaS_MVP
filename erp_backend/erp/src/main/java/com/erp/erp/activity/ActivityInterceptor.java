@@ -86,7 +86,14 @@ public class ActivityInterceptor implements HandlerInterceptor {
     }
 
     private static String module(String segment) {
-        return "billing".equals(segment) ? "settings" : segment;
+        // The CRM routes live under /crm but belong to the "contacts" module.
+        if ("billing".equals(segment)) {
+            return "settings";
+        }
+        if ("crm".equals(segment)) {
+            return "contacts";
+        }
+        return segment;
     }
 
     private static String entityId(String[] segments) {

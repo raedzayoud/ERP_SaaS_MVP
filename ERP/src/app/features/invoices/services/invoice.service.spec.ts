@@ -5,6 +5,7 @@ import { TenantService } from '../../../core/services/tenant.service';
 import { PaymentService } from '../../payments/services/payment.service';
 import { StockService } from '../../stock/services/stock.service';
 import { todayIso } from '../../../shared/utils/money';
+import { partnerServiceStub } from '../../crm/services/partner-test-stub';
 
 const QUOTE_DRAFT = 'c3000000-0000-4000-8000-000000000007';
 const QUOTE_POSTED = 'c3000000-0000-4000-8000-000000000008';
@@ -19,7 +20,7 @@ describe('InvoiceService quotes', () => {
   let stock: StockService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [partnerServiceStub()] });
     service = TestBed.inject(InvoiceService);
     payments = TestBed.inject(PaymentService);
     stock = TestBed.inject(StockService);
@@ -79,7 +80,7 @@ describe('InvoiceService credit note cap', () => {
   let service: InvoiceService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [partnerServiceStub()] });
     service = TestBed.inject(InvoiceService);
   });
 
@@ -130,6 +131,7 @@ describe('InvoiceService seller compliance', () => {
   function setup(tenant: unknown): void {
     TestBed.configureTestingModule({
       providers: [
+        partnerServiceStub(),
         { provide: TenantService, useValue: { currentTenant: () => tenant } },
       ],
     });

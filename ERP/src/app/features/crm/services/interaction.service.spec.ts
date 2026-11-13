@@ -1,71 +1,95 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { InteractionService } from './interaction.service';
-
-const ATLAS = 'f4a1c2e0-8a01-4a10-9d21-000000000004';
-const CALL_ONE = 'd6000000-0000-4000-8000-000000000001';
 
 describe('InteractionService', () => {
   let service: InteractionService;
+  let http: HttpTestingController;
+
+  const baseUrl = `${environment.apiUrl}/crm/interactions`;
+  const partnersUrl = `${environment.apiUrl}/crm/partners`;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(InteractionService);
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    http.verify();
   });
 
   it('lists the history of one contact', async () => {
-    const items = await firstValueFrom(service.getForPartner(ATLAS));
+    const history = firstValueFrom(service.getForPartner('partner-1'));
 
-    expect(items.length).toBeGreaterThanOrEqual(2);
-    expect(items.every((item) => item.partnerId === ATLAS)).toBe(true);
+    const request = http.expectOne(`${partnersUrl}/partner-1/interactions`);
+    expect(request.request.method).toBe('GET');
+    request.flush([{ id: 'int-1', subject: 'Follow-up' }]);
+
+    expect((await history).length).toBe(1);
   });
 
-  it('sorts pending reminders from the most urgent', async () => {
-    const reminders = await firstValueFrom(service.getPendingReminders());
+  it('lists the pending reminders', async () => {
+    const reminders = firstValueFrom(service.getPendingReminders());
 
-    expect(reminders.length).toBeGreaterThanOrEqual(3);
-    const dates = reminders.map((item) => item.reminderAt ?? '');
-    const sorted = [...dates].sort((a, b) => a.localeCompare(b));
-    expect(dates).toEqual(sorted);
+    const request = http.expectOne(`${baseUrl}/reminders`);
+    expect(request.request.method).toBe('GET');
+    request.flush([{ id: 'int-1', reminderAt: '2026-10-27' }]);
+
+    expect((await reminders).length).toBe(1);
   });
 
-  it('hides reminders once they are done', async () => {
-    await firstValueFrom(service.markReminderDone(CALL_ONE));
-
-    const reminders = await firstValueFrom(service.getPendingReminders());
-    expect(reminders.some((item) => item.id === CALL_ONE)).toBe(false);
-  });
-
-  it('requires a subject to save an interaction', async () => {
-    const promise = firstValueFrom(
+  it('creates an interaction on a contact', async () => {
+    const created = firstValueFrom(
       service.save({
         id: null,
-        partnerId: ATLAS,
+        partnerId: 'partner-1',
         type: 'call',
-        date: '2026-10-26',
-        subject: '   ',
-        notes: '',
-        reminderAt: null,
+        date: '2026-10-21',
+        subject: 'Follow-up',
+        notes: 'notes',
+        reminderAt: '2026-10-27',
       }),
     );
 
-    await expect(promise).rejects.toMatchObject({ code: 'noSubject' });
+    const request = http.expectOne(`${partnersUrl}/partner-1/interactions`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body.subject).toBe('Follow-up');
+    request.flush({ id: 'int-1', subject: 'Follow-up' });
+
+    expect((await created).id).toBe('int-1');
   });
 
-  it('creates an interaction with a pending reminder when a date is set', async () => {
-    const created = await firstValueFrom(
-      service.save({
-        id: null,
-        partnerId: ATLAS,
-        type: 'note',
-        date: '2026-10-26',
-        subject: 'Test note',
-        notes: 'unit',
-        reminderAt: '2026-11-15',
-      }),
-    );
+  it('refuses an interaction without a subject before calling the API', async () => {
+    await expect(
+      firstValueFrom(
+        service.save({
+          id: null,
+          partnerId: 'partner-1',
+          type: 'call',
+          date: '2026-10-21',
+          subject: '  ',
+          notes: '',
+          reminderAt: null,
+        }),
+      ),
+    ).rejects.toMatchObject({ code: 'noSubject' });
 
-    expect(created.reminderDone).toBe(false);
-    expect(created.reminderAt).toBe('2026-11-15');
+    http.verify();
+  });
+
+  it('marks a reminder as done', async () => {
+    const done = firstValueFrom(service.markReminderDone('int-1'));
+
+    const request = http.expectOne(`${baseUrl}/int-1/reminder-done`);
+    expect(request.request.method).toBe('PUT');
+    request.flush({ id: 'int-1', reminderDone: true });
+
+    expect((await done).reminderDone).toBe(true);
   });
 });

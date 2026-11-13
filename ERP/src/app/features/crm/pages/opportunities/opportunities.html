@@ -58,14 +58,28 @@
     } @else {
       <div class="kanban">
         @for (column of columns(); track column.stage) {
-          <section class="kanban-col" [attr.data-stage]="column.stage">
+          <section
+            class="kanban-col"
+            [attr.data-stage]="column.stage"
+            [class.kanban-col--over]="dragOver() === column.stage"
+            (dragover)="onDragOver(column.stage, $event)"
+            (dragleave)="onDragLeave(column.stage, $event)"
+            (drop)="onDrop(column.stage, $event)"
+          >
             <header class="kanban-col-header">
               <h2 class="kanban-col-title">{{ t(stageKey(column.stage)) }}</h2>
               <span class="kanban-col-count">{{ column.items.length }}</span>
             </header>
 
             @for (item of column.items; track item.id) {
-              <article class="kanban-card" [class.kanban-card-closed]="column.closed">
+              <article
+                class="kanban-card"
+                [class.kanban-card-closed]="column.closed"
+                [class.kanban-card--dragging]="dragging() === item.id"
+                [attr.draggable]="!column.closed"
+                (dragstart)="onDragStart(item, $event)"
+                (dragend)="onDragEnd()"
+              >
                 <div class="kanban-card-head">
                   <h3 class="kanban-card-name">{{ item.name }}</h3>
                   <span class="kanban-card-amount">
