@@ -36,6 +36,7 @@ public class BillingService {
     private final StripeClient stripeClient;
     private final TenantRepository tenantRepository;
     private final StripePriceCatalog priceCatalog;
+    private final SubscriptionSync subscriptionSync;
     private final String secretKey;
     private final String successUrl;
     private final String cancelUrl;
@@ -45,6 +46,7 @@ public class BillingService {
             StripeClient stripeClient,
             TenantRepository tenantRepository,
             StripePriceCatalog priceCatalog,
+            SubscriptionSync subscriptionSync,
             @Value("${app.stripe.secret-key:}") String secretKey,
             @Value("${app.stripe.success-url}") String successUrl,
             @Value("${app.stripe.cancel-url}") String cancelUrl,
@@ -52,6 +54,7 @@ public class BillingService {
         this.stripeClient = stripeClient;
         this.tenantRepository = tenantRepository;
         this.priceCatalog = priceCatalog;
+        this.subscriptionSync = subscriptionSync;
         this.secretKey = secretKey;
         this.successUrl = successUrl;
         this.cancelUrl = cancelUrl;
@@ -139,7 +142,10 @@ public class BillingService {
 
             Subscription latest = selectSubscription(subscriptions.getData());
             if (latest != null) {
-                SubscriptionSync.apply(tenant, latest);
+                subscriptionSync.apply(tenant, latest);
+                if (status(tenant) == BillingStatus.ACTIVE) {
+                    subscriptionSync.unlockPaidModules(tenant, latest);
+                }
             } else if (current == BillingStatus.PENDING) {
                 // No subscription means the checkout was not completed. Let the
                 // client retry the payment instead of staying stuck on PENDING.

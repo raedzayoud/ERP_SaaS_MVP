@@ -414,7 +414,14 @@
       "removeSupplierFor": "Remove supplier",
       "minStock": "Stock alert threshold",
       "minStockHint": "Warn when the stock of this item falls to this level or below. 0 = no tracking.",
-      "minStockInvalid": "The threshold must be 0 or more."
+      "minStockInvalid": "The threshold must be 0 or more.",
+      "openingStock": "Opening stock",
+      "openingStockHint": "Quantity available when the product is created. It is recorded as an inventory movement.",
+      "openingWarehouse": "Warehouse",
+      "openingWarehouseNone": "No opening stock",
+      "openingQuantity": "Quantity",
+      "noWarehouse": "Create a warehouse before adding an opening stock."
+
     }
   },
   "invoices": {
@@ -2807,6 +2814,17 @@
       "title": "Recent activity",
       "empty": "No activity recorded yet."
     },
+    "modules": {
+      "title": "Modules",
+      "hint": "Add a module to your workspace. It is charged on top of your plan.",
+      "active": "Active",
+      "requires": "Requires",
+      "perMonth": "month",
+      "total": "Monthly total",
+      "pay": "Pay and unlock",
+      "none": "No module is available for sale right now.",
+      "notConfigured": "Not available for sale yet"
+    },
     "messages": {
       "companyInvalid": "Please enter a valid company name and email.",
       "saveFailed": "Could not save the company information. Please try again.",
@@ -2823,6 +2841,13 @@
       "adminOnly": "Only the company administrator can manage these settings.",
       "subscriptionExists": "A subscription already exists. Use the billing portal to manage it.",
       "billingFailed": "Could not start the billing action. Please try again.",
+      "modulesFailed": "The module catalog could not be loaded. Please try again.",
+      "moduleAlreadyActive": "This module is already part of your workspace.",
+      "moduleAlreadyPaid": "This module is already part of your subscription.",
+      "moduleUnknown": "This module is not available.",
+      "paymentFailed": "The payment could not be started. Please try again.",
+      "noSubscription": "Your workspace has no subscription yet. Subscribe first.",
+      "modulesPurchaseFailed": "The purchase could not be prepared. Please try again.",
       "billingExempt": "Billing is not required for this account.",
       "completePayment": "Complete payment",
       "manageBilling": "Manage billing"

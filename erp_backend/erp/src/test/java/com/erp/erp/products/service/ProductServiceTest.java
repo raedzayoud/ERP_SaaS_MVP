@@ -3,6 +3,7 @@ package com.erp.erp.products.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -12,6 +13,7 @@ import com.erp.erp.auth.exception.AuthException;
 import com.erp.erp.common.dto.PageResponse;
 import com.erp.erp.crm.repository.CrmPartnerRepository;
 import com.erp.erp.products.dto.ProductRequest;
+import com.erp.erp.products.dto.ProductRequest.OpeningStock;
 import com.erp.erp.products.dto.ProductResponse;
 import com.erp.erp.products.dto.ProductSupplierRequest;
 import com.erp.erp.products.model.Product;
@@ -19,18 +21,22 @@ import com.erp.erp.products.model.ProductSupplier;
 import com.erp.erp.products.model.ProductType;
 import com.erp.erp.products.repository.ProductRepository;
 import com.erp.erp.products.repository.ProductSupplierRepository;
+import com.erp.erp.stock.dto.MovementRequest;
+import com.erp.erp.stock.service.StockService;
 import com.erp.erp.tenant.model.Tenant;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ProductServiceTest {
 
     private final ProductRepository products = mock(ProductRepository.class);
     private final ProductSupplierRepository suppliers = mock(ProductSupplierRepository.class);
     private final CrmPartnerRepository partners = mock(CrmPartnerRepository.class);
-    private final ProductService service = new ProductService(products, suppliers, partners);
+    private final StockService stock = mock(StockService.class);
+    private final ProductService service = new ProductService(products, suppliers, partners, stock);
 
     @Test
     void createsAProductWithItsSuppliers() {
@@ -48,6 +54,57 @@ class ProductServiceTest {
         assertEquals(true, response.active());
         assertEquals(0, new BigDecimal("1299.00").compareTo(response.salePrice()));
         verify(suppliers).save(any(ProductSupplier.class));
+    }
+
+    @Test
+    void createsTheOpeningStockMovement() {
+        Tenant tenant = tenant();
+        UUID warehouseId = UUID.randomUUID();
+        when(products.save(any(Product.class))).thenAnswer(call -> save(call.getArgument(0)));
+        when(suppliers.findByTenantIdAndProductIdOrderByPositionAsc(any(), any()))
+                .thenReturn(List.of());
+
+        ProductResponse response =
+                service.create(
+                        tenant,
+                        request(
+                                null,
+                                new OpeningStock(warehouseId.toString(), new BigDecimal("10"))));
+
+        assertEquals(0, new BigDecimal("10.000").compareTo(response.openingQuantity()));
+
+        ArgumentCaptor<MovementRequest> captor = ArgumentCaptor.forClass(MovementRequest.class);
+        verify(stock).adjustment(eq(tenant), captor.capture());
+        assertEquals("in", captor.getValue().direction());
+        assertEquals(warehouseId.toString(), captor.getValue().warehouseId());
+        assertEquals(0, new BigDecimal("10").compareTo(captor.getValue().quantity()));
+        assertEquals("Opening inventory", captor.getValue().reason());
+    }
+
+    @Test
+    void failsWhenTheOpeningStockIsRefused() {
+        Tenant tenant = tenant();
+        UUID warehouseId = UUID.randomUUID();
+        when(products.save(any(Product.class))).thenAnswer(call -> save(call.getArgument(0)));
+        when(suppliers.findByTenantIdAndProductIdOrderByPositionAsc(any(), any()))
+                .thenReturn(List.of());
+        when(stock.adjustment(any(Tenant.class), any(MovementRequest.class)))
+                .thenThrow(new AuthException(404, "warehouse not found", "missingWarehouse"));
+
+        AuthException ex =
+                assertThrows(
+                        AuthException.class,
+                        () ->
+                                service.create(
+                                        tenant,
+                                        request(
+                                                null,
+                                                new OpeningStock(
+                                                        warehouseId.toString(),
+                                                        new BigDecimal("10")))));
+
+        assertEquals(404, ex.getStatus());
+        assertEquals("missingWarehouse", ex.getCode());
     }
 
     @Test
@@ -99,7 +156,8 @@ class ProductServiceTest {
                                 new ProductSupplierRequest(
                                         supplierId.toString(), "VRD", new BigDecimal("900"), 1, 14),
                                 new ProductSupplierRequest(
-                                        supplierId.toString(), "VRD", new BigDecimal("900"), 1, 14)));
+                                        supplierId.toString(), "VRD", new BigDecimal("900"), 1, 14)),
+                        null);
 
         AuthException ex =
                 assertThrows(AuthException.class, () -> service.create(tenant, request));
@@ -123,7 +181,8 @@ class ProductServiceTest {
                         new BigDecimal("900"),
                         new BigDecimal("19"),
                         new BigDecimal("6"),
-                        List.of());
+                        List.of(),
+                        null);
 
         AuthException ex =
                 assertThrows(AuthException.class, () -> service.create(tenant, request));
@@ -166,6 +225,10 @@ class ProductServiceTest {
     }
 
     private ProductRequest request(UUID supplierId) {
+        return request(supplierId, null);
+    }
+
+    private ProductRequest request(UUID supplierId, OpeningStock openingStock) {
         List<ProductSupplierRequest> supplierList =
                 supplierId == null
                         ? List.of()
@@ -187,7 +250,8 @@ class ProductServiceTest {
                 new BigDecimal("900"),
                 new BigDecimal("19"),
                 new BigDecimal("6"),
-                supplierList);
+                supplierList,
+                openingStock);
     }
 
     private Product save(Product product) {

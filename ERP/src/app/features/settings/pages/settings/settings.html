@@ -36,6 +36,13 @@
     >
       💳 Subscription
     </button>
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'modules'"
+      (click)="setTab('modules')"
+    >
+      🧩 Modules
+    </button>
   </div>
 
   <!-- ═══ COMPANY TAB ═══ -->
@@ -482,6 +489,88 @@
               ? t('settings.messages.manageBilling')
               : t('settings.messages.completePayment') }}
           </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ═══ MODULES TAB ═══ -->
+  @if (activeTab() === 'modules') {
+    <div class="tab-content">
+      @if (modulesError()) {
+        <div class="alert alert-danger" role="alert">{{ t(modulesError()) }}</div>
+      }
+
+      @if (modulesLoading()) {
+        <div class="state-block">
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="state-text">{{ t('common.loading') }}</p>
+        </div>
+      } @else {
+        <div class="card">
+          <h2 class="section-title">{{ t('settings.modules.title') }}</h2>
+          <p class="form-hint">{{ t('settings.modules.hint') }}</p>
+
+          <div class="module-list">
+            @for (offer of moduleOffers(); track offer.id) {
+              <div
+                class="module-row"
+                [class.module-row--active]="isModuleEnabled(offer.id)"
+                [class.module-row--disabled]="!offer.saleable"
+              >
+                <label class="module-label">
+                  <input
+                    type="checkbox"
+                    [checked]="selectedModules().includes(offer.id)"
+                    [disabled]="isModuleEnabled(offer.id) || !offer.saleable"
+                    (change)="toggleModule(offer.id)"
+                  />
+                  <span class="module-name">{{ t('apps.items.' + offer.id + '.label') }}</span>
+                </label>
+
+                @if (isModuleEnabled(offer.id)) {
+                  <span class="badge badge-success">{{ t('settings.modules.active') }}</span>
+                } @else {
+                  <span class="module-price">
+                    {{ offer.priceMonthly | currency: offer.currency : 'symbol' : '1.0-2' }}
+                    /{{ t('settings.modules.perMonth') }}
+                  </span>
+
+                  @if (!offer.saleable) {
+                    <span class="badge">{{ t('settings.modules.notConfigured') }}</span>
+                  }
+                }
+
+                @if (offer.dependencies.length > 0) {
+                  <p class="form-hint">
+                    {{ t('settings.modules.requires') }}:
+                    @for (dependency of offer.dependencies; track dependency; let last = $last) {
+                      <span>{{ t('apps.items.' + dependency + '.label') }}</span>@if (!last) {<span>, </span>}
+                    }
+                  </p>
+                }
+              </div>
+            } @empty {
+              <p class="state-text">{{ t('settings.modules.none') }}</p>
+            }
+          </div>
+
+          @if (selectedModules().length > 0) {
+            <div class="tab-actions">
+              <span class="module-total">
+                {{ t('settings.modules.total') }}:
+                {{ moduleTotal() | currency: moduleCurrency() : 'symbol' : '1.0-2' }}
+                /{{ t('settings.modules.perMonth') }}
+              </span>
+              <button
+                class="btn btn-primary"
+                (click)="buyModules()"
+                [disabled]="modulesBuying()"
+              >
+                {{ modulesBuying() ? t('common.loading') : t('settings.modules.pay') }}
+              </button>
+            </div>
+          }
         </div>
       }
     </div>

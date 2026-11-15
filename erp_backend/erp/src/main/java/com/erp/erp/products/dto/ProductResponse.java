@@ -19,6 +19,7 @@ public record ProductResponse(
         BigDecimal purchasePrice,
         BigDecimal vatRate,
         BigDecimal minStock,
+        BigDecimal openingQuantity,
         boolean active,
         List<ProductSupplierResponse> suppliers,
         String createdAt,
@@ -39,6 +40,7 @@ public record ProductResponse(
                 product.getPurchasePrice(),
                 product.getVatRate(),
                 product.getMinStock(),
+                product.getOpeningQuantity(),
                 product.isActive(),
                 suppliers.stream()
                         .map(

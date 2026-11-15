@@ -3,6 +3,7 @@ package com.erp.erp.billing.service;
 import com.erp.erp.auth.exception.AuthException;
 import com.erp.erp.billing.model.BillingInterval;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -44,5 +45,16 @@ public class StripePriceCatalog {
             throw new AuthException(503, "billing is not configured for " + planId + " " + interval.name());
         }
         return priceId;
+    }
+
+    /** The plan a Stripe price pays for, when it is one of our plan prices. */
+    public Optional<String> planFor(String priceId) {
+        if (priceId == null || priceId.isBlank()) {
+            return Optional.empty();
+        }
+        return prices.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(priceId))
+                .map(entry -> entry.getKey().split("_")[0])
+                .findFirst();
     }
 }

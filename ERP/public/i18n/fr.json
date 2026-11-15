@@ -414,7 +414,14 @@
       "removeSupplierFor": "Retirer le fournisseur",
       "minStock": "Seuil d’alerte stock",
       "minStockHint": "Alerter quand le stock de ce produit tombe à ce niveau. 0 = pas de suivi.",
-      "minStockInvalid": "Le seuil doit être 0 ou plus."
+      "minStockInvalid": "Le seuil doit être 0 ou plus.",
+      "openingStock": "Stock initial",
+      "openingStockHint": "Quantit\u00e9 disponible \u00e0 la cr\u00e9ation du produit. Elle est enregistr\u00e9e comme un mouvement de stock.",
+      "openingWarehouse": "Entrep\u00f4t",
+      "openingWarehouseNone": "Pas de stock initial",
+      "openingQuantity": "Quantit\u00e9",
+      "noWarehouse": "Cr\u00e9ez un entrep\u00f4t avant de saisir un stock initial."
+
     }
   },
   "invoices": {
@@ -2803,6 +2810,17 @@
     "subscribe": "S’abonner"
   },
   "settings": {
+    "modules": {
+      "title": "Modules",
+      "hint": "Ajoutez un module à votre espace. Il est facturé en plus de votre formule.",
+      "active": "Actif",
+      "requires": "Nécessite",
+      "perMonth": "mois",
+      "total": "Total mensuel",
+      "pay": "Payer et débloquer",
+      "none": "Aucun module n'est disponible à la vente pour le moment.",
+      "notConfigured": "Pas encore disponible à la vente"
+    },
     "activity": {
       "title": "Activité récente",
       "empty": "Aucune activité enregistrée pour le moment."
@@ -2823,6 +2841,13 @@
       "adminOnly": "Seul l'administrateur de l'entreprise peut g\u00e9rer ces param\u00e8tres.",
       "subscriptionExists": "Un abonnement existe d\u00e9j\u00e0. Utilisez le portail de facturation pour le g\u00e9rer.",
       "billingFailed": "Impossible de lancer l'action de facturation. Veuillez r\u00e9essayer.",
+      "modulesFailed": "Impossible de charger le catalogue des modules. Veuillez r\u00e9essayer.",
+      "moduleAlreadyActive": "Ce module fait d\u00e9j\u00e0 partie de votre espace.",
+      "moduleAlreadyPaid": "Ce module fait d\u00e9j\u00e0 partie de votre abonnement.",
+      "moduleUnknown": "Ce module n'est pas disponible.",
+      "paymentFailed": "Le paiement n'a pas pu être lancé. Veuillez réessayer.",
+      "noSubscription": "Votre espace n'a pas encore d'abonnement. Abonnez-vous d'abord.",
+      "modulesPurchaseFailed": "L'achat n'a pas pu être préparé. Veuillez réessayer.",
       "billingExempt": "La facturation n'est pas requise pour ce compte.",
       "completePayment": "Finaliser le paiement",
       "manageBilling": "G\u00e9rer la facturation"

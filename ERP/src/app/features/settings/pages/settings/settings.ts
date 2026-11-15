@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, signal, computed, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -13,12 +13,12 @@ import { BillingStatusResponse } from '../../../../core/models/billing';
 import { Plan } from '../../../../core/models/plan';
 import { COUNTRIES, LANGUAGES, COMPANY_SIZES } from '../../../../core/data/countries';
 import { ASSIGNEE_ROLES, ROLE_INFO, Role, roleLabelKey } from '../../../../core/models/role';
-import { CompanySettingsRequest, TeamMember } from '../../models/settings';
+import { CompanySettingsRequest, ModuleCatalog, TeamMember } from '../../models/settings';
 import { ActivityEntry } from '../../models/activity';
 import { SettingsApiService } from '../../services/settings-api.service';
 import { ActivityApiService } from '../../services/activity-api.service';
 
-type SettingsTab = 'company' | 'users' | 'roles' | 'subscription';
+type SettingsTab = 'company' | 'users' | 'roles' | 'subscription' | 'modules';
 type ErrorContext = 'save' | 'user' | 'billing';
 
 const ROLE_BADGE_CLASS: Record<Role, string> = {
@@ -34,7 +34,7 @@ const ROLE_BADGE_CLASS: Record<Role, string> = {
 
 @Component({
   selector: 'app-settings',
-  imports: [RouterLink, TranslocoDirective, DatePipe],
+  imports: [RouterLink, TranslocoDirective, DatePipe, CurrencyPipe],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
@@ -106,6 +106,13 @@ export class SettingsComponent {
   billingError = signal('');
   billingActionLoading = signal(false);
 
+  // ── Modules tab ──────────────────────────────
+  moduleCatalog = signal<ModuleCatalog | null>(null);
+  modulesLoading = signal(false);
+  modulesError = signal('');
+  selectedModules = signal<string[]>([]);
+  modulesBuying = signal(false);
+
   // ── Computed ─────────────────────────────────
   currentUser = this.authService.currentUser;
   workspaceAddress = computed(() => {
@@ -127,6 +134,17 @@ export class SettingsComponent {
   );
   billingExempt = computed(() => this.billingStatus() === 'EXEMPT');
 
+  // ── Modules computed ─────────────────────────
+  enabledModuleIds = computed(() => this.moduleCatalog()?.enabledModules ?? []);
+  moduleOffers = computed(() => this.moduleCatalog()?.offers ?? []);
+  moduleTotal = computed(() =>
+    this.selectedModules().reduce((total, id) => {
+      const offer = this.moduleOffers().find((one) => one.id === id);
+      return total + (offer?.priceMonthly ?? 0);
+    }, 0),
+  );
+  moduleCurrency = computed(() => this.moduleOffers()[0]?.currency ?? 'USD');
+
   constructor() {
     this.loadCompanyData();
     this.loadCompany();
@@ -142,6 +160,87 @@ export class SettingsComponent {
     if (tab === 'users') {
       this.loadActivity();
     }
+    if (tab === 'modules') {
+      this.loadModules();
+    }
+  }
+
+  // ── Modules actions ──────────────────────────
+  toggleModule(id: string): void {
+    this.selectedModules.update((list) =>
+      list.includes(id) ? list.filter((one) => one !== id) : [...list, id],
+    );
+  }
+
+  isModuleEnabled(id: string): boolean {
+    return this.enabledModuleIds().includes(id);
+  }
+
+  buyModules(): void {
+    const modules = this.selectedModules();
+    if (modules.length === 0 || this.modulesBuying()) {
+      return;
+    }
+
+    this.modulesBuying.set(true);
+    this.modulesError.set('');
+
+    this.api
+      .addModules(modules)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (purchase) => this.redirect(purchase.url),
+        error: (error: unknown) => {
+          this.modulesBuying.set(false);
+          this.modulesError.set(this.moduleErrorKey(error));
+        },
+      });
+  }
+
+  /** Opens the Stripe page; kept public so the tests can replace it. */
+  redirect(url: string): void {
+    window.location.assign(url);
+  }
+
+  private loadModules(): void {
+    this.modulesLoading.set(true);
+    this.modulesError.set('');
+
+    // The workspace may have just bought a module: the refresh makes the
+    // backend read the Stripe subscription (it unlocks what was paid), then the
+    // account reload gives the app the new modules.
+    this.billingApi.refresh().subscribe({
+      next: () => this.authService.reloadAccount().subscribe({ error: () => undefined }),
+      error: () => undefined,
+    });
+
+    this.api
+      .getModules()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (catalog) => {
+          this.moduleCatalog.set(catalog);
+          this.selectedModules.set([]);
+          this.modulesLoading.set(false);
+        },
+        error: () => {
+          this.modulesError.set('settings.messages.modulesFailed');
+          this.modulesLoading.set(false);
+        },
+      });
+  }
+
+  private moduleErrorKey(error: unknown): string {
+    const body = (error as { error?: { code?: string; message?: string } })?.error;
+    const code = String(body?.code ?? '').toLowerCase();
+
+    if (code === 'paymentfailed') return 'settings.messages.paymentFailed';
+    if (code === 'nosubscription') return 'settings.messages.noSubscription';
+    if (code === 'unknownmodule') return 'settings.messages.moduleUnknown';
+    if (code === 'modulealreadyactive') return 'settings.messages.moduleAlreadyActive';
+    if (code === 'modulealreadypaid') return 'settings.messages.moduleAlreadyPaid';
+    if (body?.message) return 'settings.messages.modulesPurchaseFailed';
+    return 'settings.messages.modulesFailed';
   }
 
   // ── Company actions ──────────────────────────

@@ -69,6 +69,22 @@ public class Product {
     @Column(nullable = false, precision = 14, scale = 3)
     private BigDecimal minStock = BigDecimal.ZERO;
 
+    /**
+     * Quantity the product was created with. The journal of movements stays the
+     * source of truth for the stock on hand; this column is the trace of the
+     * opening quantity.
+     * shortcut: the default is required, Hibernate cannot add a not null
+     * column to a table that already holds rows; drop it when migrations
+     * replace ddl-auto.
+     */
+    @Column(
+            name = "opening_quantity",
+            nullable = false,
+            precision = 14,
+            scale = 3,
+            columnDefinition = "numeric(14,3) default 0")
+    private BigDecimal openingQuantity = BigDecimal.ZERO;
+
     @Column(nullable = false)
     private boolean active = true;
 

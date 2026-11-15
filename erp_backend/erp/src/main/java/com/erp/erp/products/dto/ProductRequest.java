@@ -18,4 +18,12 @@ public record ProductRequest(
         @NotNull @DecimalMin(value = "0.00") BigDecimal purchasePrice,
         @NotNull @DecimalMin(value = "0.00") BigDecimal vatRate,
         @NotNull @DecimalMin(value = "0.000") BigDecimal minStock,
-        List<ProductSupplierRequest> suppliers) {}
+        List<ProductSupplierRequest> suppliers,
+        OpeningStock openingStock) {
+
+    /**
+     * Opening stock of the product. It is recorded as an inventory movement
+     * when the product is created.
+     */
+    public record OpeningStock(String warehouseId, BigDecimal quantity) {}
+}

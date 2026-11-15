@@ -30,16 +30,19 @@ public class StripeWebhookService {
     private final String webhookSecret;
     private final TenantRepository tenantRepository;
     private final StripeEventRepository eventRepository;
+    private final SubscriptionSync subscriptionSync;
 
     public StripeWebhookService(
             StripeClient stripeClient,
             @Value("${app.stripe.webhook-secret:}") String webhookSecret,
             TenantRepository tenantRepository,
-            StripeEventRepository eventRepository) {
+            StripeEventRepository eventRepository,
+            SubscriptionSync subscriptionSync) {
         this.stripeClient = stripeClient;
         this.webhookSecret = webhookSecret;
         this.tenantRepository = tenantRepository;
         this.eventRepository = eventRepository;
+        this.subscriptionSync = subscriptionSync;
     }
 
     @Transactional
@@ -79,10 +82,33 @@ public class StripeWebhookService {
                     syncDeletedSubscription(object(event, Subscription.class));
             case "invoice.payment_failed" ->
                     handlePaymentFailed(object(event, Invoice.class));
+            case "invoice.paid" -> handleInvoicePaid(object(event, Invoice.class));
             default -> {
                 // Other event types are acknowledged but ignored.
             }
         }
+    }
+
+    /**
+     * A paid invoice unlocks the modules the subscription pays for: the
+     * workspace only gets them once the money is in.
+     */
+    private void handleInvoicePaid(Invoice invoice) {
+        if (invoice.getCustomer() == null || invoice.getCustomer().isBlank()) {
+            return;
+        }
+        Optional<Tenant> tenant = tenantRepository.findByStripeCustomerId(invoice.getCustomer());
+        if (tenant.isEmpty()) {
+            return;
+        }
+        Tenant workspace = tenant.get();
+        String subscriptionId = workspace.getStripeSubscriptionId();
+        if (subscriptionId == null || subscriptionId.isBlank()) {
+            return;
+        }
+        Subscription subscription = retrieveSubscription(subscriptionId);
+        subscriptionSync.apply(workspace, subscription);
+        subscriptionSync.unlockPaidModules(workspace, subscription);
     }
 
     private void handleCheckout(Session session, boolean paid) {
@@ -102,7 +128,7 @@ public class StripeWebhookService {
         if (subscriptionId == null || subscriptionId.isBlank()) {
             return;
         }
-        SubscriptionSync.apply(tenant, retrieveSubscription(subscriptionId));
+        subscriptionSync.apply(tenant, retrieveSubscription(subscriptionId));
     }
 
     private void handleCheckoutFailure(Session session) {
@@ -115,14 +141,14 @@ public class StripeWebhookService {
     private void syncSubscription(Subscription subscription) {
         Tenant tenant = tenantFor(subscription);
         if (tenant != null) {
-            SubscriptionSync.apply(tenant, subscription);
+            subscriptionSync.apply(tenant, subscription);
         }
     }
 
     private void syncDeletedSubscription(Subscription subscription) {
         Tenant tenant = tenantFor(subscription);
         if (tenant != null) {
-            SubscriptionSync.apply(tenant, subscription);
+            subscriptionSync.apply(tenant, subscription);
             tenant.setBillingStatus(BillingStatus.CANCELED);
         }
     }

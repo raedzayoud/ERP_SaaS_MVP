@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.erp.erp.billing.config.ModuleProperties;
 import com.erp.erp.billing.dto.BillingStatusResponse;
 import com.erp.erp.billing.model.BillingStatus;
 import com.erp.erp.tenant.model.Tenant;
@@ -16,6 +17,7 @@ import com.stripe.model.StripeCollection;
 import com.stripe.model.Subscription;
 import com.stripe.param.SubscriptionListParams;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -104,6 +106,9 @@ class BillingServiceTest {
                 stripeClient,
                 repository,
                 null,
+                new SubscriptionSync(
+                        new ModuleCatalog(new ModuleProperties(Map.of(), Map.of())),
+                        new StripePriceCatalog("", "", "", "", "", "")),
                 "sk_test",
                 "http://localhost:4200/signup/success",
                 "http://localhost:4200/signup/payment-cancelled",

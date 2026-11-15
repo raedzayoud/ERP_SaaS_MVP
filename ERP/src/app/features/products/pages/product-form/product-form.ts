@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
@@ -14,6 +14,9 @@ import {
 } from '../../models/product';
 import { Partner } from '../../../crm/models/partner';
 import { PartnerService } from '../../../crm/services/partner.service';
+import { StockService } from '../../../stock/services/stock.service';
+import { Warehouse } from '../../../stock/models/warehouse';
+import { TenantService } from '../../../../core/services/tenant.service';
 
 type CheckedControl =
   | 'sku'
@@ -32,6 +35,8 @@ type SupplierControlName = 'supplierId' | 'supplierRef' | 'price' | 'minQty' | '
 export class ProductForm {
   private readonly service = inject(ProductService);
   private readonly partners = inject(PartnerService);
+  private readonly stock = inject(StockService);
+  private readonly tenantService = inject(TenantService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
@@ -51,6 +56,10 @@ export class ProductForm {
 
   type = signal<ProductType>('good');
   supplierOptions = signal<Partner[]>([]);
+  warehouses = signal<Warehouse[]>([]);
+
+  /** The opening stock is only offered when the workspace manages a stock. */
+  readonly hasStockModule = computed(() => this.tenantService.isModuleEnabled('stock'));
 
   form = this.fb.nonNullable.group({
     type: ['good' as ProductType, Validators.required],
@@ -62,6 +71,8 @@ export class ProductForm {
     purchasePrice: [0, Validators.min(0)],
     vatRate: [0, Validators.required],
     minStock: [0, Validators.min(0)],
+    openingWarehouseId: [''],
+    openingQuantity: [0, Validators.min(0)],
     description: [''],
     suppliers: this.fb.nonNullable.array([this.newSupplierGroup()]),
   });
@@ -72,6 +83,7 @@ export class ProductForm {
       .subscribe((value) => this.type.set(value));
 
     this.loadSupplierOptions();
+    this.loadWarehouses();
 
     if (this.productId) {
       this.loadProduct(this.productId);
@@ -130,6 +142,12 @@ export class ProductForm {
       })),
     };
 
+    // The opening stock is only set when the product is created.
+    const openingStock = this.openingStock(raw.openingWarehouseId, Number(raw.openingQuantity));
+    if (!this.isEdit && openingStock) {
+      input.openingStock = openingStock;
+    }
+
     this.saving.set(true);
 
     const request$ =
@@ -149,14 +167,44 @@ export class ProductForm {
     });
   }
 
-  private newSupplierGroup() {
+  private newSupplierGroup(entry?: {
+    supplierId: string;
+    supplierRef: string;
+    price: number;
+    minQty: number;
+    delayDays: number;
+  }) {
     return this.fb.nonNullable.group({
-      supplierId: ['', Validators.required],
-      supplierRef: [''],
-      price: [0, [Validators.required, Validators.min(0)]],
-      minQty: [1, [Validators.required, Validators.min(1)]],
-      delayDays: [0, [Validators.required, Validators.min(0)]],
+      supplierId: [entry?.supplierId ?? '', Validators.required],
+      supplierRef: [entry?.supplierRef ?? ''],
+      price: [entry?.price ?? 0, [Validators.required, Validators.min(0)]],
+      minQty: [entry?.minQty ?? 1, [Validators.required, Validators.min(1)]],
+      delayDays: [entry?.delayDays ?? 0, [Validators.required, Validators.min(0)]],
     });
+  }
+
+  /** The opening stock to record, when the user filled it in. */
+  private openingStock(
+    warehouseId: string,
+    quantity: number,
+  ): { warehouseId: string; quantity: number } | null {
+    if (!warehouseId || quantity <= 0) {
+      return null;
+    }
+    return { warehouseId, quantity };
+  }
+
+  private loadWarehouses(): void {
+    if (!this.hasStockModule()) {
+      return;
+    }
+    this.stock
+      .getWarehouses()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (list) => this.warehouses.set(list.filter((warehouse) => warehouse.active)),
+        error: () => this.warehouses.set([]),
+      });
   }
 
   private loadSupplierOptions(): void {
@@ -193,7 +241,13 @@ export class ProductForm {
   }
 
   private fillForm(product: Product): void {
-    this.form.setValue({
+    // The supplier rows are rebuilt: the array starts with one empty row.
+    this.form.controls.suppliers.clear();
+    for (const entry of product.suppliers) {
+      this.form.controls.suppliers.push(this.newSupplierGroup(entry));
+    }
+
+    this.form.patchValue({
       type: product.type,
       sku: product.sku,
       name: product.name,
@@ -203,14 +257,9 @@ export class ProductForm {
       purchasePrice: product.purchasePrice,
       vatRate: product.vatRate,
       minStock: product.minStock ?? 0,
+      openingWarehouseId: '',
+      openingQuantity: 0,
       description: product.description,
-      suppliers: product.suppliers.map((entry) => ({
-        supplierId: entry.supplierId,
-        supplierRef: entry.supplierRef,
-        price: entry.price,
-        minQty: entry.minQty,
-        delayDays: entry.delayDays,
-      })),
     });
   }
 }

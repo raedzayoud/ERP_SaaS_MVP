@@ -4,6 +4,7 @@ import com.erp.erp.auth.exception.AuthException;
 import com.erp.erp.common.dto.PageResponse;
 import com.erp.erp.crm.repository.CrmPartnerRepository;
 import com.erp.erp.products.dto.ProductRequest;
+import com.erp.erp.products.dto.ProductRequest.OpeningStock;
 import com.erp.erp.products.dto.ProductResponse;
 import com.erp.erp.products.dto.ProductSupplierRequest;
 import com.erp.erp.products.model.Product;
@@ -11,6 +12,8 @@ import com.erp.erp.products.model.ProductSupplier;
 import com.erp.erp.products.model.ProductType;
 import com.erp.erp.products.repository.ProductRepository;
 import com.erp.erp.products.repository.ProductSupplierRepository;
+import com.erp.erp.stock.dto.MovementRequest;
+import com.erp.erp.stock.service.StockService;
 import com.erp.erp.tenant.model.Tenant;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -49,14 +52,17 @@ public class ProductService {
     private final ProductRepository products;
     private final ProductSupplierRepository suppliers;
     private final CrmPartnerRepository partners;
+    private final StockService stock;
 
     public ProductService(
             ProductRepository products,
             ProductSupplierRepository suppliers,
-            CrmPartnerRepository partners) {
+            CrmPartnerRepository partners,
+            StockService stock) {
         this.products = products;
         this.suppliers = suppliers;
         this.partners = partners;
+        this.stock = stock;
     }
 
     @Transactional(readOnly = true)
@@ -129,6 +135,7 @@ public class ProductService {
 
         Product saved = products.save(product);
         saveSuppliers(tenant, saved, request.suppliers());
+        recordOpeningStock(tenant, saved, request.openingStock());
 
         return ProductResponse.from(
                 saved,
@@ -215,6 +222,38 @@ public class ProductService {
                 product.getType() == ProductType.GOOD
                         ? quantity(request.minStock(), "invalid minimum stock")
                         : BigDecimal.ZERO);
+        product.setOpeningQuantity(openingQuantity(request.openingStock()));
+    }
+
+    /** Turns the opening quantity into an "Opening inventory" movement. */
+    private void recordOpeningStock(Tenant tenant, Product product, OpeningStock openingStock) {
+        if (openingStock == null || openingStock.quantity() == null) {
+            return;
+        }
+        BigDecimal quantity = openingStock.quantity();
+        if (quantity.compareTo(BigDecimal.ZERO) == 0) {
+            return;
+        }
+        if (quantity.compareTo(BigDecimal.ZERO) < 0) {
+            throw new AuthException(
+                    400, "the opening quantity must be positive", "invalidQuantity");
+        }
+        stock.adjustment(
+                tenant,
+                new MovementRequest(
+                        "in",
+                        product.getId().toString(),
+                        openingStock.warehouseId(),
+                        quantity,
+                        null,
+                        "Opening inventory"));
+    }
+
+    private BigDecimal openingQuantity(OpeningStock openingStock) {
+        if (openingStock == null || openingStock.quantity() == null) {
+            return BigDecimal.ZERO;
+        }
+        return openingStock.quantity().setScale(3, RoundingMode.HALF_UP);
     }
 
     /** Refuses a second product with the same SKU in this workspace. */

@@ -32,3 +32,27 @@ export interface UpdateTeamMemberRequest {
   active?: boolean;
   mustRenewPassword?: boolean;
 }
+
+/** One module the workspace can buy on top of its plan. */
+export interface ModuleOffer {
+  id: string;
+  priceMonthly: number;
+  currency: string;
+  dependencies: string[];
+  /** False when the Stripe price of the module is not configured yet. */
+  saleable: boolean;
+}
+
+/** The module catalog of the workspace and the modules it already has. */
+export interface ModuleCatalog {
+  plan: string;
+  enabledModules: string[];
+  offers: ModuleOffer[];
+}
+
+/** The Stripe page the customer has to open to unlock the modules. */
+export interface ModulePurchase {
+  url: string;
+  totalMonthly: number;
+  modules: string[];
+}

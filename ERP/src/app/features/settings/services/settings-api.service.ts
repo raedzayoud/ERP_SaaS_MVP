@@ -6,6 +6,8 @@ import { AuthTenantResponse } from '../../../core/models/auth';
 import {
   CompanySettingsRequest,
   CreateTeamMemberRequest,
+  ModuleCatalog,
+  ModulePurchase,
   TeamMember,
   UpdateTeamMemberRequest,
 } from '../models/settings';
@@ -37,5 +39,13 @@ export class SettingsApiService {
 
   deleteUser(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/users/${id}`);
+  }
+
+  getModules(): Observable<ModuleCatalog> {
+    return this.http.get<ModuleCatalog>(`${this.baseUrl}/modules`);
+  }
+
+  addModules(modules: string[]): Observable<ModulePurchase> {
+    return this.http.post<ModulePurchase>(`${this.baseUrl}/modules`, { modules });
   }
 }

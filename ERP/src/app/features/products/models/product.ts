@@ -24,6 +24,8 @@ export interface Product {
   vatRate: number;
   /** Stock threshold for the low-stock report; only goods need it. */
   minStock?: number;
+  /** Quantity the product was created with. */
+  openingQuantity?: number;
   suppliers: ProductSupplierEntry[];
   active: boolean;
   createdAt: string;
@@ -33,7 +35,11 @@ export interface Product {
 export type ProductInput = Omit<
   Product,
   'id' | 'createdAt' | 'updatedAt' | 'active' | 'suppliers'
-> & { suppliers: ProductSupplierEntryInput[] };
+> & {
+  suppliers: ProductSupplierEntryInput[];
+  /** Opening quantity, recorded as an inventory movement when the product is created. */
+  openingStock?: { warehouseId: string; quantity: number };
+};
 
 export interface ProductQuery {
   page: number;
