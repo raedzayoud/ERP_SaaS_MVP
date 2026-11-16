@@ -1106,6 +1106,9 @@
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Welcome back! Here is an overview of your business.",
+    "paymentSuccess": "Your workspace now includes:",
+    "paymentFailed": "The payment was not confirmed. Please try again.",
+    "paymentRetry": "Try again",
     "kpi": {
       "revenue": "Revenue billed",
       "outstanding": "Outstanding invoices",
@@ -2058,6 +2061,7 @@
       "deleted": "Leave request deleted",
       "noEmployees": "Add an employee before creating a leave request.",
       "dateError": "The end date must be on or after the start date.",
+      "saveError": "The leave request could not be created.",
       "selectEmployee": "Select an employee."
     }
   },
@@ -2252,6 +2256,7 @@
       "active": "Active",
       "required": "This field is required.",
       "dateError": "The end date must be on or after the start date.",
+      "saveError": "The leave request could not be created.",
       "budgetError": "The budget cannot be negative.",
       "save": "Save campaign"
     },
@@ -2308,6 +2313,7 @@
       "active": "Active",
       "required": "This field is required.",
       "dateError": "The end date must be on or after the start date.",
+      "saveError": "The leave request could not be created.",
       "percentageError": "Percentage must be between 0.01 and 100.",
       "discountError": "The discount value must be greater than zero.",
       "minOrderError": "The minimum order cannot be negative.",
@@ -2823,7 +2829,8 @@
       "total": "Monthly total",
       "pay": "Pay and unlock",
       "none": "No module is available for sale right now.",
-      "notConfigured": "Not available for sale yet"
+      "notConfigured": "Not available for sale yet",
+      "waitingForPayment": "Finish the payment in the Stripe tab, we are checking…"
     },
     "messages": {
       "companyInvalid": "Please enter a valid company name and email.",

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { signal } from '@angular/core';
 import { of, throwError } from 'rxjs';
@@ -49,12 +49,13 @@ describe('SettingsComponent modules tab', () => {
   let fixture: ComponentFixture<SettingsComponent>;
   let addModules: ReturnType<typeof vi.fn>;
 
-  function setup(addModulesError?: unknown): ComponentFixture<SettingsComponent> {
+  function setup(addModulesError?: unknown, tab?: string): ComponentFixture<SettingsComponent> {
     addModules = vi.fn().mockReturnValue(
       addModulesError
         ? throwError(() => addModulesError)
         : of({ url: 'https://stripe.test/invoice', totalMonthly: 20, modules: ['stock'] }),
     );
+    const tenant = signal<{ enabledModules: string[] } | null>({ enabledModules: ['stock'] });
 
     TestBed.configureTestingModule({
       imports: [
@@ -67,11 +68,29 @@ describe('SettingsComponent modules tab', () => {
       ],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: { currentUser: signal(null), reloadAccount: () => of(null) } },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: convertToParamMap(tab ? { tab } : {}) },
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            currentUser: signal(null),
+            // The module shows up only once the purchase went through.
+            reloadAccount: () => {
+              if (addModules.mock.calls.length > 0) {
+                tenant.set({ enabledModules: ['stock', 'reports'] });
+              }
+              return of(null);
+            },
+          },
+        },
         {
           provide: TenantService,
           useValue: {
-            currentTenant: signal(null),
+            currentTenant: tenant,
             enabledModules: signal([]),
             isModuleEnabled: () => false,
             activeCurrency: () => 'USD',
@@ -184,13 +203,42 @@ describe('SettingsComponent modules tab', () => {
 
     expect(fixture.componentInstance.moduleTotal()).toBe(20);
 
-    const redirect = vi
-      .spyOn(fixture.componentInstance, 'redirect')
+    const openStripeTab = vi
+      .spyOn(fixture.componentInstance, 'openStripeTab')
       .mockImplementation(() => undefined);
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     fixture.componentInstance.buyModules();
 
     expect(addModules).toHaveBeenCalledWith(['stock']);
-    expect(redirect).toHaveBeenCalledWith('https://stripe.test/invoice');
+    expect(openStripeTab).toHaveBeenCalledWith('https://stripe.test/invoice');
+  });
+
+  it('opens the modules tab when the URL asks for it', async () => {
+    fixture = setup(undefined, 'modules');
+    await render();
+
+    expect(fixture.componentInstance.activeTab()).toBe('modules');
+  });
+
+  it('goes to the dashboard once the payment is confirmed', async () => {
+    fixture = setup();
+    await render();
+
+    fixture.componentInstance.setTab('modules');
+    await render();
+    fixture.componentInstance.toggleModule('stock');
+
+    const navigate = vi
+      .spyOn(TestBed.inject(Router), 'navigate')
+      .mockResolvedValue(true);
+    vi.spyOn(fixture.componentInstance, 'openStripeTab').mockImplementation(() => undefined);
+
+    fixture.componentInstance.buyModules();
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/dashboard'], {
+      queryParams: { payment: 'success', modules: 'reports' },
+    });
   });
 
   it('shows the API error code instead of the catalog message', async () => {
@@ -203,7 +251,7 @@ describe('SettingsComponent modules tab', () => {
     await render();
 
     fixture.componentInstance.toggleModule('stock');
-    vi.spyOn(fixture.componentInstance, 'redirect').mockImplementation(() => undefined);
+    vi.spyOn(fixture.componentInstance, 'openStripeTab').mockImplementation(() => undefined);
     fixture.componentInstance.buyModules();
     await fixture.whenStable();
     fixture.detectChanges();

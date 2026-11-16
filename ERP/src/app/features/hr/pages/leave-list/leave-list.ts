@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { apiErrorCode } from '../../../../core/services/api-error';
 import { PermissionService } from '../../../../core/services/permission.service';
 import { Employee } from '../../models/employee';
 import { LeaveRequest, LeaveStatus, LeaveType } from '../../models/leave-request';
@@ -23,7 +24,7 @@ export class LeaveList {
   loading = signal(true);
   loadFailed = signal(false);
   saving = signal(false);
-  submitFailed = signal(false);
+  errorKey = signal('');
   submitted = signal(false);
   notice = signal('');
 
@@ -63,16 +64,17 @@ export class LeaveList {
 
   create(): void {
     this.submitted.set(true);
-    this.submitFailed.set(false);
+    this.errorKey.set('');
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.errorKey.set('hr.leave.selectEmployee');
       return;
     }
 
     const value = this.form.getRawValue();
     if (value.endDate < value.startDate) {
-      this.submitFailed.set(true);
+      this.errorKey.set('hr.leave.dateError');
       return;
     }
 
@@ -91,11 +93,23 @@ export class LeaveList {
         });
         this.load();
       },
-      error: () => {
+      error: (error: unknown) => {
         this.saving.set(false);
-        this.submitFailed.set(true);
+        this.errorKey.set(this.leaveErrorKey(error));
       },
     });
+  }
+
+  /** Maps the API error code to a translation key. */
+  private leaveErrorKey(error: unknown): string {
+    const code = apiErrorCode(error);
+    if (code === 'invalidDates') {
+      return 'hr.leave.dateError';
+    }
+    if (code === 'notFound') {
+      return 'hr.leave.selectEmployee';
+    }
+    return 'hr.leave.saveError';
   }
 
   updateStatus(request: LeaveRequest, status: LeaveStatus): void {

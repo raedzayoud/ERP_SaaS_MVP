@@ -1,10 +1,10 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { apiErrorCode } from '../../../../core/services/api-error';
 import { PermissionService } from '../../../../core/services/permission.service';
 import { Employee } from '../../models/employee';
 import { HrApiService } from '../../services/hr-api.service';
@@ -66,7 +66,7 @@ export class EmployeeList {
         this.load();
       },
       error: (error: unknown) => {
-        if (error instanceof HttpErrorResponse && error.status === 409) {
+        if (apiErrorCode(error) === 'employeeHasLeaveRequests') {
           this.notice.set('hr.employees.deleteBlocked');
         } else {
           this.notice.set('hr.employees.loadError');

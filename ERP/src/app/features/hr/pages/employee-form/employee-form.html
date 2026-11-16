@@ -28,8 +28,8 @@
     </div>
   } @else {
     <form class="card form-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-      @if (submitFailed()) {
-        <div class="alert alert-danger" role="alert">{{ t('hr.form.saveError') }}</div>
+      @if (errorKey()) {
+        <div class="alert alert-danger" role="alert">{{ t(errorKey()) }}</div>
       }
 
       <div class="form-grid">

@@ -1,6 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
@@ -31,6 +31,7 @@ export class DashboardHome {
   private readonly productsService = inject(ProductService);
   private readonly tenantService = inject(TenantService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
 
   readonly currency = computed(() => this.tenantService.currentTenant()?.currency ?? 'USD');
 
@@ -58,7 +59,17 @@ export class DashboardHome {
     { labelKey: 'dashboard.quick.newOrder', icon: '🛒', route: '/purchases/new' },
   ];
 
+  /** Set when the app comes back from a module purchase. */
+  paymentNotice = signal<'success' | 'failed' | null>(null);
+  paidModules = signal<string[]>([]);
+
   constructor() {
+    const params = this.route.snapshot.queryParamMap;
+    const payment = params.get('payment');
+    if (payment === 'success' || payment === 'failed') {
+      this.paymentNotice.set(payment);
+      this.paidModules.set((params.get('modules') ?? '').split(',').filter(Boolean));
+    }
     this.load();
   }
 

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { of } from 'rxjs';
 import { DashboardHome } from './dashboard-home';
@@ -46,7 +46,11 @@ const EN = {
       pendingOrders: 'Pending purchase orders',
       lateOrders: 'Late purchase orders',
     },
+    paymentSuccess: 'Your workspace now includes:',
+    paymentFailed: 'The payment was not confirmed. Please try again.',
+    paymentRetry: 'Try again',
   },
+  apps: { items: { reports: { label: 'Reports' } } },
   invoices: { draftLabel: 'Draft' },
   common: { loading: 'Loading…', retry: 'Retry' },
 };
@@ -161,7 +165,9 @@ function pageOf<T>(items: T[], total = items.length): Page<T> {
 }
 
 describe('DashboardHome', () => {
-  async function render(): Promise<ComponentFixture<DashboardHome>> {
+  async function render(
+    queryParams: Record<string, string> = {},
+  ): Promise<ComponentFixture<DashboardHome>> {
     TestBed.configureTestingModule({
       imports: [
         DashboardHome,
@@ -173,6 +179,10 @@ describe('DashboardHome', () => {
       ],
       providers: [
         provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap(queryParams) } },
+        },
         {
           provide: InvoiceService,
           useValue: {
@@ -214,8 +224,22 @@ describe('DashboardHome', () => {
     return fixture;
   }
 
-  it('shows real KPI values from the services', async () => {
-    const fixture = await render();
+  it('shows the modules unlocked by a successful payment', async () => {
+    const fixture = await render({ payment: 'success', modules: 'reports' });
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+
+    expect(text).toContain('Your workspace now includes:');
+    expect(text).toContain('Reports');
+  });
+
+  it('shows the failure message when the payment was not confirmed', async () => {
+    const fixture = await render({ payment: 'failed' });
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+
+    expect(text).toContain('The payment was not confirmed.');
+  });
+
+  it('shows real KPI values from the services', async () => {    const fixture = await render();
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
 
     expect(text).toContain('100');

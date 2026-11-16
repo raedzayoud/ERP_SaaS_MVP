@@ -40,7 +40,29 @@ class LeaveRequestServiceTest {
                 AuthException.class, () -> service.create(tenant(), request));
 
         assertEquals(400, ex.getStatus());
+        assertEquals("invalidDates", ex.getCode());
         verify(employees, never()).findByIdAndTenantId(any(), any());
+    }
+
+    @Test
+    void storesAnEmptyReasonWhenNoneIsGiven() {
+        Tenant tenant = tenant();
+        Employee employee = employee(tenant);
+        when(employees.findByIdAndTenantId(employee.getId(), tenant.getId()))
+                .thenReturn(Optional.of(employee));
+        when(leaveRequests.save(any(LeaveRequest.class)))
+                .thenAnswer(call -> call.getArgument(0));
+
+        LeaveRequestResponse response = service.create(
+                tenant,
+                new LeaveRequestRequest(
+                        employee.getId(),
+                        "annual",
+                        LocalDate.of(2026, 5, 10),
+                        LocalDate.of(2026, 5, 12),
+                        null));
+
+        assertEquals("", response.reason());
     }
 
     @Test

@@ -48,6 +48,35 @@ class EmployeeServiceTest {
     }
 
     @Test
+    void serializesTheOnLeaveStatusInSnakeCase() {
+        Employee employee = employee(tenant());
+        employee.setStatus(EmployeeStatus.ON_LEAVE);
+
+        EmployeeResponse response = EmployeeResponse.from(employee);
+
+        assertEquals("on_leave", response.status());
+    }
+
+    @Test
+    void storesAnEmptyPhoneWhenNoneIsGiven() {
+        Tenant tenant = tenant();
+        when(employees.save(any(Employee.class))).thenAnswer(call -> call.getArgument(0));
+
+        EmployeeResponse response = service.create(
+                tenant,
+                new EmployeeRequest(
+                        "Ada Lovelace",
+                        "ada@example.com",
+                        null,
+                        "Engineering",
+                        "Developer",
+                        LocalDate.of(2026, 1, 1),
+                        null));
+
+        assertEquals("", response.phone());
+    }
+
+    @Test
     void rejectsDeletingAnEmployeeWhoHasLeaveRequests() {
         Tenant tenant = tenant();
         Employee employee = employee(tenant);
@@ -60,6 +89,7 @@ class EmployeeServiceTest {
                 AuthException.class, () -> service.delete(tenant, employee.getId()));
 
         assertEquals(409, ex.getStatus());
+        assertEquals("employeeHasLeaveRequests", ex.getCode());
         verify(employees, never()).delete(any(Employee.class));
     }
 
@@ -73,6 +103,7 @@ class EmployeeServiceTest {
                 AuthException.class, () -> service.get(tenant, id));
 
         assertEquals(404, ex.getStatus());
+        assertEquals("notFound", ex.getCode());
     }
 
     private Tenant tenant() {

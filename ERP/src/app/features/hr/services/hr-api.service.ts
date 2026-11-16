@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Employee, EmployeeInput } from '../models/employee';
+import { HrDashboardStats } from '../models/hr-dashboard';
 import { LeaveRequest, LeaveRequestInput, LeaveStatus } from '../models/leave-request';
 
 @Injectable({ providedIn: 'root' })
@@ -50,5 +51,9 @@ export class HrApiService {
 
   deleteLeaveRequest(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/leave-requests/${id}`);
+  }
+
+  getDashboard(): Observable<HrDashboardStats> {
+    return this.http.get<HrDashboardStats>(`${this.baseUrl}/dashboard`);
   }
 }

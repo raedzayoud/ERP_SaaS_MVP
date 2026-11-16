@@ -67,4 +67,17 @@ describe('HrApiService', () => {
     expect(request.request.method).toBe('DELETE');
     request.flush(null);
   });
+
+  it('loads the HR dashboard figures', () => {
+    api.getDashboard().subscribe();
+
+    const request = http.expectOne(`${environment.apiUrl}/hr/dashboard`);
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      totalEmployees: 3,
+      onLeave: 1,
+      pendingLeave: 2,
+      departments: 2,
+    });
+  });
 });

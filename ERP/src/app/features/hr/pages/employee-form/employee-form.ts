@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { apiErrorCode } from '../../../../core/services/api-error';
 import { EmployeeInput, EmployeeStatus } from '../../models/employee';
 import { HrApiService } from '../../services/hr-api.service';
 
@@ -25,7 +26,7 @@ export class EmployeeForm {
   loading = signal(this.isEdit);
   loadFailed = signal(false);
   saving = signal(false);
-  submitFailed = signal(false);
+  errorKey = signal('');
   submitted = signal(false);
 
   form = this.fb.nonNullable.group({
@@ -75,7 +76,7 @@ export class EmployeeForm {
     }
 
     this.saving.set(true);
-    this.submitFailed.set(false);
+    this.errorKey.set('');
     const input = this.form.getRawValue() as EmployeeInput;
     const request = this.employeeId
       ? this.api.updateEmployee(this.employeeId, input)
@@ -83,9 +84,11 @@ export class EmployeeForm {
 
     request.subscribe({
       next: () => void this.router.navigate(['/hr/employees']),
-      error: () => {
+      error: (error: unknown) => {
         this.saving.set(false);
-        this.submitFailed.set(true);
+        this.errorKey.set(
+          apiErrorCode(error) === 'notFound' ? 'hr.form.notFound' : 'hr.form.saveError',
+        );
       },
     });
   }

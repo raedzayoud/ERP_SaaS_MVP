@@ -2,8 +2,9 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, signal, computed, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { Observable, catchError, map, of, switchMap } from 'rxjs';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { BillingApiService } from '../../../../core/services/billing-api.service';
@@ -46,6 +47,8 @@ export class SettingsComponent {
   private activityApi = inject(ActivityApiService);
   private billingApi = inject(BillingApiService);
   private destroyRef = inject(DestroyRef);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   tenant = this.tenantService.currentTenant;
   plans = getAllPlans();
@@ -112,6 +115,8 @@ export class SettingsComponent {
   modulesError = signal('');
   selectedModules = signal<string[]>([]);
   modulesBuying = signal(false);
+  /** True while the app waits for the Stripe payment to be confirmed. */
+  modulesWaiting = signal(false);
 
   // ── Computed ─────────────────────────────────
   currentUser = this.authService.currentUser;
@@ -150,6 +155,12 @@ export class SettingsComponent {
     this.loadCompany();
     this.loadUsers();
     this.loadBilling();
+
+    // Coming back from Stripe with ?tab=modules opens the tab that checks
+    // the payment.
+    if (this.route.snapshot.queryParamMap.get('tab') === 'modules') {
+      this.setTab('modules');
+    }
   }
 
   // ── Tab switching ────────────────────────────
@@ -189,7 +200,13 @@ export class SettingsComponent {
       .addModules(modules)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (purchase) => this.redirect(purchase.url),
+        next: (purchase) => {
+          // Stripe opens in another tab: the app stays here and checks the
+          // payment until the module shows up.
+          this.openStripeTab(purchase.url);
+          this.modulesWaiting.set(true);
+          this.startPaymentCheck();
+        },
         error: (error: unknown) => {
           this.modulesBuying.set(false);
           this.modulesError.set(this.moduleErrorKey(error));
@@ -197,9 +214,49 @@ export class SettingsComponent {
       });
   }
 
-  /** Opens the Stripe page; kept public so the tests can replace it. */
-  redirect(url: string): void {
-    window.location.assign(url);
+  /** Opens the Stripe page in a new tab; kept public so the tests can replace it. */
+  openStripeTab(url: string): void {
+    window.open(url, '_blank', 'noopener');
+  }
+
+  /**
+   * Looks for the paid module every few seconds and ends on the dashboard
+   * with a success or failure message.
+   */
+  private startPaymentCheck(): void {
+    const before = this.tenant()?.enabledModules ?? [];
+
+    const attempt = (remaining: number): void => {
+      this.checkPayment(before).subscribe((added) => {
+        if (added.length > 0) {
+          this.modulesWaiting.set(false);
+          void this.router.navigate(['/dashboard'], {
+            queryParams: { payment: 'success', modules: added.join(',') },
+          });
+          return;
+        }
+        if (remaining <= 0) {
+          this.modulesWaiting.set(false);
+          void this.router.navigate(['/dashboard'], { queryParams: { payment: 'failed' } });
+          return;
+        }
+        setTimeout(() => attempt(remaining - 1), 5000);
+      });
+    };
+
+    attempt(24);
+  }
+
+  /** One check: the backend reads the Stripe subscription, then the app reloads. */
+  private checkPayment(before: string[]): Observable<string[]> {
+    return this.billingApi.refresh().pipe(
+      switchMap(() => this.authService.reloadAccount()),
+      map(() => {
+        const after = this.tenant()?.enabledModules ?? [];
+        return after.filter((id) => !before.includes(id));
+      }),
+      catchError(() => of([])),
+    );
   }
 
   private loadModules(): void {

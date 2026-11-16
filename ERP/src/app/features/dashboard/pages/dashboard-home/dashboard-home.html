@@ -7,6 +7,22 @@
       </div>
     </div>
 
+    @if (paymentNotice() === 'success') {
+      <div class="alert alert-success" role="status">
+        {{ t('dashboard.paymentSuccess') }}
+        @for (id of paidModules(); track id) {
+          <strong>{{ t('apps.items.' + id + '.label') }}</strong>
+        }
+      </div>
+    } @else if (paymentNotice() === 'failed') {
+      <div class="alert alert-danger" role="alert">
+        {{ t('dashboard.paymentFailed') }}
+        <a routerLink="/settings?tab=modules" class="btn btn-secondary btn-sm">
+          {{ t('dashboard.paymentRetry') }}
+        </a>
+      </div>
+    }
+
     @if (loading()) {
       <div class="card">
         <div class="state-block">

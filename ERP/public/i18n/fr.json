@@ -1106,6 +1106,9 @@
   "dashboard": {
     "title": "Tableau de bord",
     "subtitle": "Bon retour ! Voici un aperçu de votre activité.",
+    "paymentSuccess": "Votre espace inclut maintenant :",
+    "paymentFailed": "Le paiement n'a pas été confirmé. Veuillez réessayer.",
+    "paymentRetry": "Réessayer",
     "kpi": {
       "revenue": "CA facturé",
       "outstanding": "Encours clients",
@@ -2058,7 +2061,8 @@
       "deleted": "Demande de congé supprimée",
       "noEmployees": "Ajoutez un employé avant de créer une demande de congé.",
       "dateError": "La date de fin doit être égale ou postérieure à la date de début.",
-      "selectEmployee": "Sélectionnez un employé."
+      "selectEmployee": "Sélectionnez un employé.",
+      "saveError": "La demande de congé n'a pas pu être créée."
     }
   },
   "support": {
@@ -2819,7 +2823,8 @@
       "total": "Total mensuel",
       "pay": "Payer et débloquer",
       "none": "Aucun module n'est disponible à la vente pour le moment.",
-      "notConfigured": "Pas encore disponible à la vente"
+      "notConfigured": "Pas encore disponible à la vente",
+      "waitingForPayment": "Terminez le paiement dans l'onglet Stripe, nous vérifions…"
     },
     "activity": {
       "title": "Activité récente",

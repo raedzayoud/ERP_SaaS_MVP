@@ -64,7 +64,7 @@ public class EmployeeService {
     public void delete(Tenant tenant, UUID id) {
         Employee employee = find(tenant, id);
         if (leaveRequests.existsByEmployeeIdAndTenantId(id, tenant.getId())) {
-            throw new AuthException(409, "employee has leave requests");
+            throw new AuthException(409, "employee has leave requests", "employeeHasLeaveRequests");
         }
         employees.delete(employee);
     }
@@ -72,13 +72,13 @@ public class EmployeeService {
     private Employee find(Tenant tenant, UUID id) {
         return employees
                 .findByIdAndTenantId(id, tenant.getId())
-                .orElseThrow(() -> new AuthException(404, "employee not found"));
+                .orElseThrow(() -> new AuthException(404, "employee not found", "notFound"));
     }
 
     private void apply(Employee employee, EmployeeRequest request) {
         employee.setFullName(request.fullName().trim());
         employee.setEmail(request.email().trim().toLowerCase(Locale.ROOT));
-        employee.setPhone(request.phone());
+        employee.setPhone(request.phone() == null ? "" : request.phone().trim());
         employee.setDepartment(request.department().trim());
         employee.setPosition(request.position().trim());
         employee.setHireDate(request.hireDate());
@@ -91,7 +91,7 @@ public class EmployeeService {
         try {
             return EmployeeStatus.valueOf(value.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException ex) {
-            throw new AuthException(400, "invalid employee status");
+            throw new AuthException(400, "invalid employee status", "invalidStatus");
         }
     }
 

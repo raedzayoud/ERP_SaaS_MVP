@@ -43,12 +43,12 @@ public class LeaveRequestService {
     @Transactional
     public LeaveRequestResponse create(Tenant tenant, LeaveRequestRequest request) {
         if (request.endDate().isBefore(request.startDate())) {
-            throw new AuthException(400, "endDate must not be before startDate");
+            throw new AuthException(400, "endDate must not be before startDate", "invalidDates");
         }
 
         Employee employee = employees
                 .findByIdAndTenantId(request.employeeId(), tenant.getId())
-                .orElseThrow(() -> new AuthException(404, "employee not found"));
+                .orElseThrow(() -> new AuthException(404, "employee not found", "notFound"));
 
         LeaveRequest leaveRequest = new LeaveRequest();
         leaveRequest.setTenant(tenant);
@@ -56,7 +56,7 @@ public class LeaveRequestService {
         leaveRequest.setType(parseType(request.type()));
         leaveRequest.setStartDate(request.startDate());
         leaveRequest.setEndDate(request.endDate());
-        leaveRequest.setReason(request.reason());
+        leaveRequest.setReason(request.reason() == null ? "" : request.reason().trim());
         leaveRequest.setStatus(LeaveStatus.PENDING);
 
         return LeaveRequestResponse.from(leaveRequests.save(leaveRequest));
@@ -77,14 +77,14 @@ public class LeaveRequestService {
     private LeaveRequest find(Tenant tenant, UUID id) {
         return leaveRequests
                 .findByIdAndTenantId(id, tenant.getId())
-                .orElseThrow(() -> new AuthException(404, "leave request not found"));
+                .orElseThrow(() -> new AuthException(404, "leave request not found", "notFound"));
     }
 
     private LeaveType parseType(String value) {
         try {
             return LeaveType.valueOf(value.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException ex) {
-            throw new AuthException(400, "invalid leave type");
+            throw new AuthException(400, "invalid leave type", "invalidType");
         }
     }
 
@@ -92,7 +92,7 @@ public class LeaveRequestService {
         try {
             return LeaveStatus.valueOf(value.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException ex) {
-            throw new AuthException(400, "invalid leave status");
+            throw new AuthException(400, "invalid leave status", "invalidStatus");
         }
     }
 }

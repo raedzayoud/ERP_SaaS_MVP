@@ -565,10 +565,16 @@
               <button
                 class="btn btn-primary"
                 (click)="buyModules()"
-                [disabled]="modulesBuying()"
+                [disabled]="modulesBuying() || modulesWaiting()"
               >
                 {{ modulesBuying() ? t('common.loading') : t('settings.modules.pay') }}
               </button>
+            </div>
+          }
+
+          @if (modulesWaiting()) {
+            <div class="alert alert-info" role="status">
+              {{ t('settings.modules.waitingForPayment') }}
             </div>
           }
         </div>
