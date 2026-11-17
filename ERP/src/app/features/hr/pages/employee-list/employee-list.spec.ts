@@ -28,7 +28,7 @@ const EN = {
       columns: {
         name: 'Name',
         email: 'Email',
-        department: 'Department',
+        role: 'Role',
         position: 'Position',
         status: 'Status',
         actions: 'Actions',
@@ -44,7 +44,7 @@ const ADA: Employee = {
   fullName: 'Ada Lovelace',
   email: 'ada@example.com',
   phone: '',
-  department: 'Engineering',
+  role: 'commercial',
   position: 'Developer',
   hireDate: '2026-01-01',
   status: 'active',

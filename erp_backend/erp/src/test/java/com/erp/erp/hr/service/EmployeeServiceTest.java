@@ -16,6 +16,7 @@ import com.erp.erp.hr.model.EmployeeStatus;
 import com.erp.erp.hr.repository.EmployeeRepository;
 import com.erp.erp.hr.repository.LeaveRequestRepository;
 import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.user.model.Role;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,13 +39,55 @@ class EmployeeServiceTest {
                         " Ada Lovelace ",
                         "ADA@Example.com",
                         null,
-                        "Engineering",
+                        "commercial",
                         "Developer",
                         LocalDate.of(2026, 1, 1),
                         null));
 
         assertEquals("ada@example.com", response.email());
         assertEquals("active", response.status());
+    }
+
+    @Test
+    void storesTheRoleGivenByItsCode() {
+        Tenant tenant = tenant();
+        when(employees.save(any(Employee.class))).thenAnswer(call -> call.getArgument(0));
+
+        EmployeeResponse response = service.create(
+                tenant,
+                new EmployeeRequest(
+                        "Ada Lovelace",
+                        "ada@example.com",
+                        null,
+                        "acheteur",
+                        "Developer",
+                        LocalDate.of(2026, 1, 1),
+                        null));
+
+        assertEquals("acheteur", response.role());
+    }
+
+    @Test
+    void rejectsAnUnknownRole() {
+        Tenant tenant = tenant();
+
+        AuthException ex =
+                assertThrows(
+                        AuthException.class,
+                        () ->
+                                service.create(
+                                        tenant,
+                                        new EmployeeRequest(
+                                                "Ada Lovelace",
+                                                "ada@example.com",
+                                                null,
+                                                "directeur commercial",
+                                                "Developer",
+                                                LocalDate.of(2026, 1, 1),
+                                                null)));
+
+        assertEquals(400, ex.getStatus());
+        assertEquals("invalidRole", ex.getCode());
     }
 
     @Test
@@ -68,7 +111,7 @@ class EmployeeServiceTest {
                         "Ada Lovelace",
                         "ada@example.com",
                         null,
-                        "Engineering",
+                        "commercial",
                         "Developer",
                         LocalDate.of(2026, 1, 1),
                         null));
@@ -118,7 +161,7 @@ class EmployeeServiceTest {
         employee.setTenant(tenant);
         employee.setFullName("Ada Lovelace");
         employee.setEmail("ada@example.com");
-        employee.setDepartment("Engineering");
+        employee.setRole(Role.COMMERCIAL);
         employee.setPosition("Developer");
         employee.setHireDate(LocalDate.of(2026, 1, 1));
         employee.setStatus(EmployeeStatus.ACTIVE);

@@ -9,7 +9,7 @@ public record EmployeeRequest(
         @NotBlank String fullName,
         @NotBlank @Email String email,
         String phone,
-        @NotBlank String department,
+        @NotBlank String role,
         @NotBlank String position,
         @NotNull LocalDate hireDate,
         String status) {}

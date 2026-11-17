@@ -773,7 +773,8 @@
       "expectedDateBeforeOrder": "The expected date cannot be before the order date.",
       "hasReceptions": "This order already has receptions and cannot be cancelled.",
       "invalidReceiveQty": "A reception quantity is invalid.",
-      "alreadyComplete": "This order is already fully received."
+      "alreadyComplete": "This order is already fully received.",
+      "cancelledOrder": "A cancelled order cannot be duplicated."
     },
     "pdf": {
       "title": "Purchase order",
@@ -1969,7 +1970,7 @@
       "totalEmployees": "Employees",
       "onLeave": "On leave",
       "pendingLeave": "Pending leave",
-      "departments": "Departments",
+      "roles": "Roles",
       "employeesLink": "Manage employees",
       "leaveLink": "Manage leave"
     },
@@ -1987,7 +1988,7 @@
       "columns": {
         "name": "Name",
         "email": "Email",
-        "department": "Department",
+        "role": "Role",
         "position": "Position",
         "status": "Status",
         "actions": "Actions"
@@ -2012,12 +2013,13 @@
       "fullName": "Full name",
       "email": "Email",
       "phone": "Phone",
-      "department": "Department",
+      "role": "Role",
       "position": "Position",
       "hireDate": "Hire date",
       "status": "Status",
       "required": "This field is required.",
       "invalidEmail": "Enter a valid email address.",
+      "invalidRole": "Choose one of the roles of the company.",
       "save": "Save employee"
     },
     "leave": {

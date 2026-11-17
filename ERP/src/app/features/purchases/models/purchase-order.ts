@@ -86,5 +86,3 @@ export interface PurchaseSummary {
   awaiting: number;
   late: number;
 }
-
-export const PURCHASE_NUMBER_PREFIX = 'BC';

@@ -248,13 +248,11 @@ export class SupplierBillService {
 
   /** Confirmed orders with a reception that do not have a bill yet. */
   billableOrders(): Observable<Array<Pick<PurchaseOrder, 'id' | 'number'>>> {
-    return timer(LATENCY_MS).pipe(
-      map(() =>
-        this.orders
-          .allOrders()
+    return this.orders.getOrders({ page: 0, size: 500, status: 'confirmed' }).pipe(
+      map((page) =>
+        page.items
           .filter(
             (order) =>
-              order.status === 'confirmed' &&
               receptionState(order.lines) !== 'none' &&
               !this.items().some((bill) => bill.orderId === order.id),
           )

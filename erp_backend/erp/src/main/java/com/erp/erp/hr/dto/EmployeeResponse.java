@@ -9,7 +9,7 @@ public record EmployeeResponse(
         String fullName,
         String email,
         String phone,
-        String department,
+        String role,
         String position,
         String hireDate,
         String status,
@@ -21,7 +21,7 @@ public record EmployeeResponse(
                 employee.getFullName(),
                 employee.getEmail(),
                 employee.getPhone(),
-                employee.getDepartment(),
+                employee.getRole() == null ? null : employee.getRole().getCode(),
                 employee.getPosition(),
                 employee.getHireDate() == null ? null : employee.getHireDate().toString(),
                 employee.getStatus() == null

@@ -13,6 +13,7 @@ import com.erp.erp.hr.model.LeaveType;
 import com.erp.erp.hr.repository.EmployeeRepository;
 import com.erp.erp.hr.repository.LeaveRequestRepository;
 import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.user.model.Role;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -25,20 +26,20 @@ class HrDashboardServiceTest {
     private final HrDashboardService service = new HrDashboardService(employees, leaveRequests);
 
     @Test
-    void countsTheEmployeesTheOnLeaveOnesAndTheDepartments() {
+    void countsTheEmployeesTheOnLeaveOnesAndTheRoles() {
         Tenant tenant = tenant();
         when(employees.findByTenantIdOrderByFullNameAsc(tenant.getId()))
                 .thenReturn(
                         List.of(
-                                employee(tenant, "Engineering", EmployeeStatus.ACTIVE),
-                                employee(tenant, "Engineering", EmployeeStatus.ON_LEAVE),
-                                employee(tenant, "Sales", EmployeeStatus.ACTIVE)));
+                                employee(tenant, Role.COMMERCIAL, EmployeeStatus.ACTIVE),
+                                employee(tenant, Role.COMMERCIAL, EmployeeStatus.ON_LEAVE),
+                                employee(tenant, Role.ACHETEUR, EmployeeStatus.ACTIVE)));
 
         HrDashboardResponse response = service.dashboard(tenant);
 
         assertEquals(3, response.totalEmployees());
         assertEquals(1, response.onLeave());
-        assertEquals(2, response.departments());
+        assertEquals(2, response.roles());
     }
 
     @Test
@@ -58,13 +59,13 @@ class HrDashboardServiceTest {
         assertEquals(1, response.pendingLeave());
     }
 
-    private Employee employee(Tenant tenant, String department, EmployeeStatus status) {
+    private Employee employee(Tenant tenant, Role role, EmployeeStatus status) {
         Employee employee = new Employee();
         employee.setId(UUID.randomUUID());
         employee.setTenant(tenant);
         employee.setFullName("Ada Lovelace");
         employee.setEmail("ada@example.com");
-        employee.setDepartment(department);
+        employee.setRole(role);
         employee.setPosition("Developer");
         employee.setHireDate(LocalDate.of(2026, 1, 1));
         employee.setStatus(status);
@@ -75,7 +76,7 @@ class HrDashboardServiceTest {
         LeaveRequest request = new LeaveRequest();
         request.setId(UUID.randomUUID());
         request.setTenant(tenant);
-        request.setEmployee(employee(tenant, "Engineering", EmployeeStatus.ACTIVE));
+        request.setEmployee(employee(tenant, Role.COMMERCIAL, EmployeeStatus.ACTIVE));
         request.setType(LeaveType.ANNUAL);
         request.setStartDate(LocalDate.of(2026, 5, 10));
         request.setEndDate(LocalDate.of(2026, 5, 12));

@@ -4,6 +4,7 @@ import { AccountingService } from './accounting.service';
 import { PaymentService } from '../../payments/services/payment.service';
 import { stockServiceStub } from '../../stock/services/stock-test-stub';
 import { productServiceStub } from '../../products/services/product-test-stub';
+import { purchaseServiceStub } from '../../purchases/services/purchase-test-stub';
 
 const FAC_0004 = 'c3000000-0000-4000-8000-000000000005';
 const CN_0001 = 'c3000000-0000-4000-8000-000000000006';
@@ -21,7 +22,9 @@ describe('AccountingService', () => {
   let payments: PaymentService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [stockServiceStub(), productServiceStub()] });
+    TestBed.configureTestingModule({
+      providers: [stockServiceStub(), productServiceStub(), purchaseServiceStub()],
+    });
     service = TestBed.inject(AccountingService);
     payments = TestBed.inject(PaymentService);
   });

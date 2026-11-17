@@ -15,7 +15,7 @@ export class HrDashboard {
   totalEmployees = signal(0);
   onLeave = signal(0);
   pendingLeave = signal(0);
-  departments = signal(0);
+  roles = signal(0);
   loading = signal(true);
   loadFailed = signal(false);
 
@@ -32,7 +32,7 @@ export class HrDashboard {
         this.totalEmployees.set(stats.totalEmployees);
         this.onLeave.set(stats.onLeave);
         this.pendingLeave.set(stats.pendingLeave);
-        this.departments.set(stats.departments);
+        this.roles.set(stats.roles);
         this.loading.set(false);
       },
       error: () => {

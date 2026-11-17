@@ -3,5 +3,5 @@ export interface HrDashboardStats {
   totalEmployees: number;
   onLeave: number;
   pendingLeave: number;
-  departments: number;
+  roles: number;
 }

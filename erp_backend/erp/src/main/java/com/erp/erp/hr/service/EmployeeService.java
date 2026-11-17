@@ -8,6 +8,7 @@ import com.erp.erp.hr.model.EmployeeStatus;
 import com.erp.erp.hr.repository.EmployeeRepository;
 import com.erp.erp.hr.repository.LeaveRequestRepository;
 import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.user.model.Role;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -79,7 +80,10 @@ public class EmployeeService {
         employee.setFullName(request.fullName().trim());
         employee.setEmail(request.email().trim().toLowerCase(Locale.ROOT));
         employee.setPhone(request.phone() == null ? "" : request.phone().trim());
-        employee.setDepartment(request.department().trim());
+        employee.setRole(parseRole(request.role()));
+        // shortcut: the legacy department column is still NOT NULL in the
+        // existing databases, so it receives the role code until it is dropped.
+        employee.setDepartment(employee.getRole().getCode());
         employee.setPosition(request.position().trim());
         employee.setHireDate(request.hireDate());
         if (request.status() != null && !request.status().isBlank()) {
@@ -95,10 +99,18 @@ public class EmployeeService {
         }
     }
 
+    private Role parseRole(String value) {
+        try {
+            return Role.fromCode(value.trim().toLowerCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            throw new AuthException(400, "invalid employee role", "invalidRole");
+        }
+    }
+
     private boolean matches(Employee employee, String query) {
         return contains(employee.getFullName(), query)
                 || contains(employee.getEmail(), query)
-                || contains(employee.getDepartment(), query)
+                || contains(employee.getRole() == null ? null : employee.getRole().getCode(), query)
                 || contains(employee.getPosition(), query);
     }
 

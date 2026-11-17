@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { ReportsService } from './reports.service';
 import { stockServiceStub } from '../../stock/services/stock-test-stub';
 import { productServiceStub } from '../../products/services/product-test-stub';
+import { purchaseServiceStub } from '../../purchases/services/purchase-test-stub';
 
 const YEAR = { from: '2026-01-01', to: '2026-12-31' };
 
@@ -10,7 +11,9 @@ describe('ReportsService', () => {
   let service: ReportsService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [stockServiceStub(), productServiceStub()] });
+    TestBed.configureTestingModule({
+      providers: [stockServiceStub(), productServiceStub(), purchaseServiceStub()],
+    });
     service = TestBed.inject(ReportsService);
   });
 

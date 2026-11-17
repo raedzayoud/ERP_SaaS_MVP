@@ -1,6 +1,7 @@
 package com.erp.erp.hr.model;
 
 import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.user.model.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -42,8 +43,21 @@ public class Employee {
 
     private String phone;
 
-    @Column(nullable = false)
+    /**
+     * Legacy column, replaced by the employee role. shortcut: drop the column
+     * when the project gets a schema migration tool.
+     */
+    @Column(name = "department")
     private String department;
+
+    /** The role the employee holds in the company (commercial, acheteur, ...). */
+    @Enumerated(EnumType.STRING)
+    @Column(
+            name = "role",
+            nullable = false,
+            length = 30,
+            columnDefinition = "varchar(30) default 'COMMERCIAL'")
+    private Role role = Role.COMMERCIAL;
 
     @Column(nullable = false)
     private String position;

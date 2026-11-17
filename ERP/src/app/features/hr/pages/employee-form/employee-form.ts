@@ -3,10 +3,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { apiErrorCode } from '../../../../core/services/api-error';
-import { EmployeeInput, EmployeeStatus } from '../../models/employee';
+import { Role } from '../../../../core/models/role';
+import { EmployeeInput, EmployeeStatus, EMPLOYEE_ROLES } from '../../models/employee';
 import { HrApiService } from '../../services/hr-api.service';
 
-type CheckedField = 'fullName' | 'email' | 'department' | 'position' | 'hireDate';
+type CheckedField = 'fullName' | 'email' | 'role' | 'position' | 'hireDate';
 
 @Component({
   selector: 'app-employee-form',
@@ -22,6 +23,7 @@ export class EmployeeForm {
 
   readonly employeeId = this.route.snapshot.paramMap.get('id');
   readonly isEdit = this.employeeId !== null;
+  readonly employeeRoles = EMPLOYEE_ROLES;
 
   loading = signal(this.isEdit);
   loadFailed = signal(false);
@@ -33,7 +35,7 @@ export class EmployeeForm {
     fullName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     phone: [''],
-    department: ['', Validators.required],
+    role: ['commercial' as Role, Validators.required],
     position: ['', Validators.required],
     hireDate: [new Date().toISOString().slice(0, 10), Validators.required],
     status: ['active' as EmployeeStatus, Validators.required],
@@ -86,9 +88,14 @@ export class EmployeeForm {
       next: () => void this.router.navigate(['/hr/employees']),
       error: (error: unknown) => {
         this.saving.set(false);
-        this.errorKey.set(
-          apiErrorCode(error) === 'notFound' ? 'hr.form.notFound' : 'hr.form.saveError',
-        );
+        const code = apiErrorCode(error);
+        if (code === 'notFound') {
+          this.errorKey.set('hr.form.notFound');
+        } else if (code === 'invalidRole') {
+          this.errorKey.set('hr.form.invalidRole');
+        } else {
+          this.errorKey.set('hr.form.saveError');
+        }
       },
     });
   }

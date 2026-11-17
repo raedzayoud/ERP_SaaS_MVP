@@ -13,7 +13,7 @@ const EN = {
       totalEmployees: 'Employees',
       onLeave: 'On leave',
       pendingLeave: 'Pending leave',
-      departments: 'Departments',
+      roles: 'Roles',
       employeesLink: 'Manage employees',
       leaveLink: 'Manage leave',
     },
@@ -61,7 +61,7 @@ describe('HrDashboard', () => {
       totalEmployees: 12,
       onLeave: 3,
       pendingLeave: 4,
-      departments: 5,
+      roles: 5,
     }));
     await render(fixture);
 

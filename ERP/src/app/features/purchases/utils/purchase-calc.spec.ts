@@ -9,7 +9,6 @@ import {
   isLate,
   isReceivable,
   lineNet,
-  purchaseNumber,
   purchaseTotals,
   receptionState,
   remainingQty,
@@ -212,13 +211,6 @@ describe('order state helpers', () => {
         makeOrder({ status: 'confirmed', lines: [makeLine({ quantity: 2, receivedQty: 2 })] }),
       ),
     ).toBe(false);
-  });
-});
-
-describe('purchaseNumber', () => {
-  it('builds a padded BC number', () => {
-    expect(purchaseNumber(2026, 7)).toBe('BC-2026-0007');
-    expect(purchaseNumber(2026, 42)).toBe('BC-2026-0042');
   });
 });
 

@@ -35,7 +35,7 @@ describe('HrApiService', () => {
       fullName: 'Ada Lovelace',
       email: 'ada@example.com',
       phone: '',
-      department: 'Engineering',
+      role: 'commercial' as const,
       position: 'Developer',
       hireDate: '2026-01-01',
       status: 'active' as const,
@@ -77,7 +77,7 @@ describe('HrApiService', () => {
       totalEmployees: 3,
       onLeave: 1,
       pendingLeave: 2,
-      departments: 2,
+      roles: 2,
     });
   });
 });

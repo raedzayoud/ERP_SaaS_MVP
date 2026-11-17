@@ -75,18 +75,21 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="department">
-            {{ t('hr.form.department') }}
+          <label class="form-label" for="role">
+            {{ t('hr.form.role') }}
             <span class="required" aria-hidden="true">*</span>
           </label>
-          <input
-            id="department"
-            type="text"
+          <select
+            id="role"
             class="form-control"
-            formControlName="department"
-            [attr.aria-invalid]="isInvalid('department')"
-          />
-          @if (isInvalid('department')) {
+            formControlName="role"
+            [attr.aria-invalid]="isInvalid('role')"
+          >
+            @for (option of employeeRoles; track option) {
+              <option [value]="option">{{ t('roles.' + option + '.label') }}</option>
+            }
+          </select>
+          @if (isInvalid('role')) {
             <p class="field-error">{{ t('hr.form.required') }}</p>
           }
         </div>

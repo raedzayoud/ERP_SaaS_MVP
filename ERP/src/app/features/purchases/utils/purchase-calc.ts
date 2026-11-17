@@ -79,10 +79,6 @@ export function isExpectedDateValid(orderDate: string, expectedDate: string): bo
   return expectedDate >= orderDate;
 }
 
-export function purchaseNumber(year: number, sequence: number): string {
-  return `BC-${year}-${String(sequence).padStart(4, '0')}`;
-}
-
 export function catalogEntryFor(
   product: Product | undefined,
   supplierId: string,

@@ -773,7 +773,8 @@
       "expectedDateBeforeOrder": "La date prévue ne peut pas être avant la date de commande.",
       "hasReceptions": "Cette commande a déjà des réceptions et ne peut pas être annulée.",
       "invalidReceiveQty": "Une quantité de réception est invalide.",
-      "alreadyComplete": "Cette commande est déjà entièrement reçue."
+      "alreadyComplete": "Cette commande est déjà entièrement reçue.",
+      "cancelledOrder": "Une commande annulée ne peut pas être dupliquée."
     },
     "pdf": {
       "title": "Bon de commande",
@@ -1969,7 +1970,7 @@
       "totalEmployees": "Employés",
       "onLeave": "En congé",
       "pendingLeave": "Congés en attente",
-      "departments": "Départements",
+      "roles": "Rôles",
       "employeesLink": "Gérer les employés",
       "leaveLink": "Gérer les congés"
     },
@@ -1987,7 +1988,7 @@
       "columns": {
         "name": "Nom",
         "email": "E-mail",
-        "department": "Département",
+        "role": "Rôle",
         "position": "Poste",
         "status": "Statut",
         "actions": "Actions"
@@ -2012,12 +2013,13 @@
       "fullName": "Nom complet",
       "email": "E-mail",
       "phone": "Téléphone",
-      "department": "Département",
+      "role": "Rôle",
       "position": "Poste",
       "hireDate": "Date d'embauche",
       "status": "Statut",
       "required": "Ce champ est obligatoire.",
       "invalidEmail": "Saisissez une adresse e-mail valide.",
+      "invalidRole": "Choisissez un des rôles de l'entreprise.",
       "save": "Enregistrer l'employé"
     },
     "leave": {

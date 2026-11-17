@@ -6,6 +6,7 @@ import com.erp.erp.hr.model.LeaveStatus;
 import com.erp.erp.hr.repository.EmployeeRepository;
 import com.erp.erp.hr.repository.LeaveRequestRepository;
 import com.erp.erp.tenant.model.Tenant;
+import com.erp.erp.user.model.Role;
 import java.util.HashSet;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -34,10 +35,10 @@ public class HrDashboardService {
         var employeesOfTenant = employees.findByTenantIdOrderByFullNameAsc(tenant.getId());
         var leavesOfTenant = leaveRequests.findByTenantIdOrderByCreatedAtDesc(tenant.getId());
 
-        Set<String> departments = new HashSet<>();
+        Set<Role> roles = new HashSet<>();
         long onLeave = 0;
         for (var employee : employeesOfTenant) {
-            departments.add(employee.getDepartment());
+            roles.add(employee.getRole());
             if (employee.getStatus() == EmployeeStatus.ON_LEAVE) {
                 onLeave++;
             }
@@ -48,6 +49,6 @@ public class HrDashboardService {
                         .filter(leave -> leave.getStatus() == LeaveStatus.PENDING)
                         .count();
 
-        return new HrDashboardResponse(employeesOfTenant.size(), onLeave, pendingLeave, departments.size());
+        return new HrDashboardResponse(employeesOfTenant.size(), onLeave, pendingLeave, roles.size());
     }
 }
