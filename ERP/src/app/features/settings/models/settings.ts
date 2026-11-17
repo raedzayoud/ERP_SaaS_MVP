@@ -19,20 +19,6 @@ export interface CompanySettingsRequest {
   companySize: string;
 }
 
-export interface CreateTeamMemberRequest {
-  name: string;
-  email: string;
-  role: Role;
-  password: string;
-  mustRenewPassword: boolean;
-}
-
-export interface UpdateTeamMemberRequest {
-  role?: Role;
-  active?: boolean;
-  mustRenewPassword?: boolean;
-}
-
 /** One module the workspace can buy on top of its plan. */
 export interface ModuleOffer {
   id: string;

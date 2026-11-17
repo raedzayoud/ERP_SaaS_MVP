@@ -40,20 +40,6 @@
   font-weight: 600;
 }
 
-.tab-badge {
-  background: var(--gray-200);
-  color: var(--gray-600);
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-}
-
-.tab.active .tab-badge {
-  background: var(--primary-bg);
-  color: var(--primary);
-}
-
 /* Tab content */
 .tab-content {
   margin-bottom: 24px;
@@ -136,81 +122,9 @@
   border-top: 1px solid var(--gray-200);
 }
 
-/* Add user form */
-.add-user-form {
-  background: var(--gray-50);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.add-user-form .form-row {
-  grid-template-columns: 1fr 1fr 1fr;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-/* Users table */
-.user-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-}
-
-.user-avatar-sm {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--primary);
-  color: var(--white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.user-actions-cell {
-  white-space: nowrap;
-}
-
-.user-actions-cell .btn {
-  margin-inline-end: 6px;
-}
-
-.form-check-group {
-  display: flex;
-  align-items: end;
-}
-
-.form-check {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--gray-700);
-  cursor: pointer;
-}
-
-.activity-title {
-  margin-top: 28px;
-}
 
 .audit-table td {
   font-size: 13px;
-}
-
-.role-actions-row {
-  display: flex;
-  gap: 8px;
-  margin-top: auto;
 }
 
 /* Roles */
@@ -417,8 +331,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .form-row,
-  .form-row:has(.form-group:nth-child(3)),
-  .add-user-form .form-row {
+  .form-row:has(.form-group:nth-child(3)) {
     grid-template-columns: 1fr;
   }
 

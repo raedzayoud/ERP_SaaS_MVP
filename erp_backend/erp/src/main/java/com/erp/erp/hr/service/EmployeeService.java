@@ -7,12 +7,16 @@ import com.erp.erp.hr.model.Employee;
 import com.erp.erp.hr.model.EmployeeStatus;
 import com.erp.erp.hr.repository.EmployeeRepository;
 import com.erp.erp.hr.repository.LeaveRequestRepository;
+import com.erp.erp.settings.service.PlanLimits;
 import com.erp.erp.tenant.model.Tenant;
 import com.erp.erp.user.model.Role;
+import com.erp.erp.user.model.User;
+import com.erp.erp.user.repository.UserRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +25,18 @@ public class EmployeeService {
 
     private final EmployeeRepository employees;
     private final LeaveRequestRepository leaveRequests;
+    private final UserRepository users;
+    private final PasswordEncoder passwordEncoder;
 
     public EmployeeService(
-            EmployeeRepository employees, LeaveRequestRepository leaveRequests) {
+            EmployeeRepository employees,
+            LeaveRequestRepository leaveRequests,
+            UserRepository users,
+            PasswordEncoder passwordEncoder) {
         this.employees = employees;
         this.leaveRequests = leaveRequests;
+        this.users = users;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional(readOnly = true)
@@ -50,6 +61,7 @@ public class EmployeeService {
         Employee employee = new Employee();
         employee.setTenant(tenant);
         apply(employee, request);
+        employee.setUser(createAccount(tenant, employee, request.password()));
         return EmployeeResponse.from(employees.save(employee));
     }
 
@@ -58,6 +70,13 @@ public class EmployeeService {
         Employee employee = find(tenant, id);
         apply(employee, request);
         employee.setUpdatedAt(Instant.now());
+        User account = employee.getUser();
+        if (account != null && account.getRole() != employee.getRole()) {
+            // shortcut: the account email is not resynced when the employee
+            // email changes, upgrade when the app needs email changes.
+            account.setRole(employee.getRole());
+            users.save(account);
+        }
         return EmployeeResponse.from(employees.save(employee));
     }
 
@@ -67,7 +86,41 @@ public class EmployeeService {
         if (leaveRequests.existsByEmployeeIdAndTenantId(id, tenant.getId())) {
             throw new AuthException(409, "employee has leave requests", "employeeHasLeaveRequests");
         }
+        User account = employee.getUser();
+        if (account != null) {
+            account.setActive(false);
+            users.save(account);
+        }
         employees.delete(employee);
+    }
+
+    /**
+     * Creates the login account of a new employee. The password is mandatory:
+     * no email is sent, the administrator gives it to the employee.
+     */
+    private User createAccount(Tenant tenant, Employee employee, String password) {
+        if (password == null || password.isBlank()) {
+            throw new AuthException(400, "password required", "invalidPassword");
+        }
+        if (password.length() < 8) {
+            throw new AuthException(400, "password too short", "invalidPassword");
+        }
+        if (users.existsByEmail(employee.getEmail())) {
+            throw new AuthException(409, "email already in use", "emailTaken");
+        }
+        if (users.countByTenantId(tenant.getId()) >= PlanLimits.maxUsers(tenant.getPlanId())) {
+            throw new AuthException(409, "plan user limit reached", "planUserLimit");
+        }
+
+        User account = new User();
+        account.setFullName(employee.getFullName());
+        account.setEmail(employee.getEmail());
+        account.setPasswordHash(passwordEncoder.encode(password));
+        account.setRole(employee.getRole());
+        account.setActive(true);
+        account.setMustRenewPassword(true);
+        account.setTenant(tenant);
+        return users.save(account);
     }
 
     private Employee find(Tenant tenant, UUID id) {
@@ -84,7 +137,7 @@ public class EmployeeService {
         // shortcut: the legacy department column is still NOT NULL in the
         // existing databases, so it receives the role code until it is dropped.
         employee.setDepartment(employee.getRole().getCode());
-        employee.setPosition(request.position().trim());
+        employee.setPosition(request.position() == null ? "" : request.position().trim());
         employee.setHireDate(request.hireDate());
         if (request.status() != null && !request.status().isBlank()) {
             employee.setStatus(parseStatus(request.status()));

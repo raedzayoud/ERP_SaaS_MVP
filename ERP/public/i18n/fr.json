@@ -2000,7 +2000,8 @@
       },
       "deleteConfirm": "Supprimer cet employé ?",
       "deleteBlocked": "Cet employé a des demandes de congé et ne peut pas être supprimé.",
-      "deleted": "Employé supprimé"
+      "deleted": "Employé supprimé",
+      "account": "Compte"
     },
     "form": {
       "newTitle": "Nouvel employé",
@@ -2014,12 +2015,16 @@
       "email": "E-mail",
       "phone": "Téléphone",
       "role": "Rôle",
-      "position": "Poste",
       "hireDate": "Date d'embauche",
       "status": "Statut",
       "required": "Ce champ est obligatoire.",
       "invalidEmail": "Saisissez une adresse e-mail valide.",
       "invalidRole": "Choisissez un des rôles de l'entreprise.",
+      "password": "Mot de passe",
+      "passwordHint": "Au moins 8 caractères. Transmettez-le vous-même à l'employé.",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+      "emailTaken": "Cet e-mail possède déjà un compte de connexion.",
+      "planUserLimit": "La limite d'utilisateurs de votre plan est atteinte.",
       "save": "Enregistrer l'employé"
     },
     "leave": {
@@ -2835,15 +2840,6 @@
     "messages": {
       "companyInvalid": "Veuillez saisir un nom d'entreprise et un email valides.",
       "saveFailed": "Impossible d'enregistrer les informations de l'entreprise. Veuillez r\u00e9essayer.",
-      "userInvalid": "Veuillez saisir un nom, un email et un mot de passe valides (8 caract\u00e8res minimum).",
-      "credentialsSent": "Les identifiants de connexion ont \u00e9t\u00e9 envoy\u00e9s par email au nouveau membre.",
-      "userLimit": "Limite d'utilisateurs atteinte pour votre plan. Passez \u00e0 un plan sup\u00e9rieur.",
-      "userEmailTaken": "Cet email est d\u00e9j\u00e0 utilis\u00e9 par un autre compte.",
-      "lastAdmin": "Le dernier administrateur de l'entreprise ne peut pas \u00eatre supprim\u00e9 ni r\u00e9trograd\u00e9.",
-      "userFailed": "Impossible de terminer l'action sur l'utilisateur. Veuillez r\u00e9essayer.",
-      "userRemoved": "Utilisateur supprim\u00e9 avec succ\u00e8s.",
-      "renewalRequested": "L'utilisateur devra choisir un nouveau mot de passe \u00e0 sa prochaine connexion.",
-      "removeConfirm": "Supprimer cet utilisateur de l'espace de travail ?",
       "network": "Impossible de joindre le serveur. V\u00e9rifiez votre connexion et r\u00e9essayez.",
       "adminOnly": "Seul l'administrateur de l'entreprise peut g\u00e9rer ces param\u00e8tres.",
       "subscriptionExists": "Un abonnement existe d\u00e9j\u00e0. Utilisez le portail de facturation pour le g\u00e9rer.",
@@ -3180,6 +3176,10 @@
       "confirm": "Confirmer le mot de passe",
       "mismatch": "Les deux mots de passe ne correspondent pas.",
       "minLength": "Le mot de passe doit contenir au moins 6 caractères.",
+      "signedInAs": "Connecté en tant que",
+      "showPassword": "Afficher les mots de passe",
+      "reqLength": "Au moins 6 caractères",
+      "reqMatch": "Les deux mots de passe correspondent",
       "submit": "Enregistrer et continuer"
     }
   },

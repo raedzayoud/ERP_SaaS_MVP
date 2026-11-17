@@ -95,23 +95,6 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="position">
-            {{ t('hr.form.position') }}
-            <span class="required" aria-hidden="true">*</span>
-          </label>
-          <input
-            id="position"
-            type="text"
-            class="form-control"
-            formControlName="position"
-            [attr.aria-invalid]="isInvalid('position')"
-          />
-          @if (isInvalid('position')) {
-            <p class="field-error">{{ t('hr.form.required') }}</p>
-          }
-        </div>
-
-        <div class="form-group">
           <label class="form-label" for="hireDate">
             {{ t('hr.form.hireDate') }}
             <span class="required" aria-hidden="true">*</span>
@@ -137,6 +120,27 @@
           </select>
         </div>
       </div>
+
+      @if (!isEdit) {
+        <div class="form-group">
+          <label class="form-label" for="password">
+            {{ t('hr.form.password') }}
+            <span class="required" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="password"
+            type="password"
+            class="form-control"
+            formControlName="password"
+            autocomplete="new-password"
+            [attr.aria-invalid]="passwordTooShort()"
+          />
+          <span class="form-hint">{{ t('hr.form.passwordHint') }}</span>
+          @if (passwordTooShort()) {
+            <p class="field-error">{{ t('hr.form.passwordTooShort') }}</p>
+          }
+        </div>
+      }
 
       <div class="form-actions">
         <a routerLink="/hr/employees" class="btn btn-secondary">{{ t('common.cancel') }}</a>

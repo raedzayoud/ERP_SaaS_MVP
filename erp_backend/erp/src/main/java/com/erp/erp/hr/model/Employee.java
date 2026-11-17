@@ -2,6 +2,7 @@ package com.erp.erp.hr.model;
 
 import com.erp.erp.tenant.model.Tenant;
 import com.erp.erp.user.model.Role;
+import com.erp.erp.user.model.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -74,4 +75,9 @@ public class Employee {
 
     @Column(nullable = false)
     private Instant updatedAt = Instant.now();
+
+    /** The login account of this employee, when one was created. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

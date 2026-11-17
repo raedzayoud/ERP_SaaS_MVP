@@ -57,46 +57,6 @@ describe('SettingsApiService', () => {
     request.flush([member()]);
   });
 
-  it('creates a team member', () => {
-    api
-      .createUser({
-        name: 'Ada Lovelace',
-        email: 'ada@example.com',
-        role: 'commercial',
-        password: 'secret123',
-        mustRenewPassword: true,
-      })
-      .subscribe();
-
-    const request = http.expectOne(`${baseUrl}/users`);
-    expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({
-      name: 'Ada Lovelace',
-      email: 'ada@example.com',
-      role: 'commercial',
-      password: 'secret123',
-      mustRenewPassword: true,
-    });
-    request.flush(member());
-  });
-
-  it('patches one team member', () => {
-    api.updateUser('user-1', { active: false }).subscribe();
-
-    const request = http.expectOne(`${baseUrl}/users/user-1`);
-    expect(request.request.method).toBe('PATCH');
-    expect(request.request.body).toEqual({ active: false });
-    request.flush({ ...member(), active: false });
-  });
-
-  it('deletes one team member', () => {
-    api.deleteUser('user-1').subscribe();
-
-    const request = http.expectOne(`${baseUrl}/users/user-1`);
-    expect(request.request.method).toBe('DELETE');
-    request.flush(null);
-  });
-
   function member(): TeamMember {
     return {
       id: 'user-1',

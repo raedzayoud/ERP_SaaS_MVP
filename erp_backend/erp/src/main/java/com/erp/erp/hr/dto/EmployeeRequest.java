@@ -10,6 +10,8 @@ public record EmployeeRequest(
         @NotBlank @Email String email,
         String phone,
         @NotBlank String role,
-        @NotBlank String position,
+        String position,
         @NotNull LocalDate hireDate,
-        String status) {}
+        String status,
+        // Mandatory on creation: a login account is always created.
+        String password) {}

@@ -2,7 +2,7 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Settings</h1>
-      <p class="page-subtitle">Manage your company, users, roles, and subscription.</p>
+      <p class="page-subtitle">Manage your company, roles, subscription and modules.</p>
     </div>
   </div>
 
@@ -17,10 +17,10 @@
     </button>
     <button
       class="tab"
-      [class.active]="activeTab() === 'users'"
-      (click)="setTab('users')"
+      [class.active]="activeTab() === 'activity'"
+      (click)="setTab('activity')"
     >
-      👥 Users <span class="tab-badge">{{ userCount() }}/{{ planLimit() }}</span>
+      🕘 Activity
     </button>
     <button
       class="tab"
@@ -161,187 +161,14 @@
     </div>
   }
 
-  <!-- ═══ USERS TAB ═══ -->
-  @if (activeTab() === 'users') {
+  <!-- ═══ ACTIVITY TAB ═══ -->
+  @if (activeTab() === 'activity') {
     <div class="tab-content card">
       <div class="section-header">
-        <h2 class="section-title">Team Members</h2>
-        <button
-          class="btn btn-primary btn-sm"
-          (click)="toggleAddUser()"
-          [disabled]="!canAddUser()"
-        >
-          + Add User
-        </button>
+        <h2 class="section-title">{{ t('settings.activity.title') }}</h2>
       </div>
 
-      @if (userError()) {
-        <div class="alert alert-danger" role="alert">{{ t(userError()) }}</div>
-      }
-      @if (userSuccess()) {
-        <div class="alert alert-success">{{ t(userSuccess()) }}</div>
-      }
-
-      @if (!canAddUser() && !userError()) {
-        <div class="alert alert-warning">
-          You've reached the {{ plan()?.name }} plan limit of {{ planLimit() }} users.
-          <a routerLink="/settings" (click)="setTab('subscription')">Upgrade your plan</a> to add more.
-        </div>
-      }
-
-      <!-- Add user form -->
-      @if (showAddUser()) {
-        <div class="add-user-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Full name</label>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="e.g. Jane Doe"
-                [value]="newUserName()"
-                (input)="onUserInput('name', $event)"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Email</label>
-              <input
-                type="email"
-                class="form-control"
-                placeholder="jane@company.com"
-                [value]="newUserEmail()"
-                (input)="onUserInput('email', $event)"
-              />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Role</label>
-              <select
-                class="form-control"
-                [value]="newUserRole()"
-                (change)="onRoleChange($event)"
-              >
-                <optgroup label="Built-in roles">
-                  @for (role of assigneeRoles; track role) {
-                    <option [value]="role">{{ t(roleLabel(role)) }}</option>
-                  }
-                </optgroup>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Password (min. 8 characters)</label>
-              <input
-                type="password"
-                class="form-control"
-                placeholder="At least 8 characters"
-                [value]="newUserPassword()"
-                (input)="onUserInput('password', $event)"
-              />
-            </div>
-            <div class="form-group form-check-group">
-              <label class="form-check">
-                <input
-                  type="checkbox"
-                  [checked]="newUserMustRenew()"
-                  (change)="newUserMustRenew.set($any($event.target).checked)"
-                />
-                <span>Must choose a new password at first login</span>
-              </label>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button class="btn btn-secondary btn-sm" (click)="toggleAddUser()">Cancel</button>
-            <button class="btn btn-success btn-sm" (click)="addUser()">Add User</button>
-          </div>
-        </div>
-      }
-
-      <!-- Users table -->
-      @if (usersLoading()) {
-        <div class="state-block">
-          <span class="spinner" aria-hidden="true"></span>
-          <p class="state-text">{{ t('common.loading') }}</p>
-        </div>
-      } @else if (usersLoadFailed()) {
-        <div class="state-block state-block--error" role="alert">
-          <p class="state-title">{{ t('common.errorTitle') }}</p>
-          <p class="state-text">{{ t('common.errorHint') }}</p>
-          <button type="button" class="btn btn-secondary" (click)="loadUsers()">
-            {{ t('common.retry') }}
-          </button>
-        </div>
-      } @else {
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th style="width: 110px"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (user of users(); track user.id) {
-            <tr>
-              <td>
-                <div class="user-cell">
-                  <span class="user-avatar-sm">{{ user.name.charAt(0) }}</span>
-                  {{ user.name }}
-                </div>
-              </td>
-              <td class="text-muted">{{ user.email }}</td>
-              <td>
-                <span [class]="userBadgeClass(user)">{{ userRoleLabel(user) }}</span>
-              </td>
-              <td>
-                @if (user.active === false) {
-                  <span class="badge badge-warning">Deactivated</span>
-                } @else if (user.mustRenewPassword) {
-                  <span class="badge badge-info">Renewal pending</span>
-                } @else {
-                  <span class="badge badge-success">Active</span>
-                }
-              </td>
-              <td class="user-actions-cell">
-                @if (user.role !== 'admin-entreprise') {
-                  @if (user.active === false) {
-                    <button
-                      class="btn btn-sm btn-secondary"
-                      (click)="setUserActive(user, true)"
-                    >
-                      Activate
-                    </button>
-                  } @else {
-                    <button
-                      class="btn btn-sm btn-secondary"
-                      title="Prevent workspace access"
-                      (click)="setUserActive(user, false)"
-                    >
-                      Deactivate
-                    </button>
-                  }
-                  <button
-                    class="btn btn-sm btn-secondary"
-                    title="Must choose a new password at next login"
-                    (click)="requestRenewal(user)"
-                  >
-                    Renewal
-                  </button>
-                  <button class="btn btn-sm btn-danger" (click)="removeUser(user)" title="Remove user">
-                    ✕
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      }
-
       <!-- Recent activity -->
-      <h2 class="section-title activity-title">{{ t('settings.activity.title') }}</h2>
       @if (activityLoading()) {
         <div class="state-block">
           <span class="spinner" aria-hidden="true"></span>
@@ -412,7 +239,7 @@
         <h3 class="section-title">How roles work</h3>
         <p class="text-muted" style="font-size: 13px; line-height: 1.6;">
           Roles control what each team member can see and do in the ERP.
-          When you add a user, assign them the role that matches their job.
+          Assign each person the role that matches their job.
           The company administrator always has full access, including settings and billing.
           The external client only sees the customer portal (their invoices).
         </p>

@@ -58,6 +58,7 @@ const ADA: Employee = {
   hireDate: '2026-01-01',
   status: 'active',
   createdAt: '2026-01-01T10:00:00.000Z',
+  hasAccount: false,
 };
 
 const LEAVE: LeaveRequest = {

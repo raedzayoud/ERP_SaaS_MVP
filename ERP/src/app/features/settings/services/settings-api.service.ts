@@ -5,11 +5,9 @@ import { environment } from '../../../../environments/environment';
 import { AuthTenantResponse } from '../../../core/models/auth';
 import {
   CompanySettingsRequest,
-  CreateTeamMemberRequest,
   ModuleCatalog,
   ModulePurchase,
   TeamMember,
-  UpdateTeamMemberRequest,
 } from '../models/settings';
 
 @Injectable({ providedIn: 'root' })
@@ -27,18 +25,6 @@ export class SettingsApiService {
 
   getUsers(): Observable<TeamMember[]> {
     return this.http.get<TeamMember[]>(`${this.baseUrl}/users`);
-  }
-
-  createUser(request: CreateTeamMemberRequest): Observable<TeamMember> {
-    return this.http.post<TeamMember>(`${this.baseUrl}/users`, request);
-  }
-
-  updateUser(id: string, request: UpdateTeamMemberRequest): Observable<TeamMember> {
-    return this.http.patch<TeamMember>(`${this.baseUrl}/users/${id}`, request);
-  }
-
-  deleteUser(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/users/${id}`);
   }
 
   getModules(): Observable<ModuleCatalog> {

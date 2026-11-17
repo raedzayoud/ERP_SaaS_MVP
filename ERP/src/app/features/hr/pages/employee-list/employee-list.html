@@ -64,7 +64,12 @@
           <tbody>
             @for (employee of employees(); track employee.id) {
               <tr>
-                <td class="cell-strong">{{ employee.fullName }}</td>
+                <td class="cell-strong">
+                  {{ employee.fullName }}
+                  @if (employee.hasAccount) {
+                    <span class="badge badge-info">{{ t('hr.employees.account') }}</span>
+                  }
+                </td>
                 <td>{{ employee.email }}</td>
                 <td>{{ t('roles.' + employee.role + '.label') }}</td>
                 <td>{{ employee.position }}</td>

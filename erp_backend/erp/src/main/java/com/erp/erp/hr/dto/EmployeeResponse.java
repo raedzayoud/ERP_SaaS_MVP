@@ -13,7 +13,8 @@ public record EmployeeResponse(
         String position,
         String hireDate,
         String status,
-        String createdAt) {
+        String createdAt,
+        boolean hasAccount) {
 
     public static EmployeeResponse from(Employee employee) {
         return new EmployeeResponse(
@@ -27,6 +28,7 @@ public record EmployeeResponse(
                 employee.getStatus() == null
                         ? null
                         : employee.getStatus().name().toLowerCase(Locale.ROOT),
-                employee.getCreatedAt() == null ? null : employee.getCreatedAt().toString());
+                employee.getCreatedAt() == null ? null : employee.getCreatedAt().toString(),
+                employee.getUser() != null);
     }
 }

@@ -2000,7 +2000,8 @@
       },
       "deleteConfirm": "Delete this employee?",
       "deleteBlocked": "This employee has leave requests and cannot be deleted.",
-      "deleted": "Employee deleted"
+      "deleted": "Employee deleted",
+      "account": "Account"
     },
     "form": {
       "newTitle": "New employee",
@@ -2014,12 +2015,16 @@
       "email": "Email",
       "phone": "Phone",
       "role": "Role",
-      "position": "Position",
       "hireDate": "Hire date",
       "status": "Status",
       "required": "This field is required.",
       "invalidEmail": "Enter a valid email address.",
       "invalidRole": "Choose one of the roles of the company.",
+      "password": "Password",
+      "passwordHint": "At least 8 characters. Give it to the employee yourself.",
+      "passwordTooShort": "The password must contain at least 8 characters.",
+      "emailTaken": "This email already has a login account.",
+      "planUserLimit": "Your plan's user limit is reached.",
       "save": "Save employee"
     },
     "leave": {
@@ -2837,15 +2842,6 @@
     "messages": {
       "companyInvalid": "Please enter a valid company name and email.",
       "saveFailed": "Could not save the company information. Please try again.",
-      "userInvalid": "Please enter a valid name, email and password (8 characters minimum).",
-      "credentialsSent": "The login details were emailed to the new member.",
-      "userLimit": "User limit reached for your plan. Please upgrade.",
-      "userEmailTaken": "This email is already used by another account.",
-      "lastAdmin": "The last company administrator cannot be removed or demoted.",
-      "userFailed": "Could not complete the user action. Please try again.",
-      "userRemoved": "User removed successfully.",
-      "renewalRequested": "The user will be asked to choose a new password at their next login.",
-      "removeConfirm": "Remove this user from the workspace?",
       "network": "Cannot reach the server. Check your connection and try again.",
       "adminOnly": "Only the company administrator can manage these settings.",
       "subscriptionExists": "A subscription already exists. Use the billing portal to manage it.",
@@ -3183,6 +3179,10 @@
       "confirm": "Confirm password",
       "mismatch": "The two passwords do not match.",
       "minLength": "The password must contain at least 6 characters.",
+      "signedInAs": "Signed in as",
+      "showPassword": "Show passwords",
+      "reqLength": "At least 6 characters",
+      "reqMatch": "Both passwords match",
       "submit": "Save and continue"
     }
   },

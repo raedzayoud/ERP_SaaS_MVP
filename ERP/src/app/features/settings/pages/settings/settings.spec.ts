@@ -121,7 +121,25 @@ describe('SettingsComponent modules tab', () => {
             addModules,
           },
         },
-        { provide: ActivityApiService, useValue: { recent: () => of([]) } },
+        {
+          provide: ActivityApiService,
+          useValue: {
+            recent: () =>
+              of([
+                {
+                  id: 'a1',
+                  at: '2026-05-10T10:00:00Z',
+                  userName: 'Ada Lovelace',
+                  userEmail: 'ada@example.com',
+                  module: 'hr',
+                  action: 'create',
+                  detail: 'Employee created',
+                  entityType: 'employee',
+                  entityId: 'e1',
+                },
+              ]),
+          },
+        },
         {
           provide: BillingApiService,
           useValue: {
@@ -218,6 +236,18 @@ describe('SettingsComponent modules tab', () => {
     await render();
 
     expect(fixture.componentInstance.activeTab()).toBe('modules');
+  });
+
+  it('shows the recent activity entries', async () => {
+    fixture = setup();
+    await render();
+
+    fixture.componentInstance.setTab('activity');
+    await render();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('Ada Lovelace');
+    expect(text).toContain('Employee created');
   });
 
   it('goes to the dashboard once the payment is confirmed', async () => {

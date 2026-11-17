@@ -15,6 +15,10 @@ const EN = {
       confirm: 'Confirm password',
       mismatch: 'The two passwords do not match.',
       minLength: 'The password must contain at least 6 characters.',
+      signedInAs: 'Signed in as',
+      showPassword: 'Show passwords',
+      reqLength: 'At least 6 characters',
+      reqMatch: 'Both passwords match',
       submit: 'Save and continue',
     },
   },
@@ -87,6 +91,23 @@ describe('RenewPassword', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
       'The two passwords do not match.',
     );
+  });
+
+  it('shows the password checks and can reveal both fields', async () => {
+    fixture.componentInstance.newPassword.set('strong-6');
+    fixture.componentInstance.confirm.set('strong-6');
+    await render();
+
+    expect(fixture.componentInstance.lengthOk).toBe(true);
+    expect(fixture.componentInstance.matchOk).toBe(true);
+
+    fixture.componentInstance.onToggleShow({
+      target: { checked: true },
+    } as unknown as Event);
+    fixture.detectChanges();
+
+    const first = (fixture.nativeElement as HTMLElement).querySelector('#new-password');
+    expect(first?.getAttribute('type')).toBe('text');
   });
 
   it('clears the renewal flag and goes back home', () => {

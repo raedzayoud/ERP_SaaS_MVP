@@ -2,8 +2,8 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, signal, computed, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { Observable, catchError, map, of, switchMap } from 'rxjs';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -13,14 +13,14 @@ import { BillingInterval } from '../../../../core/models/auth';
 import { BillingStatusResponse } from '../../../../core/models/billing';
 import { Plan } from '../../../../core/models/plan';
 import { COUNTRIES, LANGUAGES, COMPANY_SIZES } from '../../../../core/data/countries';
-import { ASSIGNEE_ROLES, ROLE_INFO, Role, roleLabelKey } from '../../../../core/models/role';
+import { ASSIGNEE_ROLES, ROLE_INFO, Role } from '../../../../core/models/role';
 import { CompanySettingsRequest, ModuleCatalog, TeamMember } from '../../models/settings';
 import { ActivityEntry } from '../../models/activity';
 import { SettingsApiService } from '../../services/settings-api.service';
 import { ActivityApiService } from '../../services/activity-api.service';
 
-type SettingsTab = 'company' | 'users' | 'roles' | 'subscription' | 'modules';
-type ErrorContext = 'save' | 'user' | 'billing';
+type SettingsTab = 'company' | 'activity' | 'roles' | 'subscription' | 'modules';
+type ErrorContext = 'save' | 'billing';
 
 const ROLE_BADGE_CLASS: Record<Role, string> = {
   'super-admin': 'badge-primary',
@@ -35,14 +35,13 @@ const ROLE_BADGE_CLASS: Record<Role, string> = {
 
 @Component({
   selector: 'app-settings',
-  imports: [RouterLink, TranslocoDirective, DatePipe, CurrencyPipe],
+  imports: [TranslocoDirective, DatePipe, CurrencyPipe],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
 export class SettingsComponent {
   private tenantService = inject(TenantService);
   private authService = inject(AuthService);
-  private transloco = inject(TranslocoService);
   private api = inject(SettingsApiService);
   private activityApi = inject(ActivityApiService);
   private billingApi = inject(BillingApiService);
@@ -72,32 +71,16 @@ export class SettingsComponent {
   languages = LANGUAGES;
   companySizes = COMPANY_SIZES;
 
-  // ── Users tab ────────────────────────────────
+  // ── Team members (count only, used by the plan limit) ─────────
   users = signal<TeamMember[]>([]);
-  usersLoading = signal(true);
-  usersLoadFailed = signal(false);
-
-  showAddUser = signal(false);
-  newUserName = signal('');
-  newUserEmail = signal('');
-  newUserRole = signal<Role>('commercial');
-  newUserPassword = signal('');
-  newUserMustRenew = signal(true);
-  userError = signal('');
-  userSuccess = signal('');
 
   // ── Roles definitions ───────────────────────
-  readonly assigneeRoles = ASSIGNEE_ROLES;
   readonly roleInfo = ROLE_INFO.filter((r) => ASSIGNEE_ROLES.includes(r.role));
 
   // ── Recent activity (audit trail) ───────────
   activity = signal<ActivityEntry[]>([]);
   activityLoading = signal(true);
   activityLoadFailed = signal(false);
-
-  roleLabel(role: Role): string {
-    return roleLabelKey(role);
-  }
 
   roleBadgeClass(role: Role): string {
     return `badge ${ROLE_BADGE_CLASS[role] ?? 'badge-info'}`;
@@ -130,7 +113,6 @@ export class SettingsComponent {
   plan = computed<Plan | null>(() => getPlanById(this.currentPlanId()));
   planLimit = computed(() => this.plan()?.maxUsers ?? 3);
   userCount = computed(() => this.users().length);
-  canAddUser = computed(() => this.userCount() < this.planLimit());
   billingStatus = computed(
     () => this.billing()?.billingStatus ?? this.tenant()?.billingStatus ?? '',
   );
@@ -168,7 +150,7 @@ export class SettingsComponent {
     this.activeTab.set(tab);
     this.companySaved.set(false);
     this.billingError.set('');
-    if (tab === 'users') {
+    if (tab === 'activity') {
       this.loadActivity();
     }
     if (tab === 'modules') {
@@ -366,22 +348,13 @@ export class SettingsComponent {
       });
   }
 
-  // ── User actions ─────────────────────────────
   loadUsers(): void {
-    this.usersLoading.set(true);
-    this.usersLoadFailed.set(false);
     this.api
       .getUsers()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (users) => {
-          this.users.set(users);
-          this.usersLoading.set(false);
-        },
-        error: () => {
-          this.usersLoadFailed.set(true);
-          this.usersLoading.set(false);
-        },
+        next: (users) => this.users.set(users),
+        error: () => this.users.set([]),
       });
   }
 
@@ -401,123 +374,6 @@ export class SettingsComponent {
           this.activityLoading.set(false);
         },
       });
-  }
-
-  toggleAddUser(): void {
-    this.showAddUser.update((v) => !v);
-    this.userError.set('');
-    this.userSuccess.set('');
-    this.resetAddUserForm();
-  }
-
-  addUser(): void {
-    this.userError.set('');
-    this.userSuccess.set('');
-
-    const name = this.newUserName().trim();
-    const email = this.newUserEmail().trim();
-    const password = this.newUserPassword();
-
-    if (!name || !email.includes('@') || password.length < 8) {
-      this.userError.set('settings.messages.userInvalid');
-      return;
-    }
-
-    this.api
-      .createUser({
-        name,
-        email,
-        role: this.newUserRole(),
-        password,
-        mustRenewPassword: this.newUserMustRenew(),
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.users.update((list) => [...list, user]);
-          this.userSuccess.set('settings.messages.credentialsSent');
-          this.showAddUser.set(false);
-          this.resetAddUserForm();
-          this.loadActivity();
-          setTimeout(() => this.userSuccess.set(''), 3000);
-        },
-        error: (error: unknown) => this.userError.set(this.errorKey(error, 'user')),
-      });
-  }
-
-  /** Reactivate / deactivate a member (deactivated = no workspace access). */
-  setUserActive(user: TeamMember, active: boolean): void {
-    this.userError.set('');
-    this.api
-      .updateUser(user.id, { active })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (updated) => {
-          this.replaceUser(updated);
-          this.loadActivity();
-        },
-        error: (error: unknown) => this.userError.set(this.errorKey(error, 'user')),
-      });
-  }
-
-  /** Ask the member to choose a new password at their next login. */
-  requestRenewal(user: TeamMember): void {
-    this.userError.set('');
-    this.api
-      .updateUser(user.id, { mustRenewPassword: true })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (updated) => {
-          this.replaceUser(updated);
-          this.userSuccess.set('settings.messages.renewalRequested');
-          this.loadActivity();
-          setTimeout(() => this.userSuccess.set(''), 3000);
-        },
-        error: (error: unknown) => this.userError.set(this.errorKey(error, 'user')),
-      });
-  }
-
-  /** Badge label for one member: builtin role label. */
-  userRoleLabel(user: TeamMember): string {
-    return this.transloco.translate(roleLabelKey(user.role));
-  }
-
-  userBadgeClass(user: TeamMember): string {
-    return `badge ${ROLE_BADGE_CLASS[user.role] ?? 'badge-info'}`;
-  }
-
-  removeUser(user: TeamMember): void {
-    if (!window.confirm(this.t('settings.messages.removeConfirm'))) {
-      return;
-    }
-
-    this.userError.set('');
-    this.api
-      .deleteUser(user.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.users.update((list) => list.filter((u) => u.id !== user.id));
-          this.userSuccess.set('settings.messages.userRemoved');
-          this.loadActivity();
-          setTimeout(() => this.userSuccess.set(''), 3000);
-        },
-        error: (error: unknown) => this.userError.set(this.errorKey(error, 'user')),
-      });
-  }
-
-  private replaceUser(updated: TeamMember): void {
-    this.users.update((list) =>
-      list.map((user) => (user.id === updated.id ? updated : user)),
-    );
-  }
-
-  private resetAddUserForm(): void {
-    this.newUserName.set('');
-    this.newUserEmail.set('');
-    this.newUserRole.set('commercial');
-    this.newUserPassword.set('');
-    this.newUserMustRenew.set(true);
   }
 
   // ── Plan actions ─────────────────────────────
@@ -577,21 +433,6 @@ export class SettingsComponent {
     map[field]?.(value);
   }
 
-  onUserInput(field: string, event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    const map: Record<string, (v: string) => void> = {
-      name: (v) => this.newUserName.set(v),
-      email: (v) => this.newUserEmail.set(v),
-      password: (v) => this.newUserPassword.set(v),
-    };
-    map[field]?.(value);
-  }
-
-  onRoleChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.newUserRole.set(value as Role);
-  }
-
   private errorKey(error: unknown, context: ErrorContext): string {
     if (!(error instanceof HttpErrorResponse)) {
       return this.fallbackKey(context);
@@ -604,36 +445,14 @@ export class SettingsComponent {
     }
 
     const message = String(error.error?.message ?? '').toLowerCase();
-    if (error.status === 409) {
-      if (message.includes('plan user limit')) {
-        return 'settings.messages.userLimit';
-      }
-      if (message.includes('email already in use')) {
-        return 'settings.messages.userEmailTaken';
-      }
-      if (
-        message.includes('last administrator') ||
-        message.includes('last user')
-      ) {
-        return 'settings.messages.lastAdmin';
-      }
-      if (message.includes('subscription already exists')) {
-        return 'settings.messages.subscriptionExists';
-      }
-    }
-    if (error.status === 400 && context === 'user') {
-      return 'settings.messages.userInvalid';
+    if (error.status === 409 && message.includes('subscription already exists')) {
+      return 'settings.messages.subscriptionExists';
     }
     return this.fallbackKey(context);
   }
 
   private fallbackKey(context: ErrorContext): string {
     if (context === 'save') return 'settings.messages.saveFailed';
-    if (context === 'billing') return 'settings.messages.billingFailed';
-    return 'settings.messages.userFailed';
-  }
-
-  private t(key: string, params?: Record<string, string | number>): string {
-    return this.transloco.translate(key, params);
+    return 'settings.messages.billingFailed';
   }
 }

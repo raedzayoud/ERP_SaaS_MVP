@@ -12,6 +12,7 @@ export interface Employee {
   hireDate: string;
   status: EmployeeStatus;
   createdAt: string;
+  hasAccount: boolean;
 }
 
 export interface EmployeeInput {
@@ -22,6 +23,8 @@ export interface EmployeeInput {
   position: string;
   hireDate: string;
   status: EmployeeStatus;
+  /** Only used on creation: creates the login account of the employee. */
+  password?: string;
 }
 
 /** The roles an employee can hold: the application roles, without the external client. */

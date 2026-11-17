@@ -24,6 +24,7 @@ export class RenewPassword {
   confirm = signal('');
   errorKey = signal('');
   saving = signal(false);
+  showPassword = signal(false);
 
   constructor() {
     // Safety net: visitors without a session go back to the generic login.
@@ -32,15 +33,26 @@ export class RenewPassword {
     }
   }
 
+  /** Live check shown under the password fields. */
+  get lengthOk(): boolean {
+    return this.newPassword().length >= 6;
+  }
+
+  /** Live check shown under the password fields. */
+  get matchOk(): boolean {
+    return this.newPassword().length > 0 && this.newPassword() === this.confirm();
+  }
+
   onSubmit(event: Event): void {
     event.preventDefault();
+    if (this.saving()) return;
     this.errorKey.set('');
 
-    if (this.newPassword().length < 6) {
+    if (!this.lengthOk) {
       this.errorKey.set('rbac.renewal.minLength');
       return;
     }
-    if (this.newPassword() !== this.confirm()) {
+    if (!this.matchOk) {
       this.errorKey.set('rbac.renewal.mismatch');
       return;
     }
@@ -63,5 +75,9 @@ export class RenewPassword {
 
   onConfirmInput(event: Event): void {
     this.confirm.set((event.target as HTMLInputElement).value);
+  }
+
+  onToggleShow(event: Event): void {
+    this.showPassword.set((event.target as HTMLInputElement).checked);
   }
 }
